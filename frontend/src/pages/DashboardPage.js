@@ -238,44 +238,140 @@ export default function DashboardPage({ user, setUser }) {
 
       {/* Large Feature Cards */}
       <div className="px-4 pb-12">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
-          {featureCards.map((card) => (
+        <div className="max-w-7xl mx-auto">
+          {/* 2x2 Grid - First 4 cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {/* e-TOKI Card */}
             <div
-              key={card.id}
-              onClick={() => handleModuleClick(card.path)}
-              className="relative rounded-3xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-all group"
-              data-testid={card.testId}
+              onClick={() => handleModuleClick('/toki')}
+              className="relative rounded-3xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-all"
+              data-testid="feature-toki"
             >
-              <div className={`absolute inset-0 bg-gradient-to-br ${card.bgColor}`} />
-              <div className="relative p-6 min-h-[280px] flex flex-col">
-                {card.subtitle && (
-                  <div className="bg-white/90 rounded-2xl px-4 py-2 mb-3 inline-block self-start shadow-sm">
-                    <p className="text-xs font-medium text-slate-800">{card.subtitle}</p>
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-700" />
+              <div className="relative p-6 min-h-[320px] flex flex-col">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="text-3xl font-bold text-white drop-shadow-md">e-TOKİ</h3>
+                  <div className="bg-white rounded-2xl px-3 py-2 shadow-sm">
+                    <p className="text-xs font-medium text-slate-800">Öğren: Fiyat<br/>Trendleri<br/>Nasıl Oluşur?</p>
                   </div>
-                )}
-                <h3 className="text-2xl font-bold text-white mb-2 drop-shadow-md">{card.title}</h3>
-                <p className="text-sm text-white/90 mb-4 drop-shadow">{card.description}</p>
+                </div>
+                <p className="text-sm text-white/90 mb-3">Gerçek Zamanlı Konut Piyasası Analizleri</p>
                 <div className="mt-auto">
                   <img 
-                    src={card.image} 
-                    alt={card.title}
-                    className="w-full h-32 object-contain drop-shadow-xl"
+                    src="https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/734282e01767374da9bc679f601f445092a7881c4b10dacf1c3d8a95df28ace5.png"
+                    alt="e-TOKI"
+                    className="w-full h-40 object-contain drop-shadow-xl"
                   />
                 </div>
-                {card.hasButton && (
-                  <Button 
-                    className="mt-4 bg-teal-600 hover:bg-teal-700 text-white rounded-full px-6"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleModuleClick(card.path);
-                    }}
-                  >
-                    Başla
-                  </Button>
-                )}
               </div>
             </div>
-          ))}
+
+            {/* e-IPAT Card */}
+            <div
+              onClick={() => handleModuleClick('/land')}
+              className="relative rounded-3xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-all"
+              data-testid="feature-land"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-teal-700 to-teal-800" />
+              <div className="relative p-6 min-h-[320px] flex flex-col">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="text-3xl font-bold text-white drop-shadow-md">e-İPAT</h3>
+                  <div className="bg-white rounded-full p-3 shadow-sm">
+                    <svg className="w-6 h-6 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-sm text-white/90 mb-3">e-İPAT | İmarPlan...</p>
+                <div className="mt-auto">
+                  <img 
+                    src="https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/7edec0cb91fb852c91fb6400497a6ee104913e28c06a9628ce096af48303cb6a.png"
+                    alt="e-IPAT"
+                    className="w-full h-40 object-contain drop-shadow-xl"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Investment Simulator Card */}
+            <div
+              onClick={() => handleModuleClick('/investment')}
+              className="relative rounded-3xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-all"
+              data-testid="feature-investment"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-300 to-slate-400" />
+              <div className="relative p-6 min-h-[320px] flex flex-col">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="text-3xl font-bold text-slate-900 drop-shadow-sm">Investment<br/>Simulator</h3>
+                  <div className="bg-white rounded-2xl px-3 py-2 shadow-sm">
+                    <p className="text-xs font-medium text-slate-800">Keşfet:<br/>ROI Nasıl<br/>Hesaplanır?</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-800 mb-3">Proje ROI Tahmini</p>
+                <div className="mt-auto">
+                  <img 
+                    src="https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/b2c4ff22b8c574ea1d3f66cf1b9ebc0468da47b29dbe1249cc02040edbf75b1c.png"
+                    alt="Investment Simulator"
+                    className="w-full h-40 object-contain drop-shadow-xl"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Mega Project Map Card */}
+            <div
+              onClick={() => handleModuleClick('/mega-projects')}
+              className="relative rounded-3xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-all"
+              data-testid="feature-mega"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-400 to-slate-500" />
+              <div className="relative p-6 min-h-[320px] flex flex-col">
+                <h3 className="text-3xl font-bold text-white drop-shadow-md mb-2">Mega Project Map</h3>
+                <p className="text-sm text-white/90 mb-3">Altyapı Öngörüleri</p>
+                <div className="mt-auto">
+                  <img 
+                    src="https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/eab64624fef67dada87f9740213e291d5137a4ed123bfd3116d641cc04a2639c.png"
+                    alt="Mega Project Map"
+                    className="w-full h-40 object-contain drop-shadow-xl"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Full Width Education Card */}
+          <div
+            onClick={() => handleModuleClick('/education')}
+            className="relative rounded-3xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-all"
+            data-testid="feature-education"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-yellow-600 to-teal-600" />
+            <div className="relative p-6 min-h-[200px] flex items-center justify-between">
+              <div className="flex-1">
+                <h3 className="text-3xl font-bold text-slate-900 drop-shadow-sm mb-2">Gayrimenkul<br/>Eğitim Merkezi</h3>
+                <p className="text-sm text-slate-800 mb-4">Sertifikalı PropTech Kursları</p>
+                <Button 
+                  className="bg-teal-600 hover:bg-teal-700 text-white rounded-full px-8 shadow-lg"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleModuleClick('/education');
+                  }}
+                >
+                  Başla
+                </Button>
+              </div>
+              <div className="flex-shrink-0 ml-4">
+                <img 
+                  src="https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/86dedebcca4ac76d1db0aed111fca43e1825812d80d254ca59d8f6e6cc54edfd.png"
+                  alt="Education"
+                  className="w-48 h-40 object-contain drop-shadow-xl"
+                />
+              </div>
+              <div className="absolute top-4 right-4 bg-teal-700 text-white text-xs px-3 py-2 rounded-full">
+                Ders İçeriklerimizi<br/>Hemen İzle
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
