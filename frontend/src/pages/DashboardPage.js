@@ -108,6 +108,7 @@ const featureCards = [
 
 export default function DashboardPage({ user, setUser }) {
   const navigate = useNavigate();
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -127,20 +128,14 @@ export default function DashboardPage({ user, setUser }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-white" strokeWidth={2} />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900 font-['Manrope']">PropTech Turkey</h1>
-              <p className="text-xs text-slate-500">
-                {user ? `Hoş geldiniz, ${user.full_name}` : 'Gayrimenkul ve Arsa Yatırım Platformu'}
-              </p>
-            </div>
+    <div className="min-h-screen bg-[#F5E6D3]">
+      {/* Top Bar */}
+      <div className="bg-white border-b border-slate-200 px-4 py-2">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-slate-900">MRXTECH - Istanbul</span>
+            <span className="text-sm text-slate-600">| Central Portfolio</span>
+            <ChevronDown className="w-4 h-4 text-slate-600" />
           </div>
           <div className="flex items-center gap-3">
             {user ? (
@@ -148,21 +143,23 @@ export default function DashboardPage({ user, setUser }) {
                 {user.role === 'admin' && (
                   <Button
                     onClick={() => navigate('/admin')}
-                    variant="outline"
-                    className="flex items-center gap-2"
+                    size="sm"
+                    variant="ghost"
+                    className="text-xs"
                     data-testid="admin-panel-button"
                   >
-                    <Shield className="w-4 h-4" />
-                    Admin Panel
+                    <Shield className="w-4 h-4 mr-1" />
+                    Admin
                   </Button>
                 )}
                 <Button
                   onClick={handleLogout}
-                  variant="outline"
-                  className="flex items-center gap-2"
+                  size="sm"
+                  variant="ghost"
+                  className="text-xs"
                   data-testid="logout-button"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-4 h-4 mr-1" />
                   Çıkış
                 </Button>
               </>
@@ -170,53 +167,112 @@ export default function DashboardPage({ user, setUser }) {
               <>
                 <Button
                   onClick={() => navigate('/login')}
-                  variant="outline"
-                  className="flex items-center gap-2"
+                  size="sm"
+                  variant="ghost"
+                  className="text-xs"
                   data-testid="login-header-button"
                 >
-                  Giriş Yap
+                  Giriş
                 </Button>
                 <Button
                   onClick={() => navigate('/register')}
-                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700"
+                  size="sm"
+                  className="text-xs bg-indigo-600 hover:bg-indigo-700"
                   data-testid="register-header-button"
                 >
-                  Kayıt Ol
+                  Kayıt
                 </Button>
               </>
             )}
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* Banner */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-white shadow-lg" data-testid="banner">
-          <h2 className="text-2xl font-bold mb-2 font-['Manrope']">PropTech Potansiyelini Açığa Çıkar</h2>
-          <p className="text-indigo-100">Akıllı gayrimenkul yatırımı için araçlarımızı keşfedin.</p>
+      {/* Top Small Modules Row */}
+      <div className="px-4 py-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            {topModules.map((module) => {
+              const Icon = module.icon;
+              return (
+                <div
+                  key={module.id}
+                  onClick={() => handleModuleClick(module.path)}
+                  className="flex-shrink-0 w-24 cursor-pointer group"
+                  data-testid={module.testId}
+                >
+                  <div className={`w-20 h-20 ${module.color} rounded-2xl flex items-center justify-center mb-2 group-hover:scale-105 transition-transform shadow-md`}>
+                    <Icon className="w-10 h-10 text-white" strokeWidth={1.5} />
+                  </div>
+                  <p className="text-xs font-semibold text-slate-900 text-center leading-tight">{module.title}</p>
+                  <p className="text-[10px] text-slate-600 text-center leading-tight mt-0.5">{module.subtitle}</p>
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Carousel Indicators */}
+          <div className="flex justify-center gap-1.5 mt-3">
+            {[0, 1, 2, 3, 4, 5].map((index) => (
+              <div
+                key={index}
+                className={`h-1.5 rounded-full transition-all ${
+                  index === currentSlide ? 'w-6 bg-slate-700' : 'w-1.5 bg-slate-400'
+                }`}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Modules Grid */}
-      <div className="max-w-7xl mx-auto px-4 pb-12">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-          {modules.map((module) => {
-            const Icon = module.icon;
-            return (
-              <div
-                key={module.id}
-                onClick={() => handleModuleClick(module.path)}
-                className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group flex flex-col items-center text-center"
-                data-testid={module.testId}
-              >
-                <div className={`w-16 h-16 ${module.color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                  <Icon className="w-8 h-8 text-white" strokeWidth={2} />
+      {/* Banner */}
+      <div className="px-4 mb-6">
+        <div className="max-w-7xl mx-auto bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl px-6 py-4 text-white">
+          <h2 className="text-xl font-bold mb-1 italic font-['Georgia']">PropTech Potansiyelini Açığa Çıkar</h2>
+          <p className="text-sm text-slate-300">Akıllı gayrimenkul yatırımı için araçlarımızı keşfedin.</p>
+        </div>
+      </div>
+
+      {/* Large Feature Cards */}
+      <div className="px-4 pb-12">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
+          {featureCards.map((card) => (
+            <div
+              key={card.id}
+              onClick={() => handleModuleClick(card.path)}
+              className="relative rounded-3xl overflow-hidden shadow-lg cursor-pointer hover:shadow-xl transition-all group"
+              data-testid={card.testId}
+            >
+              <div className={`absolute inset-0 bg-gradient-to-br ${card.bgColor}`} />
+              <div className="relative p-6 min-h-[280px] flex flex-col">
+                {card.subtitle && (
+                  <div className="bg-white/90 rounded-2xl px-4 py-2 mb-3 inline-block self-start shadow-sm">
+                    <p className="text-xs font-medium text-slate-800">{card.subtitle}</p>
+                  </div>
+                )}
+                <h3 className="text-2xl font-bold text-white mb-2 drop-shadow-md">{card.title}</h3>
+                <p className="text-sm text-white/90 mb-4 drop-shadow">{card.description}</p>
+                <div className="mt-auto">
+                  <img 
+                    src={card.image} 
+                    alt={card.title}
+                    className="w-full h-32 object-contain drop-shadow-xl"
+                  />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-1 font-['Manrope']">{module.title}</h3>
-                <p className="text-sm text-slate-600">{module.subtitle}</p>
+                {card.hasButton && (
+                  <Button 
+                    className="mt-4 bg-teal-600 hover:bg-teal-700 text-white rounded-full px-6"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleModuleClick(card.path);
+                    }}
+                  >
+                    Başla
+                  </Button>
+                )}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
     </div>
