@@ -240,7 +240,7 @@ export default function DashboardPage({ user, setUser }) {
       <div className="px-4 pb-12">
         <div className="max-w-7xl mx-auto">
           {/* 2x2 Grid - First 4 cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
             {/* e-TOKI Card */}
             <div
               onClick={() => handleModuleClick('/toki')}
@@ -248,19 +248,19 @@ export default function DashboardPage({ user, setUser }) {
               data-testid="feature-toki"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-700" />
-              <div className="relative p-6 min-h-[320px] flex flex-col">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="text-3xl font-bold text-white drop-shadow-md">e-TOKİ</h3>
-                  <div className="bg-white rounded-2xl px-3 py-2 shadow-sm">
-                    <p className="text-xs font-medium text-slate-800">Öğren: Fiyat<br/>Trendleri<br/>Nasıl Oluşur?</p>
+              <div className="relative p-4 min-h-[200px] flex flex-col">
+                <div className="flex items-start justify-between mb-1">
+                  <h3 className="text-2xl font-bold text-white drop-shadow-md">e-TOKİ</h3>
+                  <div className="bg-white rounded-2xl px-2.5 py-1.5 shadow-sm">
+                    <p className="text-[10px] font-medium text-slate-800 leading-tight">Öğren: Fiyat<br/>Trendleri<br/>Nasıl Oluşur?</p>
                   </div>
                 </div>
-                <p className="text-sm text-white/90 mb-3">Gerçek Zamanlı Konut Piyasası Analizleri</p>
+                <p className="text-xs text-white/90 mb-2">Gerçek Zamanlı Konut Piyasası Analizleri</p>
                 <div className="mt-auto">
                   <img 
                     src="https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/734282e01767374da9bc679f601f445092a7881c4b10dacf1c3d8a95df28ace5.png"
                     alt="e-TOKI"
-                    className="w-full h-40 object-contain drop-shadow-xl"
+                    className="w-full h-28 object-contain drop-shadow-xl"
                   />
                 </div>
               </div>
@@ -273,21 +273,21 @@ export default function DashboardPage({ user, setUser }) {
               data-testid="feature-land"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-teal-700 to-teal-800" />
-              <div className="relative p-6 min-h-[320px] flex flex-col">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="text-3xl font-bold text-white drop-shadow-md">e-İPAT</h3>
-                  <div className="bg-white rounded-full p-3 shadow-sm">
-                    <svg className="w-6 h-6 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="relative p-4 min-h-[200px] flex flex-col">
+                <div className="flex items-start justify-between mb-1">
+                  <h3 className="text-2xl font-bold text-white drop-shadow-md">e-İPAT</h3>
+                  <div className="bg-white rounded-full p-2 shadow-sm">
+                    <svg className="w-5 h-5 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                     </svg>
                   </div>
                 </div>
-                <p className="text-sm text-white/90 mb-3">e-İPAT | İmarPlan...</p>
+                <p className="text-xs text-white/90 mb-2">e-İPAT | İmarPlan...</p>
                 <div className="mt-auto">
                   <img 
                     src="https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/7edec0cb91fb852c91fb6400497a6ee104913e28c06a9628ce096af48303cb6a.png"
                     alt="e-IPAT"
-                    className="w-full h-40 object-contain drop-shadow-xl"
+                    className="w-full h-28 object-contain drop-shadow-xl"
                   />
                 </div>
               </div>
@@ -300,19 +300,19 @@ export default function DashboardPage({ user, setUser }) {
               data-testid="feature-investment"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-slate-300 to-slate-400" />
-              <div className="relative p-6 min-h-[320px] flex flex-col">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="text-3xl font-bold text-slate-900 drop-shadow-sm">Investment<br/>Simulator</h3>
-                  <div className="bg-white rounded-2xl px-3 py-2 shadow-sm">
-                    <p className="text-xs font-medium text-slate-800">Keşfet:<br/>ROI Nasıl<br/>Hesaplanır?</p>
+              <div className="relative p-4 min-h-[200px] flex flex-col">
+                <div className="flex items-start justify-between mb-1">
+                  <h3 className="text-2xl font-bold text-slate-900 drop-shadow-sm">Investment<br/>Simulator</h3>
+                  <div className="bg-white rounded-2xl px-2.5 py-1.5 shadow-sm">
+                    <p className="text-[10px] font-medium text-slate-800 leading-tight">Keşfet:<br/>ROI Nasıl<br/>Hesaplanır?</p>
                   </div>
                 </div>
-                <p className="text-sm text-slate-800 mb-3">Proje ROI Tahmini</p>
+                <p className="text-xs text-slate-800 mb-2">Proje ROI Tahmini</p>
                 <div className="mt-auto">
                   <img 
                     src="https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/b2c4ff22b8c574ea1d3f66cf1b9ebc0468da47b29dbe1249cc02040edbf75b1c.png"
                     alt="Investment Simulator"
-                    className="w-full h-40 object-contain drop-shadow-xl"
+                    className="w-full h-28 object-contain drop-shadow-xl"
                   />
                 </div>
               </div>
@@ -325,14 +325,14 @@ export default function DashboardPage({ user, setUser }) {
               data-testid="feature-mega"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-slate-400 to-slate-500" />
-              <div className="relative p-6 min-h-[320px] flex flex-col">
-                <h3 className="text-3xl font-bold text-white drop-shadow-md mb-2">Mega Project Map</h3>
-                <p className="text-sm text-white/90 mb-3">Altyapı Öngörüleri</p>
+              <div className="relative p-4 min-h-[200px] flex flex-col">
+                <h3 className="text-2xl font-bold text-white drop-shadow-md mb-1">Mega Project Map</h3>
+                <p className="text-xs text-white/90 mb-2">Altyapı Öngörüleri</p>
                 <div className="mt-auto">
                   <img 
                     src="https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/eab64624fef67dada87f9740213e291d5137a4ed123bfd3116d641cc04a2639c.png"
                     alt="Mega Project Map"
-                    className="w-full h-40 object-contain drop-shadow-xl"
+                    className="w-full h-28 object-contain drop-shadow-xl"
                   />
                 </div>
               </div>
@@ -346,12 +346,12 @@ export default function DashboardPage({ user, setUser }) {
             data-testid="feature-education"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-yellow-600 to-teal-600" />
-            <div className="relative p-6 min-h-[200px] flex items-center justify-between">
+            <div className="relative p-4 min-h-[140px] flex items-center justify-between">
               <div className="flex-1">
-                <h3 className="text-3xl font-bold text-slate-900 drop-shadow-sm mb-2">Gayrimenkul<br/>Eğitim Merkezi</h3>
-                <p className="text-sm text-slate-800 mb-4">Sertifikalı PropTech Kursları</p>
+                <h3 className="text-2xl font-bold text-slate-900 drop-shadow-sm mb-1">Gayrimenkul<br/>Eğitim Merkezi</h3>
+                <p className="text-xs text-slate-800 mb-3">Sertifikalı PropTech Kursları</p>
                 <Button 
-                  className="bg-teal-600 hover:bg-teal-700 text-white rounded-full px-8 shadow-lg"
+                  className="bg-teal-600 hover:bg-teal-700 text-white rounded-full px-6 py-2 text-sm shadow-lg"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleModuleClick('/education');
@@ -360,14 +360,14 @@ export default function DashboardPage({ user, setUser }) {
                   Başla
                 </Button>
               </div>
-              <div className="flex-shrink-0 ml-4">
+              <div className="flex-shrink-0 ml-3">
                 <img 
                   src="https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/86dedebcca4ac76d1db0aed111fca43e1825812d80d254ca59d8f6e6cc54edfd.png"
                   alt="Education"
-                  className="w-48 h-40 object-contain drop-shadow-xl"
+                  className="w-36 h-28 object-contain drop-shadow-xl"
                 />
               </div>
-              <div className="absolute top-4 right-4 bg-teal-700 text-white text-xs px-3 py-2 rounded-full">
+              <div className="absolute top-3 right-3 bg-teal-700 text-white text-[10px] px-2.5 py-1.5 rounded-full">
                 Ders İçeriklerimizi<br/>Hemen İzle
               </div>
             </div>
