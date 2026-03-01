@@ -1,0 +1,168 @@
+{
+  "project_name": "PropTech Turkey",
+  "design_philosophy": {
+    "theme": "light",
+    "style": "Modern Super-App (Getir Inspired)",
+    "core_principles": [
+      "Mobile-First Card Layout",
+      "Clean White Backgrounds",
+      "Color-Coded Modules",
+      "Data Density with Breathing Room",
+      "No Cartoon Illustrations - Use Flat Icons or Real Photos"
+    ]
+  },
+  "typography": {
+    "font_family": {
+      "heading": "Manrope, sans-serif",
+      "body": "Inter, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "scale": {
+      "h1": "text-4xl md:text-5xl font-bold tracking-tight",
+      "h2": "text-3xl font-semibold tracking-tight",
+      "h3": "text-2xl font-semibold",
+      "h4": "text-xl font-medium",
+      "body_lg": "text-lg leading-relaxed",
+      "body_base": "text-base leading-relaxed text-slate-600",
+      "body_sm": "text-sm text-slate-500",
+      "caption": "text-xs text-slate-400 uppercase tracking-wider"
+    }
+  },
+  "colors": {
+    "palette": {
+      "brand": {
+        "primary": "#4F46E5",
+        "secondary": "#10B981",
+        "accent": "#F59E0B"
+      },
+      "modules": {
+        "toki": "#3B82F6",
+        "land": "#10B981",
+        "investment": "#8B5CF6",
+        "mega_projects": "#EF4444",
+        "education": "#F59E0B",
+        "community": "#06B6D4",
+        "market": "#6366F1",
+        "opportunities": "#059669"
+      },
+      "neutral": {
+        "bg_app": "#F3F4F6",
+        "bg_card": "#FFFFFF",
+        "text_main": "#111827",
+        "text_secondary": "#4B5563",
+        "border": "#E5E7EB"
+      }
+    },
+    "usage": {
+      "background": "bg-slate-50",
+      "card": "bg-white shadow-sm hover:shadow-md transition-shadow duration-200 border border-slate-100",
+      "primary_button": "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm",
+      "secondary_button": "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50",
+      "module_card": "flex flex-col items-center justify-center p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer bg-white group"
+    }
+  },
+  "layout_strategies": {
+    "dashboard": "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 p-4 md:p-8 max-w-7xl mx-auto",
+    "detail_page": "max-w-7xl mx-auto p-4 md:p-8 space-y-6",
+    "sidebar_layout": "flex min-h-screen bg-slate-50",
+    "mobile_nav": "fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-2 flex justify-around items-center z-50 md:hidden"
+  },
+  "components": {
+    "cards": {
+      "style": "rounded-2xl border-none shadow-sm",
+      "interaction": "hover:-translate-y-1 transition-transform duration-300"
+    },
+    "buttons": {
+      "default": "rounded-lg font-medium px-4 py-2 transition-colors",
+      "large": "h-12 text-lg px-8 rounded-xl"
+    },
+    "inputs": {
+      "style": "h-11 rounded-lg border-slate-200 bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+    }
+  },
+  "visual_enhancers": {
+    "shadows": "shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]",
+    "gradients": "bg-gradient-to-br from-white to-slate-50",
+    "borders": "border border-slate-100",
+    "icons": "Lucide React (Stroke width: 1.5px or 2px)"
+  },
+  "image_assets": {
+    "toki_projects": [
+      {
+        "url": "https://images.unsplash.com/photo-1654083411130-8514b189a597?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDV8MHwxfHNlYXJjaHwzfHxtb2Rlcm4lMjBhcGFydG1lbnQlMjBidWlsZGluZyUyMGV4dGVyaW9yJTIwdHVya2V5fGVufDB8fHx8MTc3MjQwMTk1Nnww&ixlib=rb-4.1.0&q=85",
+        "alt": "Modern TOKI Housing Project"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1767793357529-db424dfa04a1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDV8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBhcGFydG1lbnQlMjBidWlsZGluZyUyMGV4dGVyaW9yJTIwdHVya2V5fGVufDB8fHx8MTc3MjQwMTk1Nnww&ixlib=rb-4.1.0&q=85",
+        "alt": "Cityscape at Sunset"
+      }
+    ],
+    "land_parcels": [
+      {
+        "url": "https://images.unsplash.com/photo-1723367195026-4b3400e26395?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHwyfHxjb25zdHJ1Y3Rpb24lMjBzaXRlJTIwYWVyaWFsJTIwdmlld3xlbnwwfHx8fDE3NzI0MDE5NTZ8MA&ixlib=rb-4.1.0&q=85",
+        "alt": "Land Parcel Aerial View"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1723367194881-fe2e53534170?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHwxfHxjb25zdHJ1Y3Rpb24lMjBzaXRlJTIwYWVyaWFsJTIwdmlld3xlbnwwfHx8fDE3NzI0MDE5NTZ8MA&ixlib=rb-4.1.0&q=85",
+        "alt": "Construction Site"
+      }
+    ],
+    "mega_projects": [
+      {
+        "url": "https://images.unsplash.com/photo-1653549882026-4c92d25bee4f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHw0fHxpc3RhbmJ1bCUyMGJvc3Bob3J1cyUyMGJyaWRnZXxlbnwwfHx8fDE3NzI0MDE5NTd8MA&ixlib=rb-4.1.0&q=85",
+        "alt": "Istanbul Bridge Project"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1661935635412-fa36cf42ae35?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwxfHxpc3RhbmJ1bCUyMGJvc3Bob3J1cyUyMGJyaWRnZXxlbnwwfHx8fDE3NzI0MDE5NTd8MA&ixlib=rb-4.1.0&q=85",
+        "alt": "Bridge Infrastructure"
+      }
+    ],
+    "education": [
+      {
+        "url": "https://images.unsplash.com/photo-1477569914486-b9955238cae0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzl8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBvZmZpY2UlMjBtZWV0aW5nJTIwc2VtaW5hcnxlbnwwfHx8fDE3NzI0MDE5NTh8MA&ixlib=rb-4.1.0&q=85",
+        "alt": "Seminar Room"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1697059361461-b81d0e98c3af?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzl8MHwxfHNlYXJjaHw0fHxtb2Rlcm4lMjBvZmZpY2UlMjBtZWV0aW5nJTIwc2VtaW5hcnxlbnwwfHx8fDE3NzI0MDE5NTh8MA&ixlib=rb-4.1.0&q=85",
+        "alt": "Webinar Screen"
+      }
+    ],
+    "community": [
+      {
+        "url": "https://images.unsplash.com/photo-1758518731468-98e90ffd7430?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzZ8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjB0ZWFtJTIwZGl2ZXJzZXxlbnwwfHx8fDE3NzI0MDE5NTl8MA&ixlib=rb-4.1.0&q=85",
+        "alt": "Community Team"
+      }
+    ]
+  },
+  "libraries": {
+    "maps": "Leaflet (react-leaflet) with OpenStreetMap tile layer",
+    "icons": "lucide-react",
+    "charts": "recharts (via shadcn/ui charts)",
+    "ui_primitives": "shadcn/ui"
+  },
+  "instructions_to_main_agent": [
+    "Strictly follow the 'Getir-style' card layout: Rounded corners, white background, colorful icon containers.",
+    "Use the specific HEX codes provided for each module to create visual distinction.",
+    "Ensure the map component is responsive and works without an API key (using OSM).",
+    "Do NOT use any cartoon illustrations. If an image is needed and not in the list, use a solid color block with an icon.",
+    "Implement the 'Mega Projects' map with custom markers using the provided bridge images.",
+    "For the 'Investment Analysis' ROI calculator, use a clean two-column layout: Inputs on left, Real-time results card on right.",
+    "Adhere to the 'Manrope' for headings and 'Inter' for body font rule.",
+    "Use 'sonner' for all notifications.",
+    "Ensure all interactive elements have 'data-testid' attributes."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy",
+    "Use glass-morphism effects with backdrop filters (12-24px blur) only for floating overlays (e.g., mobile nav, sticky header).",
+    "You MUST NOT apply universal transition. Eg: 'transition: all'. This results in breaking transforms.",
+    "You MUST NOT center align the app container, ie do not add '.App { text-align: center; }' in the css file.",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style",
+    "NEVER: use AI assistant Emoji characters for icons.",
+    "Every interaction needs micro-animations - hover states, transitions.",
+    "Prioritize using pre-existing components from src/components/ui when applicable",
+    "Components MUST use named exports",
+    "Pages MUST use default exports"
+  ]
+}
