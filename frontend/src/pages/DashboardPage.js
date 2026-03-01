@@ -1,13 +1,14 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { LogOut, Building2, Map, Calculator, MapPin, GraduationCap, Users, TrendingUp, Target, Shield } from 'lucide-react';
+import { LogOut, Building2, Map, Calculator, MapPin, GraduationCap, Users, TrendingUp, Target, Shield, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 
-const modules = [
+const topModules = [
   {
     id: 'toki',
     title: 'e-TOKİ',
-    subtitle: 'TOKİ Proje Analizi',
+    subtitle: 'Gerçek Zamanlı Konut Piyasası Analizleri',
     icon: Building2,
     color: 'bg-blue-500',
     path: '/toki',
@@ -16,65 +17,92 @@ const modules = [
   {
     id: 'land',
     title: 'e-İPAT',
-    subtitle: 'Arsa Parsel Analizi',
+    subtitle: 'Arazi Parsel Veri Erişimi',
     icon: Map,
-    color: 'bg-green-500',
+    color: 'bg-green-600',
     path: '/land',
     testId: 'module-land'
   },
   {
     id: 'investment',
-    title: 'Yatırım Simülatörü',
-    subtitle: 'ROI Hesaplama',
+    title: 'Investment Simulator',
+    subtitle: 'Proje ROI Tahmini',
     icon: Calculator,
-    color: 'bg-purple-500',
+    color: 'bg-amber-500',
     path: '/investment',
     testId: 'module-investment'
   },
   {
     id: 'mega',
-    title: 'Mega Proje Haritası',
-    subtitle: 'Altın Koridorlar',
+    title: 'Mega Project Map',
+    subtitle: 'Altyapı Öngörüleri',
     icon: MapPin,
-    color: 'bg-red-500',
+    color: 'bg-cyan-500',
     path: '/mega-projects',
     testId: 'module-mega'
   },
   {
     id: 'education',
-    title: 'Eğitim Merkezi',
-    subtitle: 'Kurslar & Seminerler',
+    title: 'Real Estate Education',
+    subtitle: 'Küratörlü PropTech Kursları',
     icon: GraduationCap,
-    color: 'bg-amber-500',
+    color: 'bg-teal-600',
     path: '/education',
     testId: 'module-education'
   },
+];
+
+const featureCards = [
   {
-    id: 'community',
-    title: 'Topluluk',
-    subtitle: 'Tartışma & Paylaşım',
-    icon: Users,
-    color: 'bg-cyan-500',
-    path: '/community',
-    testId: 'module-community'
+    id: 'toki',
+    title: 'e-TOKİ',
+    subtitle: 'Öğren: Fiyat Trendleri Nasıl Oluşur?',
+    description: 'Gerçek Zamanlı Konut Piyasası Analizleri',
+    image: 'https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/734282e01767374da9bc679f601f445092a7881c4b10dacf1c3d8a95df28ace5.png',
+    bgColor: 'from-blue-600 to-blue-700',
+    path: '/toki',
+    testId: 'feature-toki'
   },
   {
-    id: 'opportunities',
-    title: 'Arsa Fırsatları',
-    subtitle: 'Analiz Edilmiş Arsalar',
-    icon: Target,
-    color: 'bg-emerald-600',
-    path: '/opportunities',
-    testId: 'module-opportunities'
+    id: 'land',
+    title: 'e-İPAT',
+    subtitle: 'e-İPAT | İmarPlan...',
+    description: 'Arazi Parsel Veri Erişimi',
+    image: 'https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/7edec0cb91fb852c91fb6400497a6ee104913e28c06a9628ce096af48303cb6a.png',
+    bgColor: 'from-emerald-600 to-teal-700',
+    path: '/land',
+    testId: 'feature-land'
   },
   {
-    id: 'market',
-    title: 'Piyasa Analizi',
-    subtitle: 'Fiyat Trendleri',
-    icon: TrendingUp,
-    color: 'bg-indigo-500',
-    path: '/market',
-    testId: 'module-market'
+    id: 'investment',
+    title: 'Investment Simulator',
+    subtitle: 'Keşfet: ROI Nasıl Hesaplanır?',
+    description: 'Proje ROI Tahmini',
+    image: 'https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/b2c4ff22b8c574ea1d3f66cf1b9ebc0468da47b29dbe1249cc02040edbf75b1c.png',
+    bgColor: 'from-slate-300 to-slate-400',
+    path: '/investment',
+    testId: 'feature-investment'
+  },
+  {
+    id: 'mega',
+    title: 'Mega Project Map',
+    subtitle: '',
+    description: 'Altyapı Öngörüleri',
+    image: 'https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/eab64624fef67dada87f9740213e291d5137a4ed123bfd3116d641cc04a2639c.png',
+    bgColor: 'from-slate-400 to-slate-500',
+    path: '/mega-projects',
+    testId: 'feature-mega'
+  },
+  {
+    id: 'education',
+    title: 'Gayrimenkul Eğitim Merkezi',
+    subtitle: 'Sertifikalı PropTech Kursları',
+    description: 'Ders İçeriklerimizi Yatırımlarınızı Hemen İzle',
+    image: 'https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/86dedebcca4ac76d1db0aed111fca43e1825812d80d254ca59d8f6e6cc54edfd.png',
+    bgColor: 'from-amber-500 via-yellow-600 to-teal-600',
+    path: '/education',
+    testId: 'feature-education',
+    hasButton: true
   },
 ];
 
