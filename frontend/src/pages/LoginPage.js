@@ -63,7 +63,7 @@ export default function LoginPage({ setUser }) {
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value);
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="********"
               required
               className="mt-1.5"
