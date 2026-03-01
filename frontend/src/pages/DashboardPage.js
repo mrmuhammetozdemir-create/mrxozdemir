@@ -138,6 +138,9 @@ export default function DashboardPage({ user, setUser }) {
             <ChevronDown className="w-4 h-4 text-slate-600" />
           </div>
           <div className="flex items-center gap-3">
+            <div className="text-2xl font-bold text-amber-600 tracking-wider" style={{ fontFamily: 'Georgia, serif' }}>
+              MRX
+            </div>
             {user ? (
               <>
                 {user.role === 'admin' && (
