@@ -42,9 +42,9 @@ function App() {
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={!user ? <LoginPage setUser={setUser} /> : <Navigate to="/" />} />
-          <Route path="/register" element={!user ? <RegisterPage setUser={setUser} /> : <Navigate to="/" />} />
-          <Route path="/" element={user ? <DashboardPage user={user} setUser={setUser} /> : <Navigate to="/login" />} />
+          <Route path="/login" element={<LoginPage setUser={setUser} />} />
+          <Route path="/register" element={<RegisterPage setUser={setUser} />} />
+          <Route path="/" element={<DashboardPage user={user} setUser={setUser} />} />
           <Route path="/toki" element={user ? <TOKISearchPage user={user} setUser={setUser} /> : <Navigate to="/login" />} />
           <Route path="/toki/:id" element={user ? <TOKIDetailPage user={user} setUser={setUser} /> : <Navigate to="/login" />} />
           <Route path="/land" element={user ? <LandSearchPage user={user} setUser={setUser} /> : <Navigate to="/login" />} />
