@@ -86,7 +86,16 @@ export default function DashboardPage({ user, setUser }) {
     localStorage.removeItem('user');
     setUser(null);
     toast.success('Çıkış başarılı');
-    navigate('/login');
+    navigate('/');
+  };
+
+  const handleModuleClick = (path) => {
+    if (!user) {
+      toast.error('Bu modülü kullanmak için giriş yapmalısınız');
+      navigate('/login');
+    } else {
+      navigate(path);
+    }
   };
 
   return (
@@ -100,30 +109,54 @@ export default function DashboardPage({ user, setUser }) {
             </div>
             <div>
               <h1 className="text-xl font-bold text-slate-900 font-['Manrope']">PropTech Turkey</h1>
-              <p className="text-xs text-slate-500">Hoş geldiniz, {user.full_name}</p>
+              <p className="text-xs text-slate-500">
+                {user ? `Hoş geldiniz, ${user.full_name}` : 'Gayrimenkul ve Arsa Yatırım Platformu'}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {user.role === 'admin' && (
-              <Button
-                onClick={() => navigate('/admin')}
-                variant="outline"
-                className="flex items-center gap-2"
-                data-testid="admin-panel-button"
-              >
-                <Shield className="w-4 h-4" />
-                Admin Panel
-              </Button>
+            {user ? (
+              <>
+                {user.role === 'admin' && (
+                  <Button
+                    onClick={() => navigate('/admin')}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    data-testid="admin-panel-button"
+                  >
+                    <Shield className="w-4 h-4" />
+                    Admin Panel
+                  </Button>
+                )}
+                <Button
+                  onClick={handleLogout}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                  data-testid="logout-button"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Çıkış
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={() => navigate('/login')}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                  data-testid="login-header-button"
+                >
+                  Giriş Yap
+                </Button>
+                <Button
+                  onClick={() => navigate('/register')}
+                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700"
+                  data-testid="register-header-button"
+                >
+                  Kayıt Ol
+                </Button>
+              </>
             )}
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="flex items-center gap-2"
-              data-testid="logout-button"
-            >
-              <LogOut className="w-4 h-4" />
-              Çıkış
-            </Button>
           </div>
         </div>
       </header>
@@ -144,7 +177,7 @@ export default function DashboardPage({ user, setUser }) {
             return (
               <div
                 key={module.id}
-                onClick={() => navigate(module.path)}
+                onClick={() => handleModuleClick(module.path)}
                 className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group flex flex-col items-center text-center"
                 data-testid={module.testId}
               >
