@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { LogOut, Building2, Map, Calculator, MapPin, GraduationCap, Users, TrendingUp, Target, Shield, ChevronDown } from 'lucide-react';
-import { toast } from 'sonner';
+import { Building2, Map, Calculator, MapPin, GraduationCap, ChevronDown } from 'lucide-react';
 
 const topModules = [
   {
@@ -106,25 +105,12 @@ const featureCards = [
   },
 ];
 
-export default function DashboardPage({ user, setUser }) {
+export default function DashboardPage() {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    toast.success('Çıkış başarılı');
-    navigate('/');
-  };
-
   const handleModuleClick = (path) => {
-    if (!user) {
-      toast.error('Bu modülü kullanmak için giriş yapmalısınız');
-      navigate('/login');
-    } else {
-      navigate(path);
-    }
+    navigate(path);
   };
 
   return (
@@ -141,52 +127,6 @@ export default function DashboardPage({ user, setUser }) {
             <div className="text-2xl font-bold text-amber-600 tracking-wider" style={{ fontFamily: 'Georgia, serif' }}>
               MRX
             </div>
-            {user ? (
-              <>
-                {user.role === 'admin' && (
-                  <Button
-                    onClick={() => navigate('/admin')}
-                    size="sm"
-                    variant="ghost"
-                    className="text-xs"
-                    data-testid="admin-panel-button"
-                  >
-                    <Shield className="w-4 h-4 mr-1" />
-                    Admin
-                  </Button>
-                )}
-                <Button
-                  onClick={handleLogout}
-                  size="sm"
-                  variant="ghost"
-                  className="text-xs"
-                  data-testid="logout-button"
-                >
-                  <LogOut className="w-4 h-4 mr-1" />
-                  Çıkış
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  onClick={() => navigate('/login')}
-                  size="sm"
-                  variant="ghost"
-                  className="text-xs"
-                  data-testid="login-header-button"
-                >
-                  Giriş
-                </Button>
-                <Button
-                  onClick={() => navigate('/register')}
-                  size="sm"
-                  className="text-xs bg-indigo-600 hover:bg-indigo-700"
-                  data-testid="register-header-button"
-                >
-                  Kayıt
-                </Button>
-              </>
-            )}
           </div>
         </div>
       </div>

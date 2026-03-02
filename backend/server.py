@@ -464,11 +464,11 @@ async def get_seminars():
 # ============= COMMUNITY =============
 
 @api_router.post("/community/posts", response_model=CommunityPost)
-async def create_post(post: CommunityPostCreate, current_user: dict = Depends(get_current_user)):
+async def create_post(post: CommunityPostCreate):
     import uuid
     post_dict = post.model_dump()
     post_dict["id"] = str(uuid.uuid4())
-    post_dict["author_email"] = current_user["email"]
+    post_dict["author_email"] = "anonymous@proptech.com"  # Default author since no auth
     post_dict["created_at"] = datetime.now(timezone.utc).isoformat()
     await db.community_posts.insert_one(post_dict)
     return CommunityPost(**post_dict)

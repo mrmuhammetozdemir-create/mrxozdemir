@@ -8,7 +8,7 @@ import { ArrowLeft, Search, Map as MapIcon } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 
-export default function LandSearchPage({ user, setUser }) {
+export default function LandSearchPage() {
   const navigate = useNavigate();
   const [city, setCity] = useState('');
   const [district, setDistrict] = useState('');

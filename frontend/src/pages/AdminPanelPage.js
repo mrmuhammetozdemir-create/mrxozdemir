@@ -10,7 +10,7 @@ import { ArrowLeft, Shield, Building2, Map, Target, GraduationCap, TrendingUp } 
 import api from '@/utils/api';
 import { toast } from 'sonner';
 
-export default function AdminPanelPage({ user }) {
+export default function AdminPanelPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('toki');
 

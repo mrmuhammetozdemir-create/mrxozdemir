@@ -10,7 +10,7 @@ import { ArrowLeft, Users as UsersIcon, MessageSquare, Plus } from 'lucide-react
 import api from '@/utils/api';
 import { toast } from 'sonner';
 
-export default function CommunityPage({ user }) {
+export default function CommunityPage() {
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);

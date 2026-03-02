@@ -8,7 +8,7 @@ import { ArrowLeft, Search, Building2 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 
-export default function TOKISearchPage({ user, setUser }) {
+export default function TOKISearchPage() {
   const navigate = useNavigate();
   const [city, setCity] = useState('');
   const [district, setDistrict] = useState('');
