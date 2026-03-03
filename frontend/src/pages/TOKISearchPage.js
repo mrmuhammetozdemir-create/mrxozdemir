@@ -50,93 +50,152 @@ export default function TOKISearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+      {/* Header with Logo */}
+      <header className="bg-white border-b-4 border-blue-600 sticky top-0 z-40 shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate('/')} data-testid="back-button">
-            <ArrowLeft className="w-5 h-5" />
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/')} 
+            data-testid="back-button"
+            className="hover:bg-blue-50"
+          >
+            <ArrowLeft className="w-5 h-5 text-blue-600" />
           </Button>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-white" strokeWidth={2} />
+          <div className="flex items-center gap-4 flex-1">
+            {/* TOKİ Logo */}
+            <img 
+              src="https://customer-assets.emergentagent.com/job_toki-analyzer/artifacts/ufdkg7dn_Toki_logo.png" 
+              alt="TOKİ Logo" 
+              className="h-16 w-auto"
+            />
+            <div className="border-l-2 border-blue-600 pl-4">
+              <h1 className="text-2xl font-bold text-blue-700">TOKİ Proje Sorgulama</h1>
+              <p className="text-sm text-green-600">T.C. Çevre, Şehircilik ve İklim Değişikliği Bakanlığı</p>
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 font-['Manrope']">TOKİ Proje Analizi</h1>
           </div>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-6">
-        <Card className="p-6 border-slate-200" data-testid="search-form">
+        {/* Search Form */}
+        <Card className="p-6 border-2 border-blue-200 shadow-lg bg-white" data-testid="search-form">
+          <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-green-500">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-green-500 flex items-center justify-center">
+              <Search className="w-6 h-6 text-white" strokeWidth={2.5} />
+            </div>
+            <h2 className="text-xl font-bold text-blue-800">Proje Arama</h2>
+          </div>
+          
           <form onSubmit={handleSearch} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="city">İl</Label>
+                <Label htmlFor="city" className="text-blue-700 font-semibold">İl</Label>
                 <Input
                   id="city"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="Örn: İstanbul"
-                  className="mt-1.5"
+                  className="mt-1.5 border-2 border-blue-200 focus:border-blue-500 focus:ring-blue-500"
                   data-testid="city-input"
                 />
               </div>
               <div>
-                <Label htmlFor="district">İlçe</Label>
+                <Label htmlFor="district" className="text-blue-700 font-semibold">İlçe</Label>
                 <Input
                   id="district"
                   value={district}
                   onChange={(e) => setDistrict(e.target.value)}
                   placeholder="Örn: Kadıköy"
-                  className="mt-1.5"
+                  className="mt-1.5 border-2 border-blue-200 focus:border-blue-500 focus:ring-blue-500"
                   data-testid="district-input"
                 />
               </div>
               <div>
-                <Label htmlFor="projectName">Proje Adı</Label>
+                <Label htmlFor="projectName" className="text-blue-700 font-semibold">Proje Adı</Label>
                 <Input
                   id="projectName"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
                   placeholder="Proje adı girin"
-                  className="mt-1.5"
+                  className="mt-1.5 border-2 border-blue-200 focus:border-blue-500 focus:ring-blue-500"
                   data-testid="project-name-input"
                 />
               </div>
             </div>
-            <Button type="submit" className="w-full md:w-auto bg-blue-500 hover:bg-blue-600" data-testid="search-button">
-              <Search className="w-4 h-4 mr-2" />
-              Ara
+            <Button 
+              type="submit" 
+              className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-semibold px-8 py-6 text-lg shadow-lg" 
+              data-testid="search-button"
+            >
+              <Search className="w-5 h-5 mr-2" />
+              Proje Ara
             </Button>
           </form>
         </Card>
 
+        {/* Results */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-slate-900">Projeler ({projects.length})</h2>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+              <Building2 className="w-6 h-6 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-blue-800">Bulunan Projeler ({projects.length})</h2>
+          </div>
+          
           {loading ? (
-            <div className="text-center py-12 text-slate-600">Yükleniyor...</div>
+            <div className="text-center py-12">
+              <div className="inline-block w-12 h-12 border-4 border-blue-600 border-t-green-500 rounded-full animate-spin"></div>
+              <p className="mt-4 text-blue-600 font-semibold">Yükleniyor...</p>
+            </div>
           ) : projects.length === 0 ? (
-            <Card className="p-12 text-center border-slate-200">
-              <p className="text-slate-600">Henüz proje bulunmuyor</p>
+            <Card className="p-12 text-center border-2 border-blue-200 bg-blue-50">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
+                <Building2 className="w-10 h-10 text-blue-600" />
+              </div>
+              <p className="text-blue-700 font-semibold text-lg">Henüz proje bulunmuyor</p>
+              <p className="text-blue-600 mt-2">Arama kriterlerinizi değiştirerek tekrar deneyin</p>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {projects.map((project) => (
                 <Card
                   key={project.id}
-                  className="p-6 cursor-pointer hover:shadow-lg transition-shadow border-slate-200"
+                  className="p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-blue-200 hover:border-green-500 bg-white group"
                   onClick={() => navigate(`/toki/${project.id}`)}
                   data-testid={`project-card-${project.id}`}
                 >
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">{project.project_name}</h3>
-                  <p className="text-sm text-slate-600 mb-1">
-                    <span className="font-medium">İl:</span> {project.city}
-                  </p>
-                  <p className="text-sm text-slate-600 mb-1">
-                    <span className="font-medium">İlçe:</span> {project.district}
-                  </p>
-                  <p className="text-sm text-slate-600">
-                    <span className="font-medium">Durum:</span> {project.construction_status}
-                  </p>
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-600 to-green-500 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                      <Building2 className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-blue-800 group-hover:text-green-600 transition-colors line-clamp-2">
+                        {project.project_name}
+                      </h3>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2 bg-gradient-to-br from-blue-50 to-green-50 p-4 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-blue-700 bg-blue-100 px-2 py-1 rounded">İL</span>
+                      <span className="text-sm text-slate-700 font-medium">{project.city}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-1 rounded">İLÇE</span>
+                      <span className="text-sm text-slate-700 font-medium">{project.district}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-blue-700 bg-blue-100 px-2 py-1 rounded">DURUM</span>
+                      <span className="text-sm text-slate-700 font-medium">{project.construction_status}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 pt-4 border-t border-blue-200">
+                    <Button className="w-full bg-blue-600 hover:bg-green-600 transition-colors text-white font-semibold">
+                      Detayları Görüntüle
+                    </Button>
+                  </div>
                 </Card>
               ))}
             </div>
