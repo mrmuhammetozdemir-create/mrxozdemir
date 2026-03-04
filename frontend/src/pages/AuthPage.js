@@ -86,6 +86,10 @@ export default function AuthPage() {
       const { data } = await api.post('/auth/user-login', { email: loginEmail, password: loginPassword }, { withCredentials: true });
       localStorage.setItem('app_user', JSON.stringify(data.user));
       localStorage.setItem('app_session_token', data.session_token);
+      // Admin girişi ise JWT token'ı da kaydet
+      if (data.user.role === 'admin' && data.access_token) {
+        localStorage.setItem('admin_token', data.access_token);
+      }
       toast.success('Giriş başarılı');
       navigate('/');
     } catch (err) {

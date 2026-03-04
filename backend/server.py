@@ -244,24 +244,39 @@ async def register_user(data: UserRegister):
 
 @api_router.post("/auth/user-login")
 async def user_login(credentials: UserLogin):
+    # Check app_users first
     user = await db.app_users.find_one({"email": credentials.email}, {"_id": 0})
+    is_admin = False
+    if not user:
+        # Also check admin users collection
+        admin = await db.users.find_one({"email": credentials.email}, {"_id": 0})
+        if admin:
+            user = admin
+            is_admin = True
     if not user:
         raise HTTPException(status_code=401, detail="E-posta veya şifre hatalı")
     if not user.get("password"):
         raise HTTPException(status_code=401, detail="Bu hesap Google ile oluşturulmuş. Google ile giriş yapın.")
     if not verify_password(credentials.password, user["password"]):
         raise HTTPException(status_code=401, detail="E-posta veya şifre hatalı")
+    # Determine user_id
+    user_id = user.get("user_id") or user.get("id") or f"user_{uuid.uuid4().hex[:12]}"
     session_token = f"sess_{uuid.uuid4().hex}"
     await db.user_sessions.insert_one({
-        "user_id": user["user_id"],
+        "user_id": user_id,
         "session_token": session_token,
         "expires_at": datetime.now(timezone.utc) + timedelta(days=7),
         "created_at": datetime.now(timezone.utc),
     })
-    response = JSONResponse(content={
-        "user": {"user_id": user["user_id"], "full_name": user.get("full_name", ""), "email": user["email"], "role": "user"},
+    role = user.get("role", "admin" if is_admin else "user")
+    response_data = {
+        "user": {"user_id": user_id, "full_name": user.get("full_name", ""), "email": user["email"], "role": role},
         "session_token": session_token,
-    })
+    }
+    # For admin users also return JWT access_token
+    if is_admin:
+        response_data["access_token"] = create_access_token({"sub": credentials.email})
+    response = JSONResponse(content=response_data)
     response.set_cookie("session_token", session_token, path="/", httponly=True, secure=True, samesite="none", max_age=7*24*3600)
     return response
 
