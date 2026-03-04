@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -168,6 +168,8 @@ function TokiManager() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [manageTab, setManageTab] = useState('ada');
+  const [projectImporting, setProjectImporting] = useState(false);
+  const [projectImportResult, setProjectImportResult] = useState(null);
 
   const load = useCallback(async () => {
     const { data } = await api.get('/projects');
@@ -187,6 +189,20 @@ function TokiManager() {
     toast.success('Proje silindi');
     setSelected(null);
     load();
+  };
+
+  const handleProjectExcelImport = async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    setProjectImporting(true); setProjectImportResult(null);
+    const fd = new FormData(); fd.append('file', file);
+    try {
+      const { data } = await api.post('/admin/projects/import-excel', fd, { headers: authHeaders() });
+      setProjectImportResult(data);
+      if (data.success_count > 0) toast.success(`${data.success_count} proje başarıyla eklendi`);
+      if (data.error_count > 0) toast.error(`${data.error_count} satırda hata`);
+      load();
+    } catch (err) { toast.error(err.response?.data?.detail || 'Excel import başarısız'); }
+    finally { setProjectImporting(false); e.target.value = ''; }
   };
 
   if (selected) {
@@ -246,10 +262,30 @@ function TokiManager() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-slate-900">TOKİ Projeleri ({projects.length})</h2>
-        <Button onClick={() => { setEditing(null); setShowForm(true); }} className="bg-blue-600 hover:bg-blue-700" data-testid="new-project-btn">
-          <Plus className="w-4 h-4 mr-2" />Yeni Proje
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => window.open(`${API_BASE}/api/admin/project-excel-template`, '_blank')} variant="outline" size="sm" data-testid="project-template-btn">
+            <Download className="w-4 h-4 mr-1" />Excel Şablonu
+          </Button>
+          <label>
+            <input type="file" accept=".xlsx,.xls,.csv" onChange={handleProjectExcelImport} className="hidden" />
+            <Button as="span" variant="outline" size="sm" className="cursor-pointer" disabled={projectImporting}
+              onClick={e => e.target.closest('label').querySelector('input').click()} data-testid="project-excel-import-btn">
+              <Upload className="w-4 h-4 mr-1" />{projectImporting ? 'Yükleniyor...' : 'Excel Import'}
+            </Button>
+          </label>
+          <Button onClick={() => { setEditing(null); setShowForm(true); }} className="bg-blue-600 hover:bg-blue-700" data-testid="new-project-btn">
+            <Plus className="w-4 h-4 mr-2" />Yeni Proje
+          </Button>
+        </div>
       </div>
+
+      {projectImportResult && (
+        <div className={`p-3 rounded-lg text-sm mb-4 ${projectImportResult.error_count > 0 ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'} border`}>
+          <p className="font-medium">{projectImportResult.success_count} proje eklendi{projectImportResult.error_count > 0 ? `, ${projectImportResult.error_count} hata` : ''}</p>
+          {projectImportResult.errors?.map((err, i) => <p key={i} className="text-red-600 text-xs mt-1">Satır {err.row}: {err.error}</p>)}
+        </div>
+      )}
+
       {projects.length === 0 ? (
         <Card className="p-12 text-center"><Building2 className="w-12 h-12 text-slate-300 mx-auto mb-3" /><p className="text-slate-500">Henüz proje eklenmemiş</p></Card>
       ) : (
@@ -497,25 +533,187 @@ function VideoManager({ projectId, videos, onRefresh }) {
   );
 }
 
-// ==================== MAP LAYER MANAGER ====================
+// ==================== MAP LAYER MANAGER WITH PREVIEW ====================
 function MapLayerManager({ projectId }) {
   const [layers, setLayers] = useState([]);
+  const [previewData, setPreviewData] = useState(null);
+  const [previewFile, setPreviewFile] = useState(null);
+  const [previewName, setPreviewName] = useState('');
+  const mapRef = useRef(null);
+  const previewLayerRef = useRef(null);
+
   const load = useCallback(async () => { const { data } = await api.get(`/projects/${projectId}/map-layers`); setLayers(data); }, [projectId]);
   useEffect(() => { load(); }, [load]);
-  const upload = async (e) => {
-    const file = e.target.files[0]; if (!file) return;
-    const fd = new FormData(); fd.append('file', file);
-    try { await api.post(`/admin/projects/${projectId}/map-layers`, fd, { headers: authHeaders() }); toast.success('Yüklendi'); load(); }
-    catch (err) { toast.error(err.response?.data?.detail || 'Hata'); }
+
+  // Initialize map once
+  useEffect(() => {
+    let cancelled = false;
+    const initMap = async () => {
+      const L = (await import('leaflet')).default;
+      await import('leaflet/dist/leaflet.css');
+      const container = document.getElementById('admin-map-preview');
+      if (!container || container._leaflet_id || cancelled) return;
+      const map = L.map(container).setView([39.9, 32.8], 6);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
+      mapRef.current = map;
+    };
+    initMap();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Render preview data on map
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const loadLeaflet = async () => {
+      const L = (await import('leaflet')).default;
+      if (previewLayerRef.current) {
+        mapRef.current.removeLayer(previewLayerRef.current);
+        previewLayerRef.current = null;
+      }
+      if (previewData) {
+        try {
+          const layer = L.geoJSON(previewData, {
+            style: { color: '#ef4444', weight: 3, fillOpacity: 0.2, fillColor: '#ef4444' },
+            onEachFeature: (feature, layer) => {
+              if (feature.properties) {
+                const props = Object.entries(feature.properties).map(([k, v]) => `<b>${k}:</b> ${v}`).join('<br/>');
+                if (props) layer.bindPopup(props);
+              }
+            }
+          }).addTo(mapRef.current);
+          previewLayerRef.current = layer;
+          mapRef.current.fitBounds(layer.getBounds(), { padding: [20, 20] });
+        } catch (err) {
+          toast.error('GeoJSON okunamadı: ' + err.message);
+        }
+      }
+    };
+    loadLeaflet();
+  }, [previewData]);
+
+  // Also render already-uploaded layers on the map
+  useEffect(() => {
+    if (!mapRef.current || layers.length === 0) return;
+    const loadExistingLayers = async () => {
+      const L = (await import('leaflet')).default;
+      for (const layer of layers) {
+        if (layer.file_type === 'GEOJSON' || layer.file_type === 'JSON') {
+          try {
+            const { data } = await api.get(`/projects/${projectId}/map-layers/${layer.id}/data`);
+            L.geoJSON(data, {
+              style: { color: '#3b82f6', weight: 2, fillOpacity: 0.15, fillColor: '#3b82f6' }
+            }).addTo(mapRef.current);
+          } catch {}
+        }
+      }
+    };
+    loadExistingLayers();
+  }, [layers, projectId]);
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    setPreviewFile(file);
+    setPreviewName(file.name);
+
+    if (ext === 'geojson' || ext === 'json') {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const parsed = JSON.parse(ev.target.result);
+          setPreviewData(parsed);
+          toast.success('GeoJSON haritada gösteriliyor - ön izleme');
+        } catch {
+          toast.error('GeoJSON dosyası okunamadı');
+          setPreviewData(null);
+        }
+      };
+      reader.readAsText(file);
+    } else {
+      setPreviewData(null);
+      toast.info(`${ext.toUpperCase()} dosyası seçildi. Yükle butonuna basarak kaydedebilirsiniz.`);
+    }
     e.target.value = '';
   };
+
+  const uploadPreviewFile = async () => {
+    if (!previewFile) return;
+    const fd = new FormData(); fd.append('file', previewFile);
+    try {
+      await api.post(`/admin/projects/${projectId}/map-layers`, fd, { headers: authHeaders() });
+      toast.success('Harita katmanı yüklendi');
+      setPreviewFile(null); setPreviewData(null); setPreviewName('');
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Yükleme başarısız');
+    }
+  };
+
+  const cancelPreview = () => {
+    setPreviewFile(null); setPreviewData(null); setPreviewName('');
+  };
+
   return (
     <div className="space-y-4">
-      <div className="p-4 bg-slate-50 rounded-lg"><label><input type="file" accept=".kml,.kmz,.geojson,.json" onChange={upload} className="hidden" />
-        <Button as="span" className="cursor-pointer bg-teal-600 hover:bg-teal-700" onClick={e => e.target.closest('label').querySelector('input').click()} data-testid="map-layer-upload-btn"><Upload className="w-4 h-4 mr-1" />KML / KMZ / GeoJSON Yükle</Button></label></div>
-      {layers.map(l => (<div key={l.id} className="flex items-center justify-between p-3 bg-white border rounded"><div className="flex items-center gap-2"><Layers className="w-4 h-4 text-teal-500" /><span className="text-sm">{l.original_filename}</span><Badge variant="outline" className="text-xs">{l.file_type}</Badge></div>
-        <Button variant="ghost" size="sm" className="text-red-500" onClick={async () => { await api.delete(`/admin/map-layers/${l.id}`, { headers: authHeaders() }); load(); }}><Trash2 className="w-3 h-3" /></Button></div>))}
-      {layers.length === 0 && <p className="text-center text-slate-400 py-4">Henüz harita katmanı yok</p>}
+      {/* Map Preview */}
+      <div className="rounded-xl overflow-hidden border shadow-sm">
+        <div className="bg-slate-800 text-white px-4 py-2 text-sm font-medium flex items-center justify-between">
+          <span className="flex items-center gap-2"><Layers className="w-4 h-4" />Harita Ön İzleme</span>
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-full bg-blue-500 inline-block"></span><span className="text-xs">Mevcut</span>
+            <span className="w-3 h-3 rounded-full bg-red-500 inline-block ml-2"></span><span className="text-xs">Yeni (ön izleme)</span>
+          </div>
+        </div>
+        <div id="admin-map-preview" className="h-[400px] w-full" data-testid="admin-map-preview" />
+      </div>
+
+      {/* Upload Controls */}
+      <div className="p-4 bg-slate-50 rounded-lg space-y-3">
+        <div className="flex flex-wrap gap-3 items-center">
+          <label>
+            <input type="file" accept=".kml,.kmz,.geojson,.json" onChange={handleFileSelect} className="hidden" />
+            <Button as="span" variant="outline" className="cursor-pointer" onClick={e => e.target.closest('label').querySelector('input').click()} data-testid="map-file-select-btn">
+              <Layers className="w-4 h-4 mr-1" />Dosya Seç (KML / KMZ / GeoJSON)
+            </Button>
+          </label>
+          {previewFile && (
+            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border">
+              <Layers className="w-4 h-4 text-teal-500" />
+              <span className="text-sm font-medium">{previewName}</span>
+              {previewData && <Badge className="bg-green-100 text-green-700 text-xs">Ön izleme aktif</Badge>}
+              <Button size="sm" className="bg-teal-600 hover:bg-teal-700 h-7" onClick={uploadPreviewFile} data-testid="map-layer-upload-btn">
+                <Upload className="w-3 h-3 mr-1" />Yükle
+              </Button>
+              <Button size="sm" variant="ghost" className="h-7 text-slate-500" onClick={cancelPreview}>
+                <X className="w-3 h-3" />
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Existing Layers */}
+      {layers.length > 0 && (
+        <div>
+          <h4 className="text-sm font-semibold text-slate-600 mb-2">Yüklü Katmanlar ({layers.length})</h4>
+          <div className="space-y-1.5">
+            {layers.map(l => (
+              <div key={l.id} className="flex items-center justify-between p-3 bg-white border rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-blue-500" />
+                  <span className="text-sm">{l.original_filename}</span>
+                  <Badge variant="outline" className="text-xs">{l.file_type}</Badge>
+                  <span className="text-xs text-slate-400">{(l.size / 1024).toFixed(1)} KB</span>
+                </div>
+                <Button variant="ghost" size="sm" className="text-red-500" onClick={async () => { await api.delete(`/admin/map-layers/${l.id}`, { headers: authHeaders() }); load(); }}>
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

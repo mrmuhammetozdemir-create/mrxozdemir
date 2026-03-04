@@ -463,6 +463,119 @@ async def download_excel_template():
         headers={"Content-Disposition": "attachment; filename=ada_parsel_sablonu.xlsx"}
     )
 
+# ============= PROJECT EXCEL IMPORT =============
+
+@api_router.get("/admin/project-excel-template")
+async def download_project_excel_template():
+    import openpyxl
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Projeler"
+    headers = ["Proje_Adi", "Il", "Ilce", "Mahalle", "Proje_Tipi", "Aciklama",
+               "Konut_Sayisi", "Ticari_Alan", "Okul", "Cami", "Sosyal_Tesis",
+               "Proje_Alani_m2", "Baslangic_Tarihi", "Bitis_Tarihi", "Ilerleme_Yuzde",
+               "Enlem", "Boylam"]
+    ws.append(headers)
+    ws.append(["Örnek Proje", "İstanbul", "Arnavutköy", "Tayakadın", "TOKİ", "Açıklama metni",
+               "761", "197", "1", "1", "2", "50000", "2024-01-15", "2026-06-30", "45",
+               "41.0082", "28.9784"])
+    # Adjust column widths
+    for col in ws.columns:
+        max_len = max(len(str(cell.value or "")) for cell in col)
+        ws.column_dimensions[col[0].column_letter].width = max(max_len + 2, 12)
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return Response(
+        content=buf.getvalue(),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=proje_sablonu.xlsx"}
+    )
+
+@api_router.post("/admin/projects/import-excel")
+async def import_projects_excel(file: UploadFile = File(...), admin: dict = Depends(require_admin)):
+    ext = file.filename.split(".")[-1].lower() if "." in file.filename else ""
+    if ext not in ("xlsx", "xls", "csv"):
+        raise HTTPException(status_code=400, detail="Sadece xlsx, xls, csv desteklenir")
+
+    content = await file.read()
+    errors = []
+    success_count = 0
+    created_ids = []
+
+    try:
+        if ext == "csv":
+            import csv
+            reader = csv.DictReader(io.StringIO(content.decode("utf-8-sig")))
+            rows = list(reader)
+        else:
+            import openpyxl
+            wb = openpyxl.load_workbook(io.BytesIO(content), data_only=True)
+            ws = wb.active
+            headers = [str(cell.value or "").strip() for cell in ws[1]]
+            rows = []
+            for row in ws.iter_rows(min_row=2, values_only=True):
+                row_dict = {}
+                for i, val in enumerate(row):
+                    if i < len(headers):
+                        row_dict[headers[i]] = val
+                rows.append(row_dict)
+
+        for idx, row in enumerate(rows, start=2):
+            name = str(row.get("Proje_Adi", "") or "").strip()
+            city = str(row.get("Il", "") or "").strip()
+            district = str(row.get("Ilce", "") or "").strip()
+
+            if not name or not city:
+                errors.append({"row": idx, "error": "Proje_Adi veya Il boş"})
+                continue
+
+            def safe_int(val, default=0):
+                try:
+                    return int(float(val)) if val else default
+                except (ValueError, TypeError):
+                    return default
+
+            def safe_float(val, default=0.0):
+                try:
+                    return float(val) if val else default
+                except (ValueError, TypeError):
+                    return default
+
+            project = {
+                "id": str(uuid.uuid4()),
+                "project_name": name,
+                "city": city,
+                "district": district,
+                "neighborhood": str(row.get("Mahalle", "") or "").strip(),
+                "description": str(row.get("Aciklama", "") or "").strip(),
+                "project_type": str(row.get("Proje_Tipi", "TOKİ") or "TOKİ").strip(),
+                "total_housing": safe_int(row.get("Konut_Sayisi")),
+                "commercial_count": safe_int(row.get("Ticari_Alan")),
+                "school_count": safe_int(row.get("Okul")),
+                "mosque_count": safe_int(row.get("Cami")),
+                "social_facility_count": safe_int(row.get("Sosyal_Tesis")),
+                "project_area_sqm": safe_float(row.get("Proje_Alani_m2")),
+                "start_date": str(row.get("Baslangic_Tarihi", "") or "").strip(),
+                "planned_end_date": str(row.get("Bitis_Tarihi", "") or "").strip(),
+                "progress_percentage": safe_int(row.get("Ilerleme_Yuzde")),
+                "location": {
+                    "lat": safe_float(row.get("Enlem"), 41.0082),
+                    "lng": safe_float(row.get("Boylam"), 28.9784),
+                },
+                "youtube_videos": [],
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
+            await db.projects.insert_one(project)
+            project.pop("_id", None)
+            created_ids.append(project["id"])
+            success_count += 1
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Dosya işleme hatası: {str(e)}")
+
+    return {"success_count": success_count, "error_count": len(errors), "errors": errors, "created_ids": created_ids}
+
 # ============= MEDIA MANAGEMENT =============
 
 MEDIA_CATEGORIES = ["Altyapı", "Blok Resimleri", "Peyzaj", "Zemin", "Drone", "Master Plan"]
@@ -756,8 +869,10 @@ async def create_land_parcel(
 @api_router.get("/land-parcels")
 async def get_land_parcels(city: Optional[str] = None, district: Optional[str] = None):
     query = {}
-    if city: query["city"] = {"$regex": city, "$options": "i"}
-    if district: query["district"] = {"$regex": district, "$options": "i"}
+    if city:
+        query["city"] = {"$regex": city, "$options": "i"}
+    if district:
+        query["district"] = {"$regex": district, "$options": "i"}
     parcels = await db.land_parcels.find(query, {"_id": 0}).to_list(1000)
     return parcels
 
