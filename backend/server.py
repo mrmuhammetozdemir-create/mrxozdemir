@@ -679,16 +679,174 @@ async def calculate_investment(data: InvestmentCalculation):
         roi_percentage=round(roi_percentage, 2)
     )
 
-# ============= COMMUNITY =============
+# ============= MEGA PROJECTS ADMIN =============
+
+@api_router.post("/admin/mega-projects")
+async def create_mega_project(
+    admin: dict = Depends(require_admin),
+    name: str = Form(...), category: str = Form(...), description: str = Form(""),
+    timeline: str = Form(""), location_lat: float = Form(41.0082), location_lng: float = Form(28.9784),
+):
+    project = {
+        "id": str(uuid.uuid4()), "name": name, "category": category, "description": description,
+        "timeline": timeline, "location": {"lat": location_lat, "lng": location_lng},
+        "images": [], "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.mega_projects.insert_one(project)
+    project.pop("_id", None)
+    return project
+
+@api_router.get("/mega-projects")
+async def get_mega_projects():
+    projects = await db.mega_projects.find({}, {"_id": 0}).to_list(1000)
+    # Also include all projects from projects collection (auto-map)
+    all_projects = await db.projects.find({}, {"_id": 0, "id": 1, "project_name": 1, "city": 1, "district": 1, "project_type": 1, "location": 1, "progress_percentage": 1}).to_list(1000)
+    for p in all_projects:
+        if p.get("location"):
+            projects.append({
+                "id": p["id"], "name": p.get("project_name", ""), "category": p.get("project_type", "TOKİ"),
+                "description": f"{p.get('city','')} / {p.get('district','')}", "timeline": "",
+                "location": p["location"], "images": [], "from_projects": True,
+                "progress_percentage": p.get("progress_percentage", 0),
+            })
+    return projects
+
+@api_router.put("/admin/mega-projects/{project_id}")
+async def update_mega_project(
+    project_id: str, admin: dict = Depends(require_admin),
+    name: str = Form(...), category: str = Form(...), description: str = Form(""),
+    timeline: str = Form(""), location_lat: float = Form(41.0082), location_lng: float = Form(28.9784),
+):
+    result = await db.mega_projects.update_one({"id": project_id}, {"$set": {
+        "name": name, "category": category, "description": description,
+        "timeline": timeline, "location": {"lat": location_lat, "lng": location_lng},
+    }})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    project = await db.mega_projects.find_one({"id": project_id}, {"_id": 0})
+    return project
+
+@api_router.delete("/admin/mega-projects/{project_id}")
+async def delete_mega_project(project_id: str, admin: dict = Depends(require_admin)):
+    result = await db.mega_projects.delete_one({"id": project_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"message": "Deleted"}
+
+# ============= e-IPAT (LAND PARCELS) ADMIN =============
+
+@api_router.post("/admin/land-parcels")
+async def create_land_parcel(
+    admin: dict = Depends(require_admin),
+    city: str = Form(...), district: str = Form(...), neighborhood: str = Form(""),
+    ada: str = Form(...), parsel: str = Form(...), size_sqm: float = Form(0),
+    zoning_info: str = Form(""), development_potential: str = Form(""),
+    location_lat: float = Form(41.0082), location_lng: float = Form(28.9784),
+):
+    parcel = {
+        "id": str(uuid.uuid4()), "city": city, "district": district, "neighborhood": neighborhood,
+        "ada": ada, "parsel": parsel, "size_sqm": size_sqm, "zoning_info": zoning_info,
+        "development_potential": development_potential, "location": {"lat": location_lat, "lng": location_lng},
+        "documents": [], "images": [], "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.land_parcels.insert_one(parcel)
+    parcel.pop("_id", None)
+    return parcel
+
+@api_router.get("/land-parcels")
+async def get_land_parcels(city: Optional[str] = None, district: Optional[str] = None):
+    query = {}
+    if city: query["city"] = {"$regex": city, "$options": "i"}
+    if district: query["district"] = {"$regex": district, "$options": "i"}
+    parcels = await db.land_parcels.find(query, {"_id": 0}).to_list(1000)
+    return parcels
+
+@api_router.put("/admin/land-parcels/{parcel_id}")
+async def update_land_parcel(
+    parcel_id: str, admin: dict = Depends(require_admin),
+    city: str = Form(...), district: str = Form(...), neighborhood: str = Form(""),
+    ada: str = Form(...), parsel: str = Form(...), size_sqm: float = Form(0),
+    zoning_info: str = Form(""), development_potential: str = Form(""),
+    location_lat: float = Form(41.0082), location_lng: float = Form(28.9784),
+):
+    result = await db.land_parcels.update_one({"id": parcel_id}, {"$set": {
+        "city": city, "district": district, "neighborhood": neighborhood,
+        "ada": ada, "parsel": parsel, "size_sqm": size_sqm, "zoning_info": zoning_info,
+        "development_potential": development_potential, "location": {"lat": location_lat, "lng": location_lng},
+    }})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    p = await db.land_parcels.find_one({"id": parcel_id}, {"_id": 0})
+    return p
+
+@api_router.delete("/admin/land-parcels/{parcel_id}")
+async def delete_land_parcel(parcel_id: str, admin: dict = Depends(require_admin)):
+    result = await db.land_parcels.delete_one({"id": parcel_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"message": "Deleted"}
+
+# ============= EDUCATION ADMIN =============
+
+@api_router.post("/admin/courses")
+async def create_course(
+    admin: dict = Depends(require_admin),
+    title: str = Form(...), description: str = Form(""), video_url: str = Form(""),
+    duration_minutes: int = Form(0), thumbnail: str = Form(""),
+):
+    course = {
+        "id": str(uuid.uuid4()), "title": title, "description": description,
+        "video_url": video_url, "duration_minutes": duration_minutes, "thumbnail": thumbnail,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.courses.insert_one(course)
+    course.pop("_id", None)
+    return course
+
+@api_router.get("/courses")
+async def get_courses():
+    return await db.courses.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+
+@api_router.delete("/admin/courses/{course_id}")
+async def delete_course(course_id: str, admin: dict = Depends(require_admin)):
+    result = await db.courses.delete_one({"id": course_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"message": "Deleted"}
+
+@api_router.post("/admin/seminars")
+async def create_seminar(
+    admin: dict = Depends(require_admin),
+    title: str = Form(...), description: str = Form(""), speaker: str = Form(""),
+    date: str = Form(""), registration_link: str = Form(""), thumbnail: str = Form(""),
+):
+    seminar = {
+        "id": str(uuid.uuid4()), "title": title, "description": description,
+        "speaker": speaker, "date": date, "registration_link": registration_link,
+        "thumbnail": thumbnail, "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.seminars.insert_one(seminar)
+    seminar.pop("_id", None)
+    return seminar
+
+@api_router.get("/seminars")
+async def get_seminars():
+    return await db.seminars.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+
+@api_router.delete("/admin/seminars/{seminar_id}")
+async def delete_seminar(seminar_id: str, admin: dict = Depends(require_admin)):
+    result = await db.seminars.delete_one({"id": seminar_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"message": "Deleted"}
+
+# ============= COMMUNITY ADMIN =============
 
 @api_router.post("/community/posts")
 async def create_post(title: str = Form(...), content: str = Form(...), category: str = Form("tartışma")):
     post = {
-        "id": str(uuid.uuid4()),
-        "author_email": "anonymous@proptech.com",
-        "title": title,
-        "content": content,
-        "category": category,
+        "id": str(uuid.uuid4()), "author_email": "anonymous@proptech.com",
+        "title": title, "content": content, "category": category,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.community_posts.insert_one(post)
@@ -698,15 +856,93 @@ async def create_post(title: str = Form(...), content: str = Form(...), category
 @api_router.get("/community/posts")
 async def get_posts(category: Optional[str] = None):
     query = {} if not category else {"category": category}
-    posts = await db.community_posts.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
-    return posts
+    return await db.community_posts.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
 
-# ============= MEGA PROJECTS =============
+@api_router.delete("/admin/community/posts/{post_id}")
+async def delete_post(post_id: str, admin: dict = Depends(require_admin)):
+    result = await db.community_posts.delete_one({"id": post_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"message": "Deleted"}
 
-@api_router.get("/mega-projects")
-async def get_mega_projects():
-    projects = await db.mega_projects.find({}, {"_id": 0}).to_list(1000)
-    return projects
+# ============= LAND OPPORTUNITIES ADMIN =============
+
+@api_router.post("/admin/opportunities")
+async def create_opportunity(
+    admin: dict = Depends(require_admin),
+    location_text: str = Form(...), parcel_size_sqm: float = Form(0), zoning_type: str = Form(""),
+    investment_potential: str = Form("orta"), risk_score: int = Form(5),
+    development_potential: str = Form(""), price_per_sqm: float = Form(0),
+    location_lat: float = Form(41.0082), location_lng: float = Form(28.9784),
+):
+    opp = {
+        "id": str(uuid.uuid4()), "location": location_text, "parcel_size_sqm": parcel_size_sqm,
+        "zoning_type": zoning_type, "investment_potential": investment_potential,
+        "risk_score": risk_score, "development_potential": development_potential,
+        "price_per_sqm": price_per_sqm if price_per_sqm > 0 else None,
+        "location_coords": {"lat": location_lat, "lng": location_lng},
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.land_opportunities.insert_one(opp)
+    opp.pop("_id", None)
+    return opp
+
+@api_router.get("/opportunities")
+async def get_opportunities():
+    return await db.land_opportunities.find({}, {"_id": 0}).to_list(1000)
+
+@api_router.delete("/admin/opportunities/{opp_id}")
+async def delete_opportunity(opp_id: str, admin: dict = Depends(require_admin)):
+    result = await db.land_opportunities.delete_one({"id": opp_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"message": "Deleted"}
+
+# ============= MARKET DATA ADMIN =============
+
+@api_router.post("/admin/market-data")
+async def create_market_data(
+    admin: dict = Depends(require_admin),
+    neighborhood: str = Form(...), city: str = Form(...), district: str = Form(""),
+    avg_price_per_sqm: float = Form(0), price_change_percentage: float = Form(0),
+    data_date: str = Form(""),
+):
+    data_item = {
+        "id": str(uuid.uuid4()), "neighborhood": neighborhood, "city": city,
+        "district": district, "avg_price_per_sqm": avg_price_per_sqm,
+        "price_change_percentage": price_change_percentage, "data_date": data_date,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.market_data.insert_one(data_item)
+    data_item.pop("_id", None)
+    return data_item
+
+@api_router.get("/market-data")
+async def get_market_data(city: Optional[str] = None):
+    query = {} if not city else {"city": {"$regex": city, "$options": "i"}}
+    return await db.market_data.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+
+@api_router.delete("/admin/market-data/{data_id}")
+async def delete_market_data(data_id: str, admin: dict = Depends(require_admin)):
+    result = await db.market_data.delete_one({"id": data_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"message": "Deleted"}
+
+# ============= ADMIN STATS =============
+
+@api_router.get("/admin/stats")
+async def get_admin_stats(admin: dict = Depends(require_admin)):
+    return {
+        "projects": await db.projects.count_documents({}),
+        "land_parcels": await db.land_parcels.count_documents({}),
+        "mega_projects": await db.mega_projects.count_documents({}),
+        "courses": await db.courses.count_documents({}),
+        "seminars": await db.seminars.count_documents({}),
+        "community_posts": await db.community_posts.count_documents({}),
+        "opportunities": await db.land_opportunities.count_documents({}),
+        "market_data": await db.market_data.count_documents({}),
+    }
 
 # ============= STARTUP =============
 
