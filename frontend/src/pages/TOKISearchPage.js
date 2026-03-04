@@ -4,9 +4,32 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Search, Building2 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+
+const TURKISH_CITIES = [
+  'Adana', 'Adıyaman', 'Afyonkarahisar', 'Ağrı', 'Aksaray', 'Amasya', 'Ankara', 'Antalya',
+  'Ardahan', 'Artvin', 'Aydın', 'Balıkesir', 'Bartın', 'Batman', 'Bayburt', 'Bilecik',
+  'Bingöl', 'Bitlis', 'Bolu', 'Burdur', 'Bursa', 'Çanakkale', 'Çankırı', 'Çorum',
+  'Denizli', 'Diyarbakır', 'Düzce', 'Edirne', 'Elazığ', 'Erzincan', 'Erzurum', 'Eskişehir',
+  'Gaziantep', 'Giresun', 'Gümüşhane', 'Hakkari', 'Hatay', 'Iğdır', 'Isparta', 'İstanbul',
+  'İzmir', 'Kahramanmaraş', 'Karabük', 'Karaman', 'Kars', 'Kastamonu', 'Kayseri', 'Kırıkkale',
+  'Kırklareli', 'Kırşehir', 'Kilis', 'Kocaeli', 'Konya', 'Kütahya', 'Malatya', 'Manisa',
+  'Mardin', 'Mersin', 'Muğla', 'Muş', 'Nevşehir', 'Niğde', 'Ordu', 'Osmaniye',
+  'Rize', 'Sakarya', 'Samsun', 'Siirt', 'Sinop', 'Sivas', 'Şanlıurfa', 'Şırnak',
+  'Tekirdağ', 'Tokat', 'Trabzon', 'Tunceli', 'Uşak', 'Van', 'Yalova', 'Yozgat', 'Zonguldak'
+];
+
+const ISTANBUL_DISTRICTS = [
+  'Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler', 'Bakırköy',
+  'Başakşehir', 'Bayrampaşa', 'Beşiktaş', 'Beykoz', 'Beylikdüzü', 'Beyoğlu', 'Büyükçekmece',
+  'Çatalca', 'Çekmeköy', 'Esenler', 'Esenyurt', 'Eyüpsultan', 'Fatih', 'Gaziosmanpaşa',
+  'Güngören', 'Kadıköy', 'Kağıthane', 'Kartal', 'Küçükçekmece', 'Maltepe', 'Pendik',
+  'Sancaktepe', 'Sarıyer', 'Silivri', 'Sultanbeyli', 'Sultangazi', 'Şile', 'Şişli',
+  'Tuzla', 'Ümraniye', 'Üsküdar', 'Zeytinburnu'
+];
 
 export default function TOKISearchPage() {
   const navigate = useNavigate();
@@ -49,26 +72,20 @@ export default function TOKISearchPage() {
     }
   };
 
+  const handleCityChange = (value) => {
+    setCity(value);
+    setDistrict('');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      {/* Header with Logo */}
       <header className="bg-white border-b-4 border-blue-600 sticky top-0 z-40 shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/')} 
-            data-testid="back-button"
-            className="hover:bg-blue-50"
-          >
+          <Button variant="ghost" onClick={() => navigate('/')} data-testid="back-button" className="hover:bg-blue-50">
             <ArrowLeft className="w-5 h-5 text-blue-600" />
           </Button>
           <div className="flex items-center gap-4 flex-1">
-            {/* TOKİ Logo */}
-            <img 
-              src="https://customer-assets.emergentagent.com/job_toki-analyzer/artifacts/ufdkg7dn_Toki_logo.png" 
-              alt="TOKİ Logo" 
-              className="h-16 w-auto"
-            />
+            <img src="https://customer-assets.emergentagent.com/job_toki-analyzer/artifacts/ufdkg7dn_Toki_logo.png" alt="TOKİ Logo" className="h-16 w-auto" />
             <div className="border-l-2 border-blue-600 pl-4">
               <h1 className="text-2xl font-bold text-blue-700">TOKİ Proje Sorgulama</h1>
               <p className="text-sm text-green-600">T.C. Çevre, Şehircilik ve İklim Değişikliği Bakanlığı</p>
@@ -78,7 +95,6 @@ export default function TOKISearchPage() {
       </header>
 
       <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-6">
-        {/* Search Form */}
         <Card className="p-6 border-2 border-blue-200 shadow-lg bg-white" data-testid="search-form">
           <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-green-500">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-green-500 flex items-center justify-center">
@@ -91,26 +107,35 @@ export default function TOKISearchPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="city" className="text-blue-700 font-semibold">İl</Label>
-                <Input
-                  id="city"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="Örn: İstanbul"
-                  className="mt-1.5 border-2 border-blue-200 focus:border-blue-500 focus:ring-blue-500"
-                  data-testid="city-input"
-                />
+                <Select value={city} onValueChange={handleCityChange}>
+                  <SelectTrigger className="mt-1.5 border-2 border-blue-200 focus:border-blue-500 h-11" data-testid="city-select">
+                    <SelectValue placeholder="İl seçiniz" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {TURKISH_CITIES.map((cityName) => (
+                      <SelectItem key={cityName} value={cityName}>{cityName}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+
               <div>
                 <Label htmlFor="district" className="text-blue-700 font-semibold">İlçe</Label>
-                <Input
-                  id="district"
-                  value={district}
-                  onChange={(e) => setDistrict(e.target.value)}
-                  placeholder="Örn: Kadıköy"
-                  className="mt-1.5 border-2 border-blue-200 focus:border-blue-500 focus:ring-blue-500"
-                  data-testid="district-input"
-                />
+                <Select value={district} onValueChange={setDistrict} disabled={!city}>
+                  <SelectTrigger className="mt-1.5 border-2 border-blue-200 focus:border-blue-500 h-11" data-testid="district-select">
+                    <SelectValue placeholder={city ? "İlçe seçiniz" : "Önce il seçiniz"} />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {city === 'İstanbul' && ISTANBUL_DISTRICTS.map((districtName) => (
+                      <SelectItem key={districtName} value={districtName}>{districtName}</SelectItem>
+                    ))}
+                    {city && city !== 'İstanbul' && (
+                      <SelectItem value={city}>Tüm İlçeler</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
+
               <div>
                 <Label htmlFor="projectName" className="text-blue-700 font-semibold">Proje Adı</Label>
                 <Input
@@ -118,23 +143,18 @@ export default function TOKISearchPage() {
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
                   placeholder="Proje adı girin"
-                  className="mt-1.5 border-2 border-blue-200 focus:border-blue-500 focus:ring-blue-500"
+                  className="mt-1.5 border-2 border-blue-200 focus:border-blue-500 focus:ring-blue-500 h-11"
                   data-testid="project-name-input"
                 />
               </div>
             </div>
-            <Button 
-              type="submit" 
-              className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-semibold px-8 py-6 text-lg shadow-lg" 
-              data-testid="search-button"
-            >
+            <Button type="submit" className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-semibold px-8 py-6 text-lg shadow-lg" data-testid="search-button">
               <Search className="w-5 h-5 mr-2" />
               Proje Ara
             </Button>
           </form>
         </Card>
 
-        {/* Results */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
