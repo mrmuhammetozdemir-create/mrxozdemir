@@ -37,6 +37,7 @@ export default function TOKISearchPage() {
   const [district, setDistrict] = useState('');
   const [projectName, setProjectName] = useState('');
   const [projects, setProjects] = useState([]);
+  const [allProjectNames, setAllProjectNames] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -48,6 +49,9 @@ export default function TOKISearchPage() {
     try {
       const { data } = await api.get('/toki/projects');
       setProjects(data);
+      // Extract unique project names
+      const uniqueNames = [...new Set(data.map(p => p.project_name))];
+      setAllProjectNames(uniqueNames);
     } catch (error) {
       toast.error('Projeler yüklenemedi');
     } finally {
@@ -138,14 +142,16 @@ export default function TOKISearchPage() {
 
               <div>
                 <Label htmlFor="projectName" className="text-blue-700 font-semibold">Proje Adı</Label>
-                <Input
-                  id="projectName"
-                  value={projectName}
-                  onChange={(e) => setProjectName(e.target.value)}
-                  placeholder="Proje adı girin"
-                  className="mt-1.5 border-2 border-blue-200 focus:border-blue-500 focus:ring-blue-500 h-11"
-                  data-testid="project-name-input"
-                />
+                <Select value={projectName} onValueChange={setProjectName}>
+                  <SelectTrigger className="mt-1.5 border-2 border-blue-200 focus:border-blue-500 h-11" data-testid="project-name-select">
+                    <SelectValue placeholder="Proje seçiniz" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {allProjectNames.map((name) => (
+                      <SelectItem key={name} value={name}>{name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <Button type="submit" className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-semibold px-8 py-6 text-lg shadow-lg" data-testid="search-button">
