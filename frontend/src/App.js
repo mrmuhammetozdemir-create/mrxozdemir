@@ -12,6 +12,7 @@ import CommunityPage from '@/pages/CommunityPage';
 import OpportunitiesPage from '@/pages/OpportunitiesPage';
 import MarketAnalysisPage from '@/pages/MarketAnalysisPage';
 import AdminPanelPage from '@/pages/AdminPanelPage';
+import AuthPage, { AuthCallback } from '@/pages/AuthPage';
 import '@/App.css';
 
 function App() {
@@ -20,6 +21,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<DashboardPage />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/toki" element={<TOKISearchPage />} />
           <Route path="/toki/:id" element={<ProjectDetailPage />} />
           <Route path="/project/:id" element={<ProjectDetailPage />} />
