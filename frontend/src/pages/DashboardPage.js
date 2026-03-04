@@ -1,7 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Building2, Map, Calculator, MapPin, GraduationCap, ChevronDown } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Building2, Map, Calculator, MapPin, GraduationCap, ChevronDown, LogIn, Shield, LogOut, Settings, X } from 'lucide-react';
+import api from '@/utils/api';
+import { toast } from 'sonner';
 
 const topModules = [
   {
@@ -108,6 +111,41 @@ const featureCards = [
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showLogin, setShowLogin] = useState(false);
+  const [user, setUser] = useState(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loggingIn, setLoggingIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('admin_token');
+    if (token) {
+      api.get('/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+        .then(({ data }) => { if (data.role === 'admin') setUser(data); })
+        .catch(() => {});
+    }
+  }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoggingIn(true);
+    try {
+      const { data } = await api.post('/auth/login', { email, password });
+      if (data.user.role !== 'admin') { toast.error('Admin yetkisi yok'); return; }
+      localStorage.setItem('admin_token', data.access_token);
+      setUser(data.user);
+      setShowLogin(false);
+      setEmail(''); setPassword('');
+      toast.success('Giriş başarılı');
+    } catch { toast.error('E-posta veya şifre hatalı'); }
+    finally { setLoggingIn(false); }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token');
+    setUser(null);
+    toast.success('Çıkış yapıldı');
+  };
 
   const handleModuleClick = (path) => {
     navigate(path);
@@ -127,9 +165,57 @@ export default function DashboardPage() {
             <div className="text-2xl font-bold text-amber-600 tracking-wider" style={{ fontFamily: 'Georgia, serif' }}>
               MRX
             </div>
+            {user ? (
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => navigate('/admin')}
+                  className="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-4 py-1.5 h-8 text-xs font-semibold shadow-md"
+                  data-testid="admin-panel-btn"
+                >
+                  <Settings className="w-3.5 h-3.5 mr-1.5" />Yönetim Paneli
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleLogout} className="h-8 text-xs text-slate-500" data-testid="dashboard-logout-btn">
+                  <LogOut className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={() => setShowLogin(true)}
+                variant="outline"
+                size="sm"
+                className="rounded-full h-8 px-4 text-xs font-medium border-slate-300"
+                data-testid="dashboard-login-btn"
+              >
+                <LogIn className="w-3.5 h-3.5 mr-1.5" />Giriş Yap
+              </Button>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Login Modal */}
+      {showLogin && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setShowLogin(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="font-bold text-slate-900">Giriş Yap</h3>
+              </div>
+              <button onClick={() => setShowLogin(false)} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+            </div>
+            <form onSubmit={handleLogin} className="space-y-3">
+              <Input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="E-posta" required data-testid="dash-login-email" />
+              <Input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="Şifre" required data-testid="dash-login-password" />
+              <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800" disabled={loggingIn} data-testid="dash-login-submit">
+                {loggingIn ? 'Giriş yapılıyor...' : 'Giriş Yap'}
+              </Button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Top Small Modules Row */}
       <div className="px-4 py-6">
