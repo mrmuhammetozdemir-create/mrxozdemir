@@ -46,7 +46,18 @@ Sidebar-based admin panel at `/admin` with 8 module pages:
 - Compact feature cards (flex-[2] ratio)
 - "Giriş Yap" → navigates to `/auth`
 
-## Auth-Gated Search (Complete) - Feb 2026
+## User Management (Admin) - Feb 2026
+- Admin panel "Kullanıcılar" sayfası (sidebar'da UserCog ikonu)
+- Tablo: Ad Soyad, Email/Telefon, Rol, Plan, Durum, Son Giriş + arama + 3 filtre (Rol/Plan/Durum)
+- Sağdan açılan drawer (UserDrawer) - 5 sekme:
+  - **Özet**: Ad, Telefon, Rol düzenleme + hızlı aksiyon (Aktif/Pasif/Ban/Oturum Sonlandır)
+  - **Üyelik**: Free/Pro/Yıllık plan, başlangıç/bitiş tarihi, uzatma (gün bazlı)
+  - **Yetkiler**: 9 modül × 4 yetki seviyesi (none/view/edit/admin)
+  - **Aktivite**: Giriş ve durum değişikliği logları (pagination)
+  - **Notlar**: Admin notu + etiketler
+- Kaydetmeden çıkma uyarısı (isDirty kontrolü)
+- Backend endpoints: GET/PUT /api/admin/app-users/* (7 endpoint)
+
 - Shared `LoginRequiredModal` component in `/components/LoginRequiredModal.js`
 - TOKİ, Arazi ve Yatırım Simülatörü sayfalarında arama/hesaplama yapılırken giriş kontrolü
 - Giriş yapılmamışsa modal çıkar: "Giriş Yap" + "Ücretsiz Kayıt Ol" butonları
