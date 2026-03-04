@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Building2, Map, Calculator, MapPin, GraduationCap, ChevronDown, LogIn, Shield, LogOut, Settings, X } from 'lucide-react';
+import { Building2, Map, Calculator, MapPin, GraduationCap, LogIn, Shield, LogOut, Settings, X, BookOpen } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 
@@ -59,13 +59,17 @@ export default function DashboardPage() {
       {/* Top Bar */}
       <div className="bg-white border-b border-slate-200 px-3 py-1.5 flex-shrink-0">
         <div className="max-w-lg mx-auto flex items-center justify-between">
+          {/* Logo */}
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-semibold text-slate-900">MRXTECH - Istanbul</span>
-            <span className="text-xs text-slate-500">| Central Portfolio</span>
-            <ChevronDown className="w-3 h-3 text-slate-500" />
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-sm">
+              <BookOpen className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-sm font-extrabold tracking-tight text-slate-900" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+              mrx<span className="text-emerald-600">akademi</span>
+            </span>
           </div>
+          {/* Auth */}
           <div className="flex items-center gap-2">
-            <span className="text-lg font-bold text-amber-600 tracking-wider" style={{ fontFamily: 'Georgia, serif' }}>MRX</span>
             {user ? (
               <div className="flex items-center gap-1">
                 <Button onClick={() => navigate('/admin')} className="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-3 h-7 text-[10px] font-semibold" data-testid="admin-panel-btn">
