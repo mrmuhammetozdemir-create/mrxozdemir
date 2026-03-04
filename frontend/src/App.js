@@ -12,6 +12,7 @@ import CommunityPage from '@/pages/CommunityPage';
 import OpportunitiesPage from '@/pages/OpportunitiesPage';
 import MarketAnalysisPage from '@/pages/MarketAnalysisPage';
 import AdminPanelPage from '@/pages/AdminPanelPage';
+import CourseDetailPage from '@/pages/CourseDetailPage';
 import AuthPage, { AuthCallback } from '@/pages/AuthPage';
 import '@/App.css';
 
@@ -34,6 +35,7 @@ function App() {
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/opportunities" element={<OpportunitiesPage />} />
           <Route path="/market" element={<MarketAnalysisPage />} />
+          <Route path="/course/:id" element={<CourseDetailPage />} />
           <Route path="/admin" element={<AdminPanelPage />} />
         </Routes>
       </BrowserRouter>

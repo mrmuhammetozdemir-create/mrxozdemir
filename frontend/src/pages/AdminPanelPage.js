@@ -18,6 +18,7 @@ import {
 import api from '@/utils/api';
 import { toast } from 'sonner';
 import UsersManager from '@/pages/UsersManager';
+import EducationManagerPage from '@/pages/EducationManager';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL;
 
@@ -838,65 +839,7 @@ function MegaManager() {
   );
 }
 
-// ==================== EDUCATION MANAGER ====================
-function EducationManager() {
-  const [courses, setCourses] = useState([]);
-  const [seminars, setSeminars] = useState([]);
-  const [tab, setTab] = useState('courses');
-  const [showForm, setShowForm] = useState(false);
-  const [courseForm, setCourseForm] = useState({ title: '', description: '', video_url: '', duration_minutes: 0, thumbnail: '' });
-  const [seminarForm, setSeminarForm] = useState({ title: '', description: '', speaker: '', date: '', registration_link: '', thumbnail: '' });
-
-  const load = useCallback(async () => { const [c, s] = await Promise.all([api.get('/courses'), api.get('/seminars')]); setCourses(c.data); setSeminars(s.data); }, []);
-  useEffect(() => { load(); }, [load]);
-
-  const submitCourse = async (e) => {
-    e.preventDefault();
-    const fd = new FormData(); Object.entries(courseForm).forEach(([k, v]) => fd.append(k, v));
-    await api.post('/admin/courses', fd, { headers: authHeaders() }); toast.success('Kurs eklendi'); setShowForm(false); setCourseForm({ title: '', description: '', video_url: '', duration_minutes: 0, thumbnail: '' }); load();
-  };
-  const submitSeminar = async (e) => {
-    e.preventDefault();
-    const fd = new FormData(); Object.entries(seminarForm).forEach(([k, v]) => fd.append(k, v));
-    await api.post('/admin/seminars', fd, { headers: authHeaders() }); toast.success('Seminer eklendi'); setShowForm(false); setSeminarForm({ title: '', description: '', speaker: '', date: '', registration_link: '', thumbnail: '' }); load();
-  };
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-slate-900">Eğitim Yönetimi</h2>
-        <Button onClick={() => setShowForm(!showForm)} className="bg-amber-500 hover:bg-amber-600" data-testid="new-edu-btn"><Plus className="w-4 h-4 mr-2" />Yeni {tab === 'courses' ? 'Kurs' : 'Seminer'}</Button>
-      </div>
-      <Tabs value={tab} onValueChange={setTab} className="mb-4"><TabsList><TabsTrigger value="courses">Kurslar ({courses.length})</TabsTrigger><TabsTrigger value="seminars">Seminerler ({seminars.length})</TabsTrigger></TabsList></Tabs>
-      {showForm && tab === 'courses' && (
-        <Card className="p-5 mb-4"><form onSubmit={submitCourse} className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div><Label className="text-xs">Başlık *</Label><Input value={courseForm.title} onChange={e => setCourseForm({ ...courseForm, title: e.target.value })} required className="mt-1" /></div>
-          <div><Label className="text-xs">Video URL</Label><Input value={courseForm.video_url} onChange={e => setCourseForm({ ...courseForm, video_url: e.target.value })} className="mt-1" /></div>
-          <div><Label className="text-xs">Süre (dk)</Label><Input type="number" value={courseForm.duration_minutes} onChange={e => setCourseForm({ ...courseForm, duration_minutes: e.target.value })} className="mt-1" /></div>
-          <div><Label className="text-xs">Thumbnail URL</Label><Input value={courseForm.thumbnail} onChange={e => setCourseForm({ ...courseForm, thumbnail: e.target.value })} className="mt-1" /></div>
-          <div className="md:col-span-2"><Label className="text-xs">Açıklama</Label><Textarea value={courseForm.description} onChange={e => setCourseForm({ ...courseForm, description: e.target.value })} rows={2} className="mt-1" /></div>
-          <div className="flex gap-2"><Button type="submit" className="bg-amber-500"><Check className="w-4 h-4 mr-1" />Kaydet</Button><Button type="button" variant="outline" onClick={() => setShowForm(false)}>İptal</Button></div>
-        </form></Card>
-      )}
-      {showForm && tab === 'seminars' && (
-        <Card className="p-5 mb-4"><form onSubmit={submitSeminar} className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div><Label className="text-xs">Başlık *</Label><Input value={seminarForm.title} onChange={e => setSeminarForm({ ...seminarForm, title: e.target.value })} required className="mt-1" /></div>
-          <div><Label className="text-xs">Konuşmacı</Label><Input value={seminarForm.speaker} onChange={e => setSeminarForm({ ...seminarForm, speaker: e.target.value })} className="mt-1" /></div>
-          <div><Label className="text-xs">Tarih</Label><Input type="date" value={seminarForm.date} onChange={e => setSeminarForm({ ...seminarForm, date: e.target.value })} className="mt-1" /></div>
-          <div><Label className="text-xs">Kayıt Linki</Label><Input value={seminarForm.registration_link} onChange={e => setSeminarForm({ ...seminarForm, registration_link: e.target.value })} className="mt-1" /></div>
-          <div className="md:col-span-2"><Label className="text-xs">Açıklama</Label><Textarea value={seminarForm.description} onChange={e => setSeminarForm({ ...seminarForm, description: e.target.value })} rows={2} className="mt-1" /></div>
-          <div className="flex gap-2"><Button type="submit" className="bg-amber-500"><Check className="w-4 h-4 mr-1" />Kaydet</Button><Button type="button" variant="outline" onClick={() => setShowForm(false)}>İptal</Button></div>
-        </form></Card>
-      )}
-      {tab === 'courses' && (courses.length === 0 ? <Card className="p-8 text-center"><GraduationCap className="w-10 h-10 text-slate-300 mx-auto mb-2" /><p className="text-slate-500">Henüz kurs yok</p></Card> :
-        <div className="space-y-2">{courses.map(c => (<Card key={c.id} className="p-3 flex items-center justify-between"><div><span className="font-bold text-sm">{c.title}</span>{c.duration_minutes > 0 && <Badge className="ml-2 text-xs">{c.duration_minutes} dk</Badge>}<p className="text-xs text-slate-500">{c.description}</p></div>
-          <Button variant="ghost" size="sm" className="text-red-500" onClick={async () => { await api.delete(`/admin/courses/${c.id}`, { headers: authHeaders() }); load(); }}><Trash2 className="w-4 h-4" /></Button></Card>))}</div>)}
-      {tab === 'seminars' && (seminars.length === 0 ? <Card className="p-8 text-center"><GraduationCap className="w-10 h-10 text-slate-300 mx-auto mb-2" /><p className="text-slate-500">Henüz seminer yok</p></Card> :
-        <div className="space-y-2">{seminars.map(s => (<Card key={s.id} className="p-3 flex items-center justify-between"><div><span className="font-bold text-sm">{s.title}</span><Badge className="ml-2 text-xs">{s.speaker}</Badge>{s.date && <span className="text-xs text-slate-500 ml-2">{s.date}</span>}<p className="text-xs text-slate-500">{s.description}</p></div>
-          <Button variant="ghost" size="sm" className="text-red-500" onClick={async () => { await api.delete(`/admin/seminars/${s.id}`, { headers: authHeaders() }); load(); }}><Trash2 className="w-4 h-4" /></Button></Card>))}</div>)}
-    </div>
-  );
-}
+// ==================== EDUCATION MANAGER (moved to EducationManager.js) ====================
 
 // ==================== COMMUNITY MANAGER ====================
 function CommunityManager() {
@@ -1018,7 +961,7 @@ export default function AdminPanelPage() {
       case 'toki': return <TokiManager />;
       case 'ipat': return <IpatManager />;
       case 'mega': return <MegaManager />;
-      case 'education': return <EducationManager />;
+      case 'education': return <EducationManagerPage />;
       case 'community': return <CommunityManager />;
       case 'opportunities': return <OpportunitiesManager />;
       case 'market': return <MarketManager />;
