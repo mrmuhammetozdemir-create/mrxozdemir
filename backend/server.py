@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, Depends, HTTPException, UploadFile, File, Form, Query, Response, Request
+from fastapi import FastAPI, APIRouter, Depends, HTTPException, UploadFile, File, Form, Query, Response, Request, Body
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -1224,58 +1224,313 @@ async def delete_land_parcel(parcel_id: str, admin: dict = Depends(require_admin
         raise HTTPException(status_code=404, detail="Not found")
     return {"message": "Deleted"}
 
-# ============= EDUCATION ADMIN =============
+# ============= EDUCATION SYSTEM =============
 
-@api_router.post("/admin/courses")
-async def create_course(
-    admin: dict = Depends(require_admin),
-    title: str = Form(...), description: str = Form(""), video_url: str = Form(""),
-    duration_minutes: int = Form(0), thumbnail: str = Form(""),
-):
-    course = {
-        "id": str(uuid.uuid4()), "title": title, "description": description,
-        "video_url": video_url, "duration_minutes": duration_minutes, "thumbnail": thumbnail,
-        "created_at": datetime.now(timezone.utc).isoformat(),
-    }
-    await db.courses.insert_one(course)
-    course.pop("_id", None)
-    return course
+class SeminarCreate(BaseModel):
+    title: str
+    description: str = ""
+    date: str = ""
+    time: str = ""
+    duration: str = ""
+    speaker: str = ""
+    seminar_type: str = "free"
+    location: str = ""
+    zoom_link: str = ""
+    cover_image: str = ""
+    status: str = "active"
 
-@api_router.get("/courses")
+class SeminarRegistrationCreate(BaseModel):
+    name: str
+    phone: str
+    email: str
+
+class CourseCreate(BaseModel):
+    title: str
+    short_description: str = ""
+    full_description: str = ""
+    cover_image: str = ""
+    promo_video: str = ""
+    price: float = 0
+    discount_price: Optional[float] = None
+    level: str = "başlangıç"
+    tags: List[str] = []
+    status: str = "active"
+    order: int = 0
+    student_count: int = 0
+    rating: float = 5.0
+
+class CourseModuleCreate(BaseModel):
+    title: str
+    order: int = 0
+
+class CourseLessonCreate(BaseModel):
+    title: str
+    video_url: str = ""
+    pdf_files: List[str] = []
+    duration: str = ""
+    is_preview: bool = False
+    order: int = 0
+
+class LiveTrainingUpdate(BaseModel):
+    title: str = "Haftalık Canlı Online Eğitim"
+    description: str = ""
+    day_of_week: str = ""
+    time: str = ""
+    zoom_link: str = ""
+    status: str = "active"
+
+class LiveArchiveCreate(BaseModel):
+    title: str
+    video_url: str = ""
+    date: str = ""
+    thumbnail: str = ""
+
+# --- Public Education Endpoints ---
+
+@api_router.get("/education/courses")
+async def list_edu_courses():
+    return await db.courses.find({"status": "active"}, {"_id": 0}).sort("order", 1).to_list(1000)
+
+@api_router.get("/courses")  # backward compat
 async def get_courses():
     return await db.courses.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
 
-@api_router.delete("/admin/courses/{course_id}")
-async def delete_course(course_id: str, admin: dict = Depends(require_admin)):
-    result = await db.courses.delete_one({"id": course_id})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Not found")
-    return {"message": "Deleted"}
+@api_router.get("/education/courses/{course_id}")
+async def get_edu_course(course_id: str):
+    c = await db.courses.find_one({"id": course_id}, {"_id": 0})
+    if not c: raise HTTPException(status_code=404, detail="Kurs bulunamadı")
+    return c
 
-@api_router.post("/admin/seminars")
-async def create_seminar(
-    admin: dict = Depends(require_admin),
-    title: str = Form(...), description: str = Form(""), speaker: str = Form(""),
-    date: str = Form(""), registration_link: str = Form(""), thumbnail: str = Form(""),
-):
-    seminar = {
-        "id": str(uuid.uuid4()), "title": title, "description": description,
-        "speaker": speaker, "date": date, "registration_link": registration_link,
-        "thumbnail": thumbnail, "created_at": datetime.now(timezone.utc).isoformat(),
-    }
-    await db.seminars.insert_one(seminar)
-    seminar.pop("_id", None)
-    return seminar
+@api_router.get("/education/seminars")
+async def list_edu_seminars():
+    return await db.seminars.find({"status": "active"}, {"_id": 0}).sort("date", -1).to_list(1000)
 
-@api_router.get("/seminars")
+@api_router.get("/seminars")  # backward compat
 async def get_seminars():
     return await db.seminars.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
 
+@api_router.post("/education/seminars/{seminar_id}/register")
+async def register_for_seminar(seminar_id: str, data: SeminarRegistrationCreate):
+    seminar = await db.seminars.find_one({"id": seminar_id})
+    if not seminar: raise HTTPException(status_code=404, detail="Seminer bulunamadı")
+    existing = await db.seminar_registrations.find_one({"seminar_id": seminar_id, "email": data.email})
+    if existing: raise HTTPException(status_code=400, detail="Bu email ile zaten kayıt yapılmış")
+    reg = {
+        "id": str(uuid.uuid4()), "seminar_id": seminar_id,
+        "seminar_title": seminar.get("title", ""),
+        "name": data.name, "phone": data.phone, "email": data.email,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.seminar_registrations.insert_one(reg)
+    reg.pop("_id", None)
+    return {"message": "Kaydınız başarıyla alındı. Seminer bilgileri size SMS ve email ile gönderilecektir.", "registration": reg}
+
+@api_router.get("/education/live")
+async def get_live_training():
+    live = await db.weekly_live.find_one({}, {"_id": 0})
+    return live or {"title": "Haftalık Canlı Online Eğitim", "description": "Her hafta yatırımcılarla birlikte canlı analiz yapılır.", "day_of_week": "Çarşamba", "time": "20:00", "zoom_link": "", "status": "active", "archives": []}
+
+@api_router.get("/education/page-settings")
+async def get_edu_page_settings():
+    return await db.edu_page_settings.find_one({}, {"_id": 0}) or {}
+
+# User dashboard
+@api_router.get("/user/my-seminars")
+async def get_my_seminars(request: Request):
+    session = await get_session_user(request)
+    if not session: raise HTTPException(status_code=401, detail="Giriş gerekli")
+    regs = await db.seminar_registrations.find({"email": session["email"]}, {"_id": 0}).to_list(100)
+    return regs
+
+# --- Admin Education Endpoints ---
+
+@api_router.get("/admin/education/courses")
+async def admin_list_courses(admin: dict = Depends(require_admin)):
+    return await db.courses.find({}, {"_id": 0}).sort("order", 1).to_list(1000)
+
+@api_router.post("/admin/education/courses")
+async def admin_create_course(data: CourseCreate, admin: dict = Depends(require_admin)):
+    c = {"id": str(uuid.uuid4()), "modules": [], "created_at": datetime.now(timezone.utc).isoformat(), **data.dict()}
+    await db.courses.insert_one(c)
+    c.pop("_id", None)
+    return c
+
+@api_router.put("/admin/education/courses/{course_id}")
+async def admin_update_course(course_id: str, data: CourseCreate, admin: dict = Depends(require_admin)):
+    upd = {k: v for k, v in data.dict().items()}
+    upd["updated_at"] = datetime.now(timezone.utc).isoformat()
+    result = await db.courses.update_one({"id": course_id}, {"$set": upd})
+    if result.matched_count == 0: raise HTTPException(status_code=404, detail="Kurs bulunamadı")
+    return await db.courses.find_one({"id": course_id}, {"_id": 0})
+
+@api_router.delete("/admin/education/courses/{course_id}")
+async def admin_delete_course(course_id: str, admin: dict = Depends(require_admin)):
+    await db.courses.delete_one({"id": course_id})
+    return {"message": "Silindi"}
+
+@api_router.post("/admin/education/courses/{course_id}/modules")
+async def admin_add_module(course_id: str, data: CourseModuleCreate, admin: dict = Depends(require_admin)):
+    module = {"module_id": str(uuid.uuid4()), "title": data.title, "order": data.order, "lessons": []}
+    result = await db.courses.update_one({"id": course_id}, {"$push": {"modules": module}})
+    if result.matched_count == 0: raise HTTPException(status_code=404, detail="Kurs bulunamadı")
+    return module
+
+@api_router.put("/admin/education/courses/{course_id}/modules/{module_id}")
+async def admin_update_module(course_id: str, module_id: str, data: CourseModuleCreate, admin: dict = Depends(require_admin)):
+    await db.courses.update_one(
+        {"id": course_id, "modules.module_id": module_id},
+        {"$set": {"modules.$.title": data.title, "modules.$.order": data.order}}
+    )
+    return {"message": "Güncellendi"}
+
+@api_router.delete("/admin/education/courses/{course_id}/modules/{module_id}")
+async def admin_delete_module(course_id: str, module_id: str, admin: dict = Depends(require_admin)):
+    await db.courses.update_one({"id": course_id}, {"$pull": {"modules": {"module_id": module_id}}})
+    return {"message": "Silindi"}
+
+@api_router.post("/admin/education/courses/{course_id}/modules/{module_id}/lessons")
+async def admin_add_lesson(course_id: str, module_id: str, data: CourseLessonCreate, admin: dict = Depends(require_admin)):
+    lesson = {"lesson_id": str(uuid.uuid4()), **data.dict()}
+    await db.courses.update_one(
+        {"id": course_id, "modules.module_id": module_id},
+        {"$push": {"modules.$.lessons": lesson}}
+    )
+    return lesson
+
+@api_router.delete("/admin/education/courses/{course_id}/modules/{module_id}/lessons/{lesson_id}")
+async def admin_delete_lesson(course_id: str, module_id: str, lesson_id: str, admin: dict = Depends(require_admin)):
+    await db.courses.update_one(
+        {"id": course_id, "modules.module_id": module_id},
+        {"$pull": {"modules.$.lessons": {"lesson_id": lesson_id}}}
+    )
+    return {"message": "Silindi"}
+
+# --- Admin Seminar Endpoints ---
+
+@api_router.get("/admin/education/seminars")
+async def admin_list_seminars(admin: dict = Depends(require_admin)):
+    seminars = await db.seminars.find({}, {"_id": 0}).sort("date", -1).to_list(1000)
+    for s in seminars:
+        s["registration_count"] = await db.seminar_registrations.count_documents({"seminar_id": s["id"]})
+    return seminars
+
+@api_router.post("/admin/education/seminars")
+async def admin_create_seminar(data: SeminarCreate, admin: dict = Depends(require_admin)):
+    s = {"id": str(uuid.uuid4()), "created_at": datetime.now(timezone.utc).isoformat(), **data.dict()}
+    await db.seminars.insert_one(s)
+    s.pop("_id", None)
+    return s
+
+@api_router.put("/admin/education/seminars/{seminar_id}")
+async def admin_update_seminar(seminar_id: str, data: SeminarCreate, admin: dict = Depends(require_admin)):
+    upd = {**data.dict(), "updated_at": datetime.now(timezone.utc).isoformat()}
+    result = await db.seminars.update_one({"id": seminar_id}, {"$set": upd})
+    if result.matched_count == 0: raise HTTPException(status_code=404, detail="Seminer bulunamadı")
+    return await db.seminars.find_one({"id": seminar_id}, {"_id": 0})
+
+@api_router.delete("/admin/education/seminars/{seminar_id}")
+async def admin_delete_seminar(seminar_id: str, admin: dict = Depends(require_admin)):
+    await db.seminars.delete_one({"id": seminar_id})
+    return {"message": "Silindi"}
+
+@api_router.get("/admin/education/seminars/{seminar_id}/registrations")
+async def admin_seminar_registrations(seminar_id: str, admin: dict = Depends(require_admin)):
+    return await db.seminar_registrations.find({"seminar_id": seminar_id}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+
+# --- Admin Live Training ---
+
+@api_router.get("/admin/education/live")
+async def admin_get_live(admin: dict = Depends(require_admin)):
+    live = await db.weekly_live.find_one({}, {"_id": 0})
+    return live or {}
+
+@api_router.put("/admin/education/live")
+async def admin_update_live(data: LiveTrainingUpdate, admin: dict = Depends(require_admin)):
+    upd = {**data.dict(), "updated_at": datetime.now(timezone.utc).isoformat()}
+    existing = await db.weekly_live.find_one({})
+    if existing:
+        await db.weekly_live.update_one({}, {"$set": upd})
+    else:
+        await db.weekly_live.insert_one({"id": str(uuid.uuid4()), "archives": [], **upd})
+    return await db.weekly_live.find_one({}, {"_id": 0})
+
+@api_router.post("/admin/education/live/archives")
+async def admin_add_archive(data: LiveArchiveCreate, admin: dict = Depends(require_admin)):
+    archive = {"archive_id": str(uuid.uuid4()), **data.dict()}
+    existing = await db.weekly_live.find_one({})
+    if existing:
+        await db.weekly_live.update_one({}, {"$push": {"archives": archive}})
+    return archive
+
+@api_router.delete("/admin/education/live/archives/{archive_id}")
+async def admin_delete_archive(archive_id: str, admin: dict = Depends(require_admin)):
+    await db.weekly_live.update_one({}, {"$pull": {"archives": {"archive_id": archive_id}}})
+    return {"message": "Silindi"}
+
+# --- Admin Media Library ---
+
+@api_router.post("/admin/education/media/upload")
+async def upload_edu_media(file: UploadFile = File(...), folder: str = Form("genel"), admin: dict = Depends(require_admin)):
+    ext = file.filename.split(".")[-1].lower() if "." in file.filename else "bin"
+    storage_path = f"{APP_NAME}/education/media/{folder}/{uuid.uuid4()}.{ext}"
+    data_bytes = await file.read()
+    content_type = file.content_type or MIME_TYPES.get(ext, "application/octet-stream")
+    put_object(storage_path, data_bytes, content_type)
+    media_type = "image" if ext in ["jpg", "jpeg", "png", "gif", "webp"] else "video" if ext in ["mp4", "mov", "avi"] else "pdf" if ext == "pdf" else "other"
+    record = {
+        "id": str(uuid.uuid4()), "name": file.filename, "original_name": file.filename,
+        "type": media_type, "ext": ext, "storage_path": storage_path,
+        "size": len(data_bytes), "folder": folder,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.education_media.insert_one(record)
+    record.pop("_id", None)
+    return record
+
+@api_router.get("/admin/education/media")
+async def list_edu_media(folder: str = Query(""), search: str = Query(""), admin: dict = Depends(require_admin)):
+    query = {}
+    if folder: query["folder"] = folder
+    if search: query["name"] = {"$regex": search, "$options": "i"}
+    return await db.education_media.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+
+@api_router.delete("/admin/education/media/{media_id}")
+async def delete_edu_media(media_id: str, admin: dict = Depends(require_admin)):
+    result = await db.education_media.delete_one({"id": media_id})
+    if result.deleted_count == 0: raise HTTPException(status_code=404, detail="Medya bulunamadı")
+    return {"message": "Silindi"}
+
+# --- Admin Page Settings ---
+
+@api_router.put("/admin/education/page-settings")
+async def update_edu_page_settings(sections: List[Dict[str, Any]] = Body(...), admin: dict = Depends(require_admin)):
+    await db.edu_page_settings.delete_many({})
+    await db.edu_page_settings.insert_one({"sections": sections})
+    return {"sections": sections}
+
+# Backward compat - old admin endpoints
+@api_router.post("/admin/courses")
+async def create_course_compat(admin: dict = Depends(require_admin), title: str = Form(...), description: str = Form(""), video_url: str = Form(""), duration_minutes: int = Form(0), thumbnail: str = Form("")):
+    c = {"id": str(uuid.uuid4()), "title": title, "short_description": description, "full_description": "", "cover_image": thumbnail, "promo_video": video_url, "price": 0, "level": "başlangıç", "tags": [], "status": "active", "order": 0, "modules": [], "student_count": duration_minutes, "rating": 5.0, "created_at": datetime.now(timezone.utc).isoformat()}
+    await db.courses.insert_one(c)
+    c.pop("_id", None)
+    return c
+
+@api_router.delete("/admin/courses/{course_id}")
+async def delete_course_compat(course_id: str, admin: dict = Depends(require_admin)):
+    await db.courses.delete_one({"id": course_id})
+    return {"message": "Deleted"}
+
+@api_router.post("/admin/seminars")
+async def create_seminar_compat(admin: dict = Depends(require_admin), title: str = Form(...), description: str = Form(""), speaker: str = Form(""), date: str = Form(""), registration_link: str = Form(""), thumbnail: str = Form("")):
+    s = {"id": str(uuid.uuid4()), "title": title, "description": description, "speaker": speaker, "date": date, "zoom_link": registration_link, "cover_image": thumbnail, "seminar_type": "free", "time": "", "duration": "", "location": "", "status": "active", "created_at": datetime.now(timezone.utc).isoformat()}
+    await db.seminars.insert_one(s)
+    s.pop("_id", None)
+    return s
+
 @api_router.delete("/admin/seminars/{seminar_id}")
-async def delete_seminar(seminar_id: str, admin: dict = Depends(require_admin)):
-    result = await db.seminars.delete_one({"id": seminar_id})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Not found")
+async def delete_seminar_compat(seminar_id: str, admin: dict = Depends(require_admin)):
+    await db.seminars.delete_one({"id": seminar_id})
     return {"message": "Deleted"}
 
 # ============= COMMUNITY ADMIN =============
