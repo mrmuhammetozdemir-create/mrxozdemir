@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { ArrowLeft, Calculator as CalcIcon, TrendingUp } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import LoginRequiredModal from '@/components/LoginRequiredModal';
 
 export default function InvestmentCalculatorPage() {
   const navigate = useNavigate();
@@ -22,6 +23,9 @@ export default function InvestmentCalculatorPage() {
   });
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const isLoggedIn = () => !!(localStorage.getItem('app_user') || localStorage.getItem('admin_token'));
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -29,6 +33,7 @@ export default function InvestmentCalculatorPage() {
 
   const handleCalculate = async (e) => {
     e.preventDefault();
+    if (!isLoggedIn()) { setShowLoginModal(true); return; }
     setLoading(true);
     try {
       const payload = {
@@ -49,6 +54,7 @@ export default function InvestmentCalculatorPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      {showLoginModal && <LoginRequiredModal onClose={() => setShowLoginModal(false)} />}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
           <Button variant="ghost" onClick={() => navigate('/')} data-testid="back-button">

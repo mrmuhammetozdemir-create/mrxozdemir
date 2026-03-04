@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, Search, Building2 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import LoginRequiredModal from '@/components/LoginRequiredModal';
 
 const TURKISH_CITIES = [
   'Adana', 'Adıyaman', 'Afyonkarahisar', 'Ağrı', 'Aksaray', 'Amasya', 'Ankara', 'Antalya',
@@ -39,6 +40,9 @@ export default function TOKISearchPage() {
   const [projects, setProjects] = useState([]);
   const [allProjectNames, setAllProjectNames] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const isLoggedIn = () => !!(localStorage.getItem('app_user') || localStorage.getItem('admin_token'));
 
   useEffect(() => {
     fetchProjects();
@@ -60,6 +64,7 @@ export default function TOKISearchPage() {
 
   const handleSearch = async (e) => {
     e.preventDefault();
+    if (!isLoggedIn()) { setShowLoginModal(true); return; }
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -86,6 +91,7 @@ export default function TOKISearchPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+      {showLoginModal && <LoginRequiredModal onClose={() => setShowLoginModal(false)} />}
       <header className="bg-white border-b-4 border-blue-600 sticky top-0 z-40 shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
           <Button variant="ghost" onClick={() => navigate('/')} data-testid="back-button" className="hover:bg-blue-50">

@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { ArrowLeft, Search, Map as MapIcon } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import LoginRequiredModal from '@/components/LoginRequiredModal';
 
 export default function LandSearchPage() {
   const navigate = useNavigate();
@@ -17,6 +18,9 @@ export default function LandSearchPage() {
   const [parsel, setParsel] = useState('');
   const [parcels, setParcels] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const isLoggedIn = () => !!(localStorage.getItem('app_user') || localStorage.getItem('admin_token'));
 
   useEffect(() => {
     fetchParcels();
@@ -36,6 +40,7 @@ export default function LandSearchPage() {
 
   const handleSearch = async (e) => {
     e.preventDefault();
+    if (!isLoggedIn()) { setShowLoginModal(true); return; }
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -55,6 +60,7 @@ export default function LandSearchPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      {showLoginModal && <LoginRequiredModal onClose={() => setShowLoginModal(false)} />}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
           <Button variant="ghost" onClick={() => navigate('/')} data-testid="back-button">

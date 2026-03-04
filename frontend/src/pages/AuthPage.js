@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { useNavigate, useLocation } from 'react-router-dom';import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -46,6 +45,7 @@ export function AuthCallback() {
 // ======= MAIN AUTH PAGE =======
 export default function AuthPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [loginTab, setLoginTab] = useState('abone'); // 'abone' | 'partner'
 
@@ -65,11 +65,13 @@ export default function AuthPage() {
 
   const [loading, setLoading] = useState(false);
 
-  // Check if already logged in
+  // Check if already logged in or mode param
   useEffect(() => {
     const user = localStorage.getItem('app_user');
     if (user) navigate('/');
-  }, [navigate]);
+    const params = new URLSearchParams(location.search);
+    if (params.get('mode') === 'register') setMode('register');
+  }, [navigate, location.search]);
 
   const handleGoogleLogin = () => {
     // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH

@@ -46,6 +46,11 @@ Sidebar-based admin panel at `/admin` with 8 module pages:
 - Compact feature cards (flex-[2] ratio)
 - "Giriş Yap" → navigates to `/auth`
 
+## Auth-Gated Search (Complete) - Feb 2026
+- Shared `LoginRequiredModal` component in `/components/LoginRequiredModal.js`
+- TOKİ, Arazi ve Yatırım Simülatörü sayfalarında arama/hesaplama yapılırken giriş kontrolü
+- Giriş yapılmamışsa modal çıkar: "Giriş Yap" + "Ücretsiz Kayıt Ol" butonları
+
 ## Credentials
 - Admin: ipatarazi@gmail.com / As537273
 - Test user: testuser@test.com / Test1234!
