@@ -5,28 +5,29 @@ Modern PropTech web platform for real estate and land investment analysis in Tur
 
 ## Architecture
 - **Frontend:** React + Tailwind CSS + shadcn/ui
-- **Backend:** FastAPI (Python)
+- **Backend:** FastAPI (Python) - monolithic server.py
 - **Database:** MongoDB
 - **File Storage:** Emergent Object Storage (cloud)
 - **Maps:** Leaflet.js + OpenStreetMap
 - **Auth:** JWT (admin) + Session tokens (users) + Emergent Google OAuth
 
 ## Admin Panel (Complete) - Feb 2026
-Sidebar-based admin panel at `/admin` with 8 module pages:
+Sidebar-based admin panel at `/admin` with 9 module pages:
 
 1. **Ana Sayfa (Dashboard)** - Stats cards for all modules
 2. **TOKİ Yönetimi** - Project CRUD, Ada/Parsel, Media, Documents, Videos, Map Layers + Excel Import
 3. **e-İPAT Yönetimi** - Land parcel CRUD
 4. **Mega Projeler** - Manual + auto-mapped TOKİ projects
-5. **Eğitim Yönetimi** - Courses and Seminars
+5. **Eğitim Yönetimi** - Full 5-tab education manager (Kurslar, Seminerler, Haftalık Canlı, Medya, Sayfa Yönetimi)
 6. **Topluluk Yönetimi** - Community posts
 7. **Arsa Fırsatları** - Investment opportunities
 8. **Piyasa Analizi** - Market data
+9. **Kullanıcılar** - User management with drawer (5 tabs: Özet, Üyelik, Yetkiler, Aktivite, Notlar)
 
 ### Key Features:
 - **Excel Import for Projects**: Bulk TOKİ project creation via XLSX/XLS/CSV (17 columns)
 - **Excel Import for Ada/Parsel**: Bulk ada/parsel import per project
-- **GeoJSON Map Preview**: Live map preview before uploading map layers (red=preview, blue=existing)
+- **GeoJSON Map Preview**: Live map preview before uploading map layers
 - Cloud file storage (Emergent Object Storage)
 - Media categories (6), Document types (7), Map layers (KML/KMZ/GeoJSON)
 - YouTube video embed, Project statistics, Progress bar
@@ -58,25 +59,51 @@ Sidebar-based admin panel at `/admin` with 8 module pages:
 - Kaydetmeden çıkma uyarısı (isDirty kontrolü)
 - Backend endpoints: GET/PUT /api/admin/app-users/* (7 endpoint)
 
+## Login Required Modal
 - Shared `LoginRequiredModal` component in `/components/LoginRequiredModal.js`
 - TOKİ, Arazi ve Yatırım Simülatörü sayfalarında arama/hesaplama yapılırken giriş kontrolü
 - Giriş yapılmamışsa modal çıkar: "Giriş Yap" + "Ücretsiz Kayıt Ol" butonları
 
-## Education Page Redesign (Complete) - Feb 2026
-- **Hero**: Koyu yeşil (#0a1f14) arka plan, altın "Profesyonel" text, 4 istatistik
-- **Section 1**: 4 Ücretsiz Seminer kartı (Muhammet Özdemir), krem arka plan, yeşil badge
-- **Section 2**: 5 Ücretli Eğitim kartı, Masterclass dark style, yıldızlar + seviye + fiyat
-- **Section 3**: Haftalık Canlı Online Eğitim, 4 özellik kutusu
-- **Section 4**: Arsa Yatırımcı Topluluğu, 4 kanal (#Yenişehir, #Arnavutköy, #Kanal İstanbul, #Yatırım Fırsatları)
-- Tüm CTA giriş kontrolü (LoginRequiredModal)
+## Education Center (Complete) - Feb 2026
 
+### Public Page (`/education`)
+- **Hero**: Koyu yeşil (#0F3D2E) arka plan, altın "Profesyonel" text, 4 istatistik
+- **Section 1**: Ücretsiz Seminerler kartları (DB'den yükler, fallback: statik 4 kart)
+- **Section 2**: Ücretli Eğitimler kartları (DB'den yükler, fallback: statik 5 kart)
+- **Section 3**: Haftalık Canlı Online Eğitim, 4 özellik kutusu
+- **Section 4**: Arsa Yatırımcı Topluluğu, 4 kanal
+- Seminer kayıt: `SeminarRegistrationModal` → POST /api/education/seminars/{id}/register
+- Kurs detayı: `/course/:id` → `CourseDetailPage`
+- **Smart fallback**: Statik veriler gösterilirken kurs/seminer aksiyonları LoginRequired modal'ı açar; DB verisi varsa gerçek aksiyon gerçekleşir
+
+### Admin Panel (`/admin` → Eğitim Yönetimi)
+5-sekme tam işlevsel yönetim paneli (`EducationManager.js`):
+- **Kurslar**: CRUD + modül/ders yönetimi (nested), görsel yükleme
+- **Seminerler**: CRUD + kayıt listesi görüntüleme, görsel yükleme  
+- **Haftalık Canlı**: Başlık/gün/saat/zoom linki + arşiv kayıtları
+- **Medya Kütüphanesi**: Drag-drop upload, klasör filtreleme, link kopyalama
+- **Sayfa Yönetimi**: Public sayfanın başlık/açıklama/buton metinleri düzenlenebilir
+
+### Backend APIs
+- GET/POST /api/admin/education/courses + /{id} (PUT/DELETE) + /{id}/modules + /{id}/modules/{mid}/lessons
+- GET/POST /api/admin/education/seminars + /{id} (PUT/DELETE) + /{id}/registrations
+- GET/PUT /api/admin/education/live + /archives (POST/DELETE)
+- GET /api/admin/education/media + /upload (POST) + /{id} (DELETE)
+- GET/PUT /api/admin/education/page-settings
+- GET /api/education/courses (public) + /{id}
+- GET /api/education/seminars (public)
+- POST /api/education/seminars/{id}/register
+- GET /api/education/live (public)
+- GET /api/education/page-settings (public)
 
 ## Credentials
 - Admin: ipatarazi@gmail.com / As537273
 - Test user: testuser@test.com / Test1234!
 
-## Backlog
+## Backlog (Prioritized)
 - P1: Dependent İlçe dropdown in TOKI search (city → district)
 - P1: e-İPAT module from GitHub
-- P2: User-facing pages for each module
-- P2: Backend modularization (split server.py into routers)
+- P2: User Dashboard (my courses, my seminars, certificates)
+- P2: Add real seminar/course content via admin panel
+- P2: User-facing pages for each module (detailed TOKI, Land analysis, etc.)
+- P3: Backend modularization (split server.py into FastAPI routers)

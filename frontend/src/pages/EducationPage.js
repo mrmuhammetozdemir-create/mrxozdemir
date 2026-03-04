@@ -49,6 +49,8 @@ export default function EducationPage() {
   const [pageSettings, setPageSettings] = useState(null);
   const [selectedSeminar, setSelectedSeminar] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [seminarsFromDB, setSeminarsFromDB] = useState(false);
+  const [coursesFromDB, setCoursesFromDB] = useState(false);
 
   const isLoggedIn = () => !!(localStorage.getItem('app_user') || localStorage.getItem('admin_token'));
 
@@ -59,8 +61,8 @@ export default function EducationPage() {
   };
 
   useEffect(() => {
-    api.get('/education/courses').then(r => { if (r.data?.length > 0) setCourses(r.data); }).catch(() => {});
-    api.get('/education/seminars').then(r => { if (r.data?.length > 0) setSeminars(r.data); }).catch(() => {});
+    api.get('/education/courses').then(r => { if (r.data?.length > 0) { setCourses(r.data); setCoursesFromDB(true); } }).catch(() => {});
+    api.get('/education/seminars').then(r => { if (r.data?.length > 0) { setSeminars(r.data); setSeminarsFromDB(true); } }).catch(() => {});
     api.get('/education/live').then(r => { if (r.data?.title) setLiveData(r.data); }).catch(() => {});
     api.get('/education/page-settings').then(r => { if (r.data?.sections) setPageSettings(r.data); }).catch(() => {});
   }, []);
@@ -142,7 +144,7 @@ export default function EducationPage() {
                     <div className="flex items-center gap-1.5 text-[12px] text-slate-500"><Mic className="w-3.5 h-3.5" style={{ color: '#C8A96A' }} />{s.speaker || 'Muhammet Özdemir'}</div>
                   </div>
                   <button
-                    onClick={() => setSelectedSeminar(s)}
+                    onClick={() => seminarsFromDB ? setSelectedSeminar(s) : handleGate()}
                     className="w-full py-2.5 rounded-xl font-bold text-sm transition-all duration-200 hover:scale-[1.02]"
                     style={{ background: 'linear-gradient(135deg, #C8A96A, #e8c84a)', color: '#0F3D2E' }}
                     data-testid={`seminar-join-${s.id}`}
@@ -175,7 +177,7 @@ export default function EducationPage() {
             {courses.map(c => (
               <div
                 key={c.id}
-                onClick={() => navigate(`/course/${c.id}`)}
+                onClick={() => coursesFromDB ? navigate(`/course/${c.id}`) : handleGate()}
                 className="group rounded-2xl overflow-hidden flex flex-col border cursor-pointer hover:border-[#C8A96A]/50 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
                 style={{ background: 'linear-gradient(160deg, #0f2d1c, #0a1f14)', borderColor: 'rgba(255,255,255,0.08)' }}
                 data-testid={`course-card-${c.id}`}
@@ -203,7 +205,7 @@ export default function EducationPage() {
                       {c.price > 0 ? `₺${c.price.toLocaleString('tr-TR')}` : 'Ücretsiz'}
                     </span>
                     <button
-                      onClick={e => { e.stopPropagation(); navigate(`/course/${c.id}`); }}
+                      onClick={e => { e.stopPropagation(); coursesFromDB ? navigate(`/course/${c.id}`) : handleGate(); }}
                       className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold hover:scale-105 transition-transform"
                       style={{ background: 'linear-gradient(135deg, #C8A96A, #e8c84a)', color: '#0F3D2E' }}
                       data-testid={`course-enroll-${c.id}`}
@@ -308,7 +310,7 @@ export default function EducationPage() {
         <div className="max-w-xl mx-auto px-4 text-center">
           <h3 className="text-xl font-bold mb-2" style={{ color: '#0F3D2E' }}>Hâlâ kararsız mısınız?</h3>
           <p className="text-[13px] text-slate-500 mb-5">Ücretsiz seminere katılın, eğitim kalitesini bizzat görün.</p>
-          <button onClick={() => seminars.length > 0 ? setSelectedSeminar(seminars[0]) : handleGate()} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm hover:scale-105 transition-transform" style={{ background: 'linear-gradient(135deg, #C8A96A, #e8c84a)', color: '#0F3D2E' }} data-testid="footer-cta-btn">
+          <button onClick={() => seminarsFromDB && seminars.length > 0 ? setSelectedSeminar(seminars[0]) : handleGate()} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm hover:scale-105 transition-transform" style={{ background: 'linear-gradient(135deg, #C8A96A, #e8c84a)', color: '#0F3D2E' }} data-testid="footer-cta-btn">
             <Play className="w-4 h-4" />Ücretsiz Seminere Katıl
           </button>
         </div>
