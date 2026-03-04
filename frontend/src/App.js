@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import DashboardPage from '@/pages/DashboardPage';
 import TOKISearchPage from '@/pages/TOKISearchPage';
-import TOKIDetailPage from '@/pages/TOKIDetailPage';
+import ProjectDetailPage from '@/pages/ProjectDetailPage';
 import LandSearchPage from '@/pages/LandSearchPage';
 import LandDetailPage from '@/pages/LandDetailPage';
 import InvestmentCalculatorPage from '@/pages/InvestmentCalculatorPage';
@@ -21,7 +21,8 @@ function App() {
         <Routes>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/toki" element={<TOKISearchPage />} />
-          <Route path="/toki/:id" element={<TOKIDetailPage />} />
+          <Route path="/toki/:id" element={<ProjectDetailPage />} />
+          <Route path="/project/:id" element={<ProjectDetailPage />} />
           <Route path="/land" element={<LandSearchPage />} />
           <Route path="/land/:id" element={<LandDetailPage />} />
           <Route path="/investment" element={<InvestmentCalculatorPage />} />

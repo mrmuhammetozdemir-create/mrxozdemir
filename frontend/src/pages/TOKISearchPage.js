@@ -49,7 +49,6 @@ export default function TOKISearchPage() {
     try {
       const { data } = await api.get('/toki/projects');
       setProjects(data);
-      // Extract unique project names
       const uniqueNames = [...new Set(data.map(p => p.project_name))];
       setAllProjectNames(uniqueNames);
     } catch (error) {
@@ -74,6 +73,10 @@ export default function TOKISearchPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getProjectPath = (project) => {
+    return project.project_type ? `/project/${project.id}` : `/toki/${project.id}`;
   };
 
   const handleCityChange = (value) => {
@@ -188,7 +191,7 @@ export default function TOKISearchPage() {
                 <Card
                   key={project.id}
                   className="p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-blue-200 hover:border-green-500 bg-white group"
-                  onClick={() => navigate(`/toki/${project.id}`)}
+                  onClick={() => navigate(getProjectPath(project))}
                   data-testid={`project-card-${project.id}`}
                 >
                   <div className="flex items-start gap-3 mb-3">

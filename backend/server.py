@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import FastAPI, APIRouter, Depends, HTTPException, UploadFile, File, Form, Query, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -9,243 +9,81 @@ from datetime import datetime, timezone, timedelta
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional, Dict, Any
 import os
+import uuid
 import logging
+import io
+import json
+import requests
 from pathlib import Path
-import cloudinary
-import cloudinary.uploader
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
+# MongoDB
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# JWT Settings
+# JWT
 SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'your-secret-key-change-in-production')
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
-# Cloudinary config
-cloudinary.config(
-    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME', ''),
-    api_key=os.environ.get('CLOUDINARY_API_KEY', ''),
-    api_secret=os.environ.get('CLOUDINARY_API_SECRET', '')
-)
+# Object Storage
+STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
+EMERGENT_KEY = os.environ.get("EMERGENT_LLM_KEY")
+APP_NAME = "proptech-turkey"
+storage_key = None
 
-# Create FastAPI app
+def init_storage():
+    global storage_key
+    if storage_key:
+        return storage_key
+    resp = requests.post(f"{STORAGE_URL}/init", json={"emergent_key": EMERGENT_KEY}, timeout=30)
+    resp.raise_for_status()
+    storage_key = resp.json()["storage_key"]
+    return storage_key
+
+def put_object(path: str, data: bytes, content_type: str) -> dict:
+    key = init_storage()
+    resp = requests.put(
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"X-Storage-Key": key, "Content-Type": content_type},
+        data=data, timeout=120
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+def get_object(path: str):
+    key = init_storage()
+    resp = requests.get(
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"X-Storage-Key": key}, timeout=60
+    )
+    resp.raise_for_status()
+    return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
+
+MIME_TYPES = {
+    "jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
+    "gif": "image/gif", "webp": "image/webp", "pdf": "application/pdf",
+    "json": "application/json", "csv": "text/csv", "txt": "text/plain",
+    "doc": "application/msword", "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "xls": "application/vnd.ms-excel", "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "kml": "application/vnd.google-earth.kml+xml", "kmz": "application/vnd.google-earth.kmz",
+    "geojson": "application/geo+json",
+}
+
 app = FastAPI(title="PropTech Turkey API")
 api_router = APIRouter(prefix="/api")
 
-# ============= MODELS =============
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-class User(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    email: EmailStr
-    full_name: str
-    role: str = "user"  # user or admin
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class UserCreate(BaseModel):
-    email: EmailStr
-    password: str
-    full_name: str
-
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-    user: User
-
-class TOKIProject(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    id: str
-    project_name: str
-    city: str  # İl
-    district: str  # İlçe
-    region: Optional[str] = None  # Bölge/Etap
-    description: str
-    construction_status: str
-    location: Dict[str, float]  # {"lat": 41.0082, "lng": 28.9784}
-    housing_details: Dict[str, Any]
-    documents: List[str] = []  # Cloudinary URLs
-    images: List[str] = []  # Cloudinary URLs
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class TOKIProjectCreate(BaseModel):
-    project_name: str
-    city: str
-    district: str
-    region: Optional[str] = None
-    description: str
-    construction_status: str
-    location: Dict[str, float]
-    housing_details: Dict[str, Any]
-
-class LandParcel(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    id: str
-    city: str  # İl
-    district: str  # İlçe
-    neighborhood: str  # Mahalle
-    ada: str  # Ada
-    parsel: str  # Parsel
-    size_sqm: float  # m²
-    zoning_info: str  # İmar durumu
-    development_potential: str
-    location: Dict[str, float]
-    documents: List[str] = []
-    images: List[str] = []
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class LandParcelCreate(BaseModel):
-    city: str
-    district: str
-    neighborhood: str
-    ada: str
-    parsel: str
-    size_sqm: float
-    zoning_info: str
-    development_potential: str
-    location: Dict[str, float]
-
-class InvestmentCalculation(BaseModel):
-    city: str
-    district: str
-    neighborhood: str
-    ada: str
-    parsel: str
-    land_size_sqm: float  # Arsa büyüklüğü
-    emsal: float  # Emsal/KAKS
-    construction_cost_per_sqm: float  # İnşaat maliyeti (TL/m²)
-
-class InvestmentResult(BaseModel):
-    total_construction_area: float
-    estimated_apartments: int
-    total_construction_cost: float
-    estimated_project_value: float
-    potential_profit: float
-    roi_percentage: float
-
-class MegaProject(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    id: str
-    name: str
-    category: str  # köprü, havalimanı, metro, otoyol, kanal, sanayi bölgesi
-    description: str
-    timeline: str
-    location: Dict[str, float]
-    images: List[str] = []
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class MegaProjectCreate(BaseModel):
-    name: str
-    category: str
-    description: str
-    timeline: str
-    location: Dict[str, float]
-
-class Course(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    id: str
-    title: str
-    description: str
-    video_url: str  # Cloudinary veya YouTube
-    duration_minutes: int
-    thumbnail: str
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class CourseCreate(BaseModel):
-    title: str
-    description: str
-    video_url: str
-    duration_minutes: int
-    thumbnail: str
-
-class Seminar(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    id: str
-    title: str
-    description: str
-    date: datetime
-    speaker: str
-    registration_link: Optional[str] = None
-    thumbnail: str
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class SeminarCreate(BaseModel):
-    title: str
-    description: str
-    date: datetime
-    speaker: str
-    registration_link: Optional[str] = None
-    thumbnail: str
-
-class CommunityPost(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    id: str
-    author_email: str
-    title: str
-    content: str
-    category: str  # tartışma, soru, paylaşım
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class CommunityPostCreate(BaseModel):
-    title: str
-    content: str
-    category: str
-
-class LandOpportunity(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    id: str
-    location: str
-    parcel_size_sqm: float
-    zoning_type: str
-    investment_potential: str  # düşük, orta, yüksek
-    risk_score: int  # 1-10
-    development_potential: str
-    price_per_sqm: Optional[float] = None
-    location_coords: Dict[str, float]
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class LandOpportunityCreate(BaseModel):
-    location: str
-    parcel_size_sqm: float
-    zoning_type: str
-    investment_potential: str
-    risk_score: int
-    development_potential: str
-    price_per_sqm: Optional[float] = None
-    location_coords: Dict[str, float]
-
-class MarketData(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    id: str
-    neighborhood: str
-    city: str
-    district: str
-    avg_price_per_sqm: float
-    price_change_percentage: float  # son 1 yıl
-    data_date: datetime
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class MarketDataCreate(BaseModel):
-    neighborhood: str
-    city: str
-    district: str
-    avg_price_per_sqm: float
-    price_change_percentage: float
-    data_date: datetime
-
-# ============= HELPER FUNCTIONS =============
+# ============= HELPERS =============
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
@@ -261,14 +99,12 @@ def create_access_token(data: dict) -> str:
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
     try:
-        token = credentials.credentials
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        if not email:
             raise HTTPException(status_code=401, detail="Invalid token")
-        
         user = await db.users.find_one({"email": email}, {"_id": 0, "password": 0})
-        if user is None:
+        if not user:
             raise HTTPException(status_code=401, detail="User not found")
         return user
     except JWTError:
@@ -279,58 +115,529 @@ async def require_admin(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Admin access required")
     return current_user
 
-# ============= AUTH ENDPOINTS =============
+# ============= MODELS =============
 
-@api_router.post("/auth/register", response_model=Token)
-async def register(user_data: UserCreate):
-    # Check if user exists
-    existing = await db.users.find_one({"email": user_data.email})
-    if existing:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
-    # Create user
-    user_dict = {
-        "email": user_data.email,
-        "full_name": user_data.full_name,
-        "password": hash_password(user_data.password),
-        "role": "user",
-        "created_at": datetime.now(timezone.utc).isoformat()
-    }
-    await db.users.insert_one(user_dict)
-    
-    # Create token
-    access_token = create_access_token({"sub": user_data.email})
-    user = User(email=user_data.email, full_name=user_data.full_name, role="user")
-    return Token(access_token=access_token, token_type="bearer", user=user)
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
 
-@api_router.post("/auth/login", response_model=Token)
+class InvestmentCalculation(BaseModel):
+    city: str
+    district: str
+    neighborhood: str
+    ada: str
+    parsel: str
+    land_size_sqm: float
+    emsal: float
+    construction_cost_per_sqm: float
+
+class InvestmentResult(BaseModel):
+    total_construction_area: float
+    estimated_apartments: int
+    total_construction_cost: float
+    estimated_project_value: float
+    potential_profit: float
+    roi_percentage: float
+
+# ============= AUTH =============
+
+@api_router.post("/auth/login")
 async def login(credentials: UserLogin):
     user = await db.users.find_one({"email": credentials.email})
     if not user or not verify_password(credentials.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
     access_token = create_access_token({"sub": credentials.email})
-    user_obj = User(email=user["email"], full_name=user["full_name"], role=user["role"])
-    return Token(access_token=access_token, token_type="bearer", user=user_obj)
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {"email": user["email"], "full_name": user.get("full_name", ""), "role": user["role"]}
+    }
 
-@api_router.get("/auth/me", response_model=User)
+@api_router.get("/auth/me")
 async def get_me(current_user: dict = Depends(get_current_user)):
-    return User(**current_user)
+    return current_user
 
-# ============= TOKI ENDPOINTS =============
+# ============= PROJECTS CRUD =============
 
-@api_router.post("/toki/projects", response_model=TOKIProject)
-async def create_toki_project(project: TOKIProjectCreate, admin: dict = Depends(require_admin)):
-    import uuid
-    project_dict = project.model_dump()
-    project_dict["id"] = str(uuid.uuid4())
-    project_dict["documents"] = []
-    project_dict["images"] = []
-    project_dict["created_at"] = datetime.now(timezone.utc).isoformat()
-    await db.toki_projects.insert_one(project_dict)
-    return TOKIProject(**project_dict)
+PROJECT_TYPES = ["TOKİ", "Emlak Konut", "Özel Proje", "Kamu Projesi"]
 
-@api_router.get("/toki/projects", response_model=List[TOKIProject])
+@api_router.post("/admin/projects")
+async def create_project(
+    admin: dict = Depends(require_admin),
+    project_name: str = Form(...),
+    city: str = Form(...),
+    district: str = Form(...),
+    neighborhood: str = Form(""),
+    description: str = Form(""),
+    project_type: str = Form("TOKİ"),
+    total_housing: int = Form(0),
+    commercial_count: int = Form(0),
+    school_count: int = Form(0),
+    mosque_count: int = Form(0),
+    social_facility_count: int = Form(0),
+    project_area_sqm: float = Form(0),
+    start_date: str = Form(""),
+    planned_end_date: str = Form(""),
+    progress_percentage: int = Form(0),
+    location_lat: float = Form(41.0082),
+    location_lng: float = Form(28.9784),
+):
+    project = {
+        "id": str(uuid.uuid4()),
+        "project_name": project_name,
+        "city": city,
+        "district": district,
+        "neighborhood": neighborhood,
+        "description": description,
+        "project_type": project_type,
+        "total_housing": total_housing,
+        "commercial_count": commercial_count,
+        "school_count": school_count,
+        "mosque_count": mosque_count,
+        "social_facility_count": social_facility_count,
+        "project_area_sqm": project_area_sqm,
+        "start_date": start_date,
+        "planned_end_date": planned_end_date,
+        "progress_percentage": progress_percentage,
+        "location": {"lat": location_lat, "lng": location_lng},
+        "youtube_videos": [],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.projects.insert_one(project)
+    project.pop("_id", None)
+    return project
+
+@api_router.get("/projects")
+async def get_projects(city: Optional[str] = None, district: Optional[str] = None, project_name: Optional[str] = None, project_type: Optional[str] = None):
+    query = {}
+    if city:
+        query["city"] = {"$regex": city, "$options": "i"}
+    if district:
+        query["district"] = {"$regex": district, "$options": "i"}
+    if project_name:
+        query["project_name"] = {"$regex": project_name, "$options": "i"}
+    if project_type:
+        query["project_type"] = project_type
+    projects = await db.projects.find(query, {"_id": 0}).to_list(1000)
+    return projects
+
+@api_router.get("/projects/{project_id}")
+async def get_project(project_id: str):
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return project
+
+@api_router.put("/admin/projects/{project_id}")
+async def update_project(
+    project_id: str,
+    admin: dict = Depends(require_admin),
+    project_name: str = Form(...),
+    city: str = Form(...),
+    district: str = Form(...),
+    neighborhood: str = Form(""),
+    description: str = Form(""),
+    project_type: str = Form("TOKİ"),
+    total_housing: int = Form(0),
+    commercial_count: int = Form(0),
+    school_count: int = Form(0),
+    mosque_count: int = Form(0),
+    social_facility_count: int = Form(0),
+    project_area_sqm: float = Form(0),
+    start_date: str = Form(""),
+    planned_end_date: str = Form(""),
+    progress_percentage: int = Form(0),
+    location_lat: float = Form(41.0082),
+    location_lng: float = Form(28.9784),
+):
+    update_data = {
+        "project_name": project_name, "city": city, "district": district,
+        "neighborhood": neighborhood, "description": description, "project_type": project_type,
+        "total_housing": total_housing, "commercial_count": commercial_count,
+        "school_count": school_count, "mosque_count": mosque_count,
+        "social_facility_count": social_facility_count, "project_area_sqm": project_area_sqm,
+        "start_date": start_date, "planned_end_date": planned_end_date,
+        "progress_percentage": progress_percentage,
+        "location": {"lat": location_lat, "lng": location_lng},
+    }
+    result = await db.projects.update_one({"id": project_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Project not found")
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    return project
+
+@api_router.delete("/admin/projects/{project_id}")
+async def delete_project(project_id: str, admin: dict = Depends(require_admin)):
+    result = await db.projects.delete_one({"id": project_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Project not found")
+    # Clean up related data
+    await db.project_adas.delete_many({"project_id": project_id})
+    await db.project_parsels.delete_many({"project_id": project_id})
+    await db.project_media.delete_many({"project_id": project_id})
+    await db.project_documents.delete_many({"project_id": project_id})
+    await db.project_map_layers.delete_many({"project_id": project_id})
+    return {"message": "Project deleted"}
+
+# ============= ADA (BLOCK) CRUD =============
+
+@api_router.post("/admin/projects/{project_id}/adas")
+async def create_ada(project_id: str, admin: dict = Depends(require_admin), ada_no: str = Form(...), description: str = Form("")):
+    project = await db.projects.find_one({"id": project_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    existing = await db.project_adas.find_one({"project_id": project_id, "ada_no": ada_no})
+    if existing:
+        raise HTTPException(status_code=400, detail=f"Ada {ada_no} already exists in this project")
+    ada = {
+        "id": str(uuid.uuid4()),
+        "project_id": project_id,
+        "ada_no": ada_no,
+        "description": description,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.project_adas.insert_one(ada)
+    ada.pop("_id", None)
+    return ada
+
+@api_router.get("/projects/{project_id}/adas")
+async def get_adas(project_id: str):
+    adas = await db.project_adas.find({"project_id": project_id}, {"_id": 0}).sort("ada_no", 1).to_list(1000)
+    return adas
+
+@api_router.put("/admin/adas/{ada_id}")
+async def update_ada(ada_id: str, admin: dict = Depends(require_admin), ada_no: str = Form(...), description: str = Form("")):
+    result = await db.project_adas.update_one({"id": ada_id}, {"$set": {"ada_no": ada_no, "description": description}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Ada not found")
+    ada = await db.project_adas.find_one({"id": ada_id}, {"_id": 0})
+    return ada
+
+@api_router.delete("/admin/adas/{ada_id}")
+async def delete_ada(ada_id: str, admin: dict = Depends(require_admin)):
+    ada = await db.project_adas.find_one({"id": ada_id})
+    if not ada:
+        raise HTTPException(status_code=404, detail="Ada not found")
+    await db.project_adas.delete_one({"id": ada_id})
+    await db.project_parsels.delete_many({"ada_id": ada_id})
+    return {"message": "Ada and its parcels deleted"}
+
+# ============= PARSEL (PARCEL) CRUD =============
+
+@api_router.post("/admin/adas/{ada_id}/parsels")
+async def create_parsel(ada_id: str, admin: dict = Depends(require_admin), parsel_no: str = Form(...), area_sqm: float = Form(0), note: str = Form("")):
+    ada = await db.project_adas.find_one({"id": ada_id})
+    if not ada:
+        raise HTTPException(status_code=404, detail="Ada not found")
+    parsel = {
+        "id": str(uuid.uuid4()),
+        "project_id": ada["project_id"],
+        "ada_id": ada_id,
+        "parsel_no": parsel_no,
+        "area_sqm": area_sqm if area_sqm > 0 else None,
+        "note": note,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.project_parsels.insert_one(parsel)
+    parsel.pop("_id", None)
+    return parsel
+
+@api_router.get("/projects/{project_id}/parsels")
+async def get_parsels(project_id: str):
+    parsels = await db.project_parsels.find({"project_id": project_id}, {"_id": 0}).to_list(10000)
+    return parsels
+
+@api_router.put("/admin/parsels/{parsel_id}")
+async def update_parsel(parsel_id: str, admin: dict = Depends(require_admin), parsel_no: str = Form(...), area_sqm: float = Form(0), note: str = Form("")):
+    result = await db.project_parsels.update_one({"id": parsel_id}, {"$set": {"parsel_no": parsel_no, "area_sqm": area_sqm if area_sqm > 0 else None, "note": note}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Parsel not found")
+    parsel = await db.project_parsels.find_one({"id": parsel_id}, {"_id": 0})
+    return parsel
+
+@api_router.delete("/admin/parsels/{parsel_id}")
+async def delete_parsel(parsel_id: str, admin: dict = Depends(require_admin)):
+    result = await db.project_parsels.delete_one({"id": parsel_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Parsel not found")
+    return {"message": "Parsel deleted"}
+
+# ============= EXCEL IMPORT =============
+
+@api_router.post("/admin/projects/{project_id}/import-excel")
+async def import_excel(project_id: str, file: UploadFile = File(...), admin: dict = Depends(require_admin)):
+    project = await db.projects.find_one({"id": project_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    ext = file.filename.split(".")[-1].lower() if "." in file.filename else ""
+    if ext not in ("xlsx", "xls", "csv"):
+        raise HTTPException(status_code=400, detail="Only xlsx, xls, csv files are supported")
+
+    content = await file.read()
+    errors = []
+    success_count = 0
+
+    try:
+        if ext == "csv":
+            import csv
+            reader = csv.DictReader(io.StringIO(content.decode("utf-8-sig")))
+            rows = list(reader)
+        else:
+            import openpyxl
+            wb = openpyxl.load_workbook(io.BytesIO(content), data_only=True)
+            ws = wb.active
+            headers = [str(cell.value or "").strip() for cell in ws[1]]
+            rows = []
+            for row in ws.iter_rows(min_row=2, values_only=True):
+                row_dict = {}
+                for i, val in enumerate(row):
+                    if i < len(headers):
+                        row_dict[headers[i]] = val
+                rows.append(row_dict)
+
+        for idx, row in enumerate(rows, start=2):
+            ada_no = str(row.get("Ada", "") or "").strip()
+            parsel_no = str(row.get("Parsel", "") or "").strip()
+            area_str = row.get("Alan_m2", "")
+            note = str(row.get("Not", "") or "").strip()
+
+            if not ada_no or not parsel_no:
+                errors.append({"row": idx, "error": "Ada veya Parsel boş"})
+                continue
+
+            area_sqm = None
+            if area_str:
+                try:
+                    area_sqm = float(area_str)
+                except (ValueError, TypeError):
+                    errors.append({"row": idx, "error": f"Geçersiz alan değeri: {area_str}"})
+                    continue
+
+            # Find or create ada
+            ada = await db.project_adas.find_one({"project_id": project_id, "ada_no": ada_no})
+            if not ada:
+                ada = {
+                    "id": str(uuid.uuid4()),
+                    "project_id": project_id,
+                    "ada_no": ada_no,
+                    "description": "",
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                }
+                await db.project_adas.insert_one(ada)
+
+            ada_id = ada["id"]
+            parsel = {
+                "id": str(uuid.uuid4()),
+                "project_id": project_id,
+                "ada_id": ada_id,
+                "parsel_no": parsel_no,
+                "area_sqm": area_sqm,
+                "note": note,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
+            await db.project_parsels.insert_one(parsel)
+            success_count += 1
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"File processing error: {str(e)}")
+
+    return {"success_count": success_count, "error_count": len(errors), "errors": errors}
+
+@api_router.get("/admin/excel-template")
+async def download_excel_template():
+    import openpyxl
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Ada-Parsel"
+    ws.append(["Ada", "Parsel", "Alan_m2", "Not"])
+    ws.append(["33", "1", "500", "Örnek not"])
+    ws.append(["33", "2", "750", ""])
+    ws.append(["34", "7", "1200", "Köşe parsel"])
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return Response(
+        content=buf.getvalue(),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=ada_parsel_sablonu.xlsx"}
+    )
+
+# ============= MEDIA MANAGEMENT =============
+
+MEDIA_CATEGORIES = ["Altyapı", "Blok Resimleri", "Peyzaj", "Zemin", "Drone", "Master Plan"]
+
+@api_router.post("/admin/projects/{project_id}/media")
+async def upload_media(project_id: str, file: UploadFile = File(...), category: str = Form(...), admin: dict = Depends(require_admin)):
+    project = await db.projects.find_one({"id": project_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    ext = file.filename.split(".")[-1].lower() if "." in file.filename else "bin"
+    storage_path = f"{APP_NAME}/media/{project_id}/{uuid.uuid4()}.{ext}"
+    data = await file.read()
+    content_type = file.content_type or MIME_TYPES.get(ext, "application/octet-stream")
+    put_object(storage_path, data, content_type)
+
+    media = {
+        "id": str(uuid.uuid4()),
+        "project_id": project_id,
+        "category": category,
+        "storage_path": storage_path,
+        "original_filename": file.filename,
+        "content_type": content_type,
+        "size": len(data),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.project_media.insert_one(media)
+    media.pop("_id", None)
+    return media
+
+@api_router.get("/projects/{project_id}/media")
+async def get_project_media(project_id: str, category: Optional[str] = None):
+    query = {"project_id": project_id}
+    if category:
+        query["category"] = category
+    media = await db.project_media.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return media
+
+@api_router.delete("/admin/media/{media_id}")
+async def delete_media(media_id: str, admin: dict = Depends(require_admin)):
+    result = await db.project_media.delete_one({"id": media_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Media not found")
+    return {"message": "Media deleted"}
+
+# ============= DOCUMENT MANAGEMENT =============
+
+DOC_TYPES = ["Zemin Etüt", "Jeoloji / Jeoteknik", "ÇED", "İhale Belgeleri", "Plan Notları", "Vaziyet Planı", "Diğer"]
+
+@api_router.post("/admin/projects/{project_id}/documents")
+async def upload_document(project_id: str, file: UploadFile = File(...), title: str = Form(...), doc_type: str = Form(...), admin: dict = Depends(require_admin)):
+    project = await db.projects.find_one({"id": project_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    ext = file.filename.split(".")[-1].lower() if "." in file.filename else "bin"
+    storage_path = f"{APP_NAME}/documents/{project_id}/{uuid.uuid4()}.{ext}"
+    data = await file.read()
+    content_type = file.content_type or MIME_TYPES.get(ext, "application/octet-stream")
+    put_object(storage_path, data, content_type)
+
+    doc = {
+        "id": str(uuid.uuid4()),
+        "project_id": project_id,
+        "title": title,
+        "doc_type": doc_type,
+        "storage_path": storage_path,
+        "original_filename": file.filename,
+        "content_type": content_type,
+        "size": len(data),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.project_documents.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+@api_router.get("/projects/{project_id}/documents")
+async def get_project_documents(project_id: str):
+    docs = await db.project_documents.find({"project_id": project_id}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return docs
+
+@api_router.delete("/admin/documents/{doc_id}")
+async def delete_document(doc_id: str, admin: dict = Depends(require_admin)):
+    result = await db.project_documents.delete_one({"id": doc_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Document not found")
+    return {"message": "Document deleted"}
+
+# ============= VIDEO MANAGEMENT =============
+
+@api_router.post("/admin/projects/{project_id}/videos")
+async def add_video(project_id: str, admin: dict = Depends(require_admin), youtube_url: str = Form(...)):
+    result = await db.projects.update_one({"id": project_id}, {"$push": {"youtube_videos": youtube_url}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"message": "Video added"}
+
+@api_router.delete("/admin/projects/{project_id}/videos")
+async def remove_video(project_id: str, admin: dict = Depends(require_admin), youtube_url: str = Form(...)):
+    result = await db.projects.update_one({"id": project_id}, {"$pull": {"youtube_videos": youtube_url}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"message": "Video removed"}
+
+# ============= MAP LAYERS =============
+
+@api_router.post("/admin/projects/{project_id}/map-layers")
+async def upload_map_layer(project_id: str, file: UploadFile = File(...), admin: dict = Depends(require_admin)):
+    project = await db.projects.find_one({"id": project_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    ext = file.filename.split(".")[-1].lower() if "." in file.filename else ""
+    if ext not in ("kml", "kmz", "geojson", "json"):
+        raise HTTPException(status_code=400, detail="Only KML, KMZ, GeoJSON files are supported")
+
+    storage_path = f"{APP_NAME}/map-layers/{project_id}/{uuid.uuid4()}.{ext}"
+    data = await file.read()
+    content_type = file.content_type or MIME_TYPES.get(ext, "application/octet-stream")
+    put_object(storage_path, data, content_type)
+
+    layer = {
+        "id": str(uuid.uuid4()),
+        "project_id": project_id,
+        "storage_path": storage_path,
+        "original_filename": file.filename,
+        "content_type": content_type,
+        "file_type": ext.upper(),
+        "size": len(data),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.project_map_layers.insert_one(layer)
+    layer.pop("_id", None)
+    return layer
+
+@api_router.get("/projects/{project_id}/map-layers")
+async def get_map_layers(project_id: str):
+    layers = await db.project_map_layers.find({"project_id": project_id}, {"_id": 0}).to_list(100)
+    return layers
+
+@api_router.delete("/admin/map-layers/{layer_id}")
+async def delete_map_layer(layer_id: str, admin: dict = Depends(require_admin)):
+    result = await db.project_map_layers.delete_one({"id": layer_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Map layer not found")
+    return {"message": "Map layer deleted"}
+
+# ============= FILE SERVING =============
+
+@api_router.get("/files/{path:path}")
+async def serve_file(path: str):
+    try:
+        data, content_type = get_object(path)
+        return Response(content=data, media_type=content_type)
+    except Exception:
+        raise HTTPException(status_code=404, detail="File not found")
+
+# ============= MAP LAYER DATA (GeoJSON content) =============
+
+@api_router.get("/projects/{project_id}/map-layers/{layer_id}/data")
+async def get_map_layer_data(project_id: str, layer_id: str):
+    layer = await db.project_map_layers.find_one({"id": layer_id, "project_id": project_id}, {"_id": 0})
+    if not layer:
+        raise HTTPException(status_code=404, detail="Map layer not found")
+    try:
+        data, _ = get_object(layer["storage_path"])
+        if layer["file_type"] in ("GEOJSON", "JSON"):
+            return json.loads(data)
+        return Response(content=data, media_type=layer["content_type"])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Cannot read layer: {str(e)}")
+
+# ============= BACKWARD COMPAT: TOKI ENDPOINTS =============
+
+@api_router.get("/toki/projects")
 async def get_toki_projects(city: Optional[str] = None, district: Optional[str] = None, project_name: Optional[str] = None):
     query = {}
     if city:
@@ -339,68 +646,30 @@ async def get_toki_projects(city: Optional[str] = None, district: Optional[str] 
         query["district"] = {"$regex": district, "$options": "i"}
     if project_name:
         query["project_name"] = {"$regex": project_name, "$options": "i"}
-    
-    projects = await db.toki_projects.find(query, {"_id": 0}).to_list(1000)
-    return [TOKIProject(**p) for p in projects]
+    # Search in both old and new collections
+    projects_old = await db.toki_projects.find(query, {"_id": 0}).to_list(1000)
+    projects_new = await db.projects.find(query, {"_id": 0}).to_list(1000)
+    return projects_old + projects_new
 
-@api_router.get("/toki/projects/{project_id}", response_model=TOKIProject)
+@api_router.get("/toki/projects/{project_id}")
 async def get_toki_project(project_id: str):
     project = await db.toki_projects.find_one({"id": project_id}, {"_id": 0})
     if not project:
+        project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    return TOKIProject(**project)
-
-# ============= LAND PARCEL ENDPOINTS =============
-
-@api_router.post("/land/parcels", response_model=LandParcel)
-async def create_land_parcel(parcel: LandParcelCreate, admin: dict = Depends(require_admin)):
-    import uuid
-    parcel_dict = parcel.model_dump()
-    parcel_dict["id"] = str(uuid.uuid4())
-    parcel_dict["documents"] = []
-    parcel_dict["images"] = []
-    parcel_dict["created_at"] = datetime.now(timezone.utc).isoformat()
-    await db.land_parcels.insert_one(parcel_dict)
-    return LandParcel(**parcel_dict)
-
-@api_router.get("/land/parcels", response_model=List[LandParcel])
-async def get_land_parcels(city: Optional[str] = None, district: Optional[str] = None, neighborhood: Optional[str] = None, ada: Optional[str] = None, parsel: Optional[str] = None):
-    query = {}
-    if city:
-        query["city"] = {"$regex": city, "$options": "i"}
-    if district:
-        query["district"] = {"$regex": district, "$options": "i"}
-    if neighborhood:
-        query["neighborhood"] = {"$regex": neighborhood, "$options": "i"}
-    if ada:
-        query["ada"] = ada
-    if parsel:
-        query["parsel"] = parsel
-    
-    parcels = await db.land_parcels.find(query, {"_id": 0}).to_list(1000)
-    return [LandParcel(**p) for p in parcels]
-
-@api_router.get("/land/parcels/{parcel_id}", response_model=LandParcel)
-async def get_land_parcel(parcel_id: str):
-    parcel = await db.land_parcels.find_one({"id": parcel_id}, {"_id": 0})
-    if not parcel:
-        raise HTTPException(status_code=404, detail="Parcel not found")
-    return LandParcel(**parcel)
+    return project
 
 # ============= INVESTMENT CALCULATOR =============
 
 @api_router.post("/investment/calculate", response_model=InvestmentResult)
 async def calculate_investment(data: InvestmentCalculation):
-    # Hesaplama mantığı
     total_construction_area = data.land_size_sqm * data.emsal
-    estimated_apartments = int(total_construction_area / 100)  # Ortalama 100m² daire
+    estimated_apartments = int(total_construction_area / 100)
     total_construction_cost = total_construction_area * data.construction_cost_per_sqm
-    
-    # Basit değerleme: inşaat maliyetinin 1.5 katı
     estimated_project_value = total_construction_cost * 1.5
     potential_profit = estimated_project_value - total_construction_cost
     roi_percentage = (potential_profit / total_construction_cost) * 100 if total_construction_cost > 0 else 0
-    
     return InvestmentResult(
         total_construction_area=total_construction_area,
         estimated_apartments=estimated_apartments,
@@ -410,118 +679,56 @@ async def calculate_investment(data: InvestmentCalculation):
         roi_percentage=round(roi_percentage, 2)
     )
 
-# ============= MEGA PROJECTS =============
-
-@api_router.post("/mega-projects", response_model=MegaProject)
-async def create_mega_project(project: MegaProjectCreate, admin: dict = Depends(require_admin)):
-    import uuid
-    project_dict = project.model_dump()
-    project_dict["id"] = str(uuid.uuid4())
-    project_dict["images"] = []
-    project_dict["created_at"] = datetime.now(timezone.utc).isoformat()
-    await db.mega_projects.insert_one(project_dict)
-    return MegaProject(**project_dict)
-
-@api_router.get("/mega-projects", response_model=List[MegaProject])
-async def get_mega_projects():
-    projects = await db.mega_projects.find({}, {"_id": 0}).to_list(1000)
-    return [MegaProject(**p) for p in projects]
-
-# ============= EDUCATION =============
-
-@api_router.post("/education/courses", response_model=Course)
-async def create_course(course: CourseCreate, admin: dict = Depends(require_admin)):
-    import uuid
-    course_dict = course.model_dump()
-    course_dict["id"] = str(uuid.uuid4())
-    course_dict["created_at"] = datetime.now(timezone.utc).isoformat()
-    await db.courses.insert_one(course_dict)
-    return Course(**course_dict)
-
-@api_router.get("/education/courses", response_model=List[Course])
-async def get_courses():
-    courses = await db.courses.find({}, {"_id": 0}).to_list(1000)
-    return [Course(**c) for c in courses]
-
-@api_router.post("/education/seminars", response_model=Seminar)
-async def create_seminar(seminar: SeminarCreate, admin: dict = Depends(require_admin)):
-    import uuid
-    seminar_dict = seminar.model_dump()
-    seminar_dict["id"] = str(uuid.uuid4())
-    seminar_dict["date"] = seminar_dict["date"].isoformat()
-    seminar_dict["created_at"] = datetime.now(timezone.utc).isoformat()
-    await db.seminars.insert_one(seminar_dict)
-    return Seminar(**{**seminar_dict, "date": datetime.fromisoformat(seminar_dict["date"])})
-
-@api_router.get("/education/seminars", response_model=List[Seminar])
-async def get_seminars():
-    seminars = await db.seminars.find({}, {"_id": 0}).to_list(1000)
-    for s in seminars:
-        if isinstance(s['date'], str):
-            s['date'] = datetime.fromisoformat(s['date'])
-    return [Seminar(**s) for s in seminars]
-
 # ============= COMMUNITY =============
 
-@api_router.post("/community/posts", response_model=CommunityPost)
-async def create_post(post: CommunityPostCreate):
-    import uuid
-    post_dict = post.model_dump()
-    post_dict["id"] = str(uuid.uuid4())
-    post_dict["author_email"] = "anonymous@proptech.com"  # Default author since no auth
-    post_dict["created_at"] = datetime.now(timezone.utc).isoformat()
-    await db.community_posts.insert_one(post_dict)
-    return CommunityPost(**post_dict)
+@api_router.post("/community/posts")
+async def create_post(title: str = Form(...), content: str = Form(...), category: str = Form("tartışma")):
+    post = {
+        "id": str(uuid.uuid4()),
+        "author_email": "anonymous@proptech.com",
+        "title": title,
+        "content": content,
+        "category": category,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.community_posts.insert_one(post)
+    post.pop("_id", None)
+    return post
 
-@api_router.get("/community/posts", response_model=List[CommunityPost])
+@api_router.get("/community/posts")
 async def get_posts(category: Optional[str] = None):
     query = {} if not category else {"category": category}
     posts = await db.community_posts.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
-    return [CommunityPost(**p) for p in posts]
+    return posts
 
-# ============= LAND OPPORTUNITIES =============
+# ============= MEGA PROJECTS =============
 
-@api_router.post("/opportunities", response_model=LandOpportunity)
-async def create_opportunity(opp: LandOpportunityCreate, admin: dict = Depends(require_admin)):
-    import uuid
-    opp_dict = opp.model_dump()
-    opp_dict["id"] = str(uuid.uuid4())
-    opp_dict["created_at"] = datetime.now(timezone.utc).isoformat()
-    await db.land_opportunities.insert_one(opp_dict)
-    return LandOpportunity(**opp_dict)
+@api_router.get("/mega-projects")
+async def get_mega_projects():
+    projects = await db.mega_projects.find({}, {"_id": 0}).to_list(1000)
+    return projects
 
-@api_router.get("/opportunities", response_model=List[LandOpportunity])
-async def get_opportunities():
-    opps = await db.land_opportunities.find({}, {"_id": 0}).to_list(1000)
-    return [LandOpportunity(**o) for o in opps]
+# ============= STARTUP =============
 
-# ============= MARKET ANALYSIS =============
+@app.on_event("startup")
+async def startup():
+    try:
+        init_storage()
+        logger.info("Object Storage initialized successfully")
+    except Exception as e:
+        logger.error(f"Object Storage init failed: {e}")
+    # Ensure admin user exists
+    admin = await db.users.find_one({"email": "ipatarazi@gmail.com"})
+    if not admin:
+        await db.users.insert_one({
+            "email": "ipatarazi@gmail.com",
+            "full_name": "Admin",
+            "password": hash_password("As537273"),
+            "role": "admin",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+        logger.info("Admin user created")
 
-@api_router.post("/market/data", response_model=MarketData)
-async def create_market_data(data: MarketDataCreate, admin: dict = Depends(require_admin)):
-    import uuid
-    data_dict = data.model_dump()
-    data_dict["id"] = str(uuid.uuid4())
-    data_dict["data_date"] = data_dict["data_date"].isoformat()
-    data_dict["created_at"] = datetime.now(timezone.utc).isoformat()
-    await db.market_data.insert_one(data_dict)
-    return MarketData(**{**data_dict, "data_date": datetime.fromisoformat(data_dict["data_date"])})
-
-@api_router.get("/market/data", response_model=List[MarketData])
-async def get_market_data(city: Optional[str] = None, district: Optional[str] = None):
-    query = {}
-    if city:
-        query["city"] = city
-    if district:
-        query["district"] = district
-    
-    data = await db.market_data.find(query, {"_id": 0}).to_list(1000)
-    for d in data:
-        if isinstance(d['data_date'], str):
-            d['data_date'] = datetime.fromisoformat(d['data_date'])
-    return [MarketData(**d) for d in data]
-
-# Include router
 app.include_router(api_router)
 
 app.add_middleware(
@@ -531,12 +738,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
