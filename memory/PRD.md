@@ -62,6 +62,15 @@ Sidebar-based admin panel at `/admin` with 8 module pages:
 - TOKİ, Arazi ve Yatırım Simülatörü sayfalarında arama/hesaplama yapılırken giriş kontrolü
 - Giriş yapılmamışsa modal çıkar: "Giriş Yap" + "Ücretsiz Kayıt Ol" butonları
 
+## Education Page Redesign (Complete) - Feb 2026
+- **Hero**: Koyu yeşil (#0a1f14) arka plan, altın "Profesyonel" text, 4 istatistik
+- **Section 1**: 4 Ücretsiz Seminer kartı (Muhammet Özdemir), krem arka plan, yeşil badge
+- **Section 2**: 5 Ücretli Eğitim kartı, Masterclass dark style, yıldızlar + seviye + fiyat
+- **Section 3**: Haftalık Canlı Online Eğitim, 4 özellik kutusu
+- **Section 4**: Arsa Yatırımcı Topluluğu, 4 kanal (#Yenişehir, #Arnavutköy, #Kanal İstanbul, #Yatırım Fırsatları)
+- Tüm CTA giriş kontrolü (LoginRequiredModal)
+
+
 ## Credentials
 - Admin: ipatarazi@gmail.com / As537273
 - Test user: testuser@test.com / Test1234!
