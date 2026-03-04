@@ -9,7 +9,7 @@ const topModules = [
   { id: 'toki', title: 'e-TOKİ', subtitle: 'Konut Piyasası Analizleri', icon: Building2, color: 'bg-blue-500', path: '/toki', testId: 'module-toki' },
   { id: 'land', title: 'e-İPAT', subtitle: 'Arazi Parsel Veri Erişimi', icon: Map, color: 'bg-green-600', path: '/land', testId: 'module-land' },
   { id: 'investment', title: 'Yatırım Simülatörü', subtitle: 'Proje ROI Tahmini', icon: Calculator, color: 'bg-amber-500', path: '/investment', testId: 'module-investment' },
-  { id: 'mega', title: 'Mega Proje Haritası', subtitle: 'Altyapı Öngörüleri', icon: MapPin, color: 'bg-cyan-500', path: '/mega-projects', testId: 'module-mega' },
+  { id: 'mega', title: 'Mega Projeler Haritası', subtitle: 'Altyapı Öngörüleri', icon: MapPin, color: 'bg-cyan-500', path: '/mega-projects', testId: 'module-mega' },
   { id: 'education', title: 'Eğitim Merkezi', subtitle: 'PropTech Kursları', icon: GraduationCap, color: 'bg-teal-600', path: '/education', testId: 'module-education' },
 ];
 
