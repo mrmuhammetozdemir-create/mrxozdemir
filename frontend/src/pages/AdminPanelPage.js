@@ -13,10 +13,11 @@ import {
   ArrowLeft, Shield, Plus, Trash2, Edit, Upload, Download, FileText,
   Image as ImageIcon, Video, Map, Layers, Building2, X, Check,
   Home, MapPin, GraduationCap, Users, Target, TrendingUp, BarChart3,
-  Menu, LogOut, ChevronRight
+  Menu, LogOut, ChevronRight, UserCog
 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import UsersManager from '@/pages/UsersManager';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL;
 
@@ -85,6 +86,7 @@ const SIDEBAR_ITEMS = [
   { id: 'community', label: 'Topluluk Yönetimi', icon: Users, color: 'text-purple-600' },
   { id: 'opportunities', label: 'Arsa Fırsatları', icon: Target, color: 'text-red-600' },
   { id: 'market', label: 'Piyasa Analizi', icon: BarChart3, color: 'text-teal-600' },
+  { id: 'users', label: 'Kullanıcılar', icon: UserCog, color: 'text-indigo-600' },
 ];
 
 function Sidebar({ active, onSelect, collapsed, onToggle }) {
@@ -130,6 +132,7 @@ function DashboardContent({ stats, onNavigate }) {
     { id: 'community', label: 'Topluluk', count: stats.community_posts, icon: Users, color: 'bg-purple-600', desc: 'Forum gönderileri' },
     { id: 'opportunities', label: 'Arsa Fırsatları', count: stats.opportunities, icon: Target, color: 'bg-red-600', desc: 'Yatırım fırsatları' },
     { id: 'market', label: 'Piyasa Analizi', count: stats.market_data, icon: BarChart3, color: 'bg-teal-600', desc: 'Piyasa verileri' },
+    { id: 'users', label: 'Kullanıcılar', count: stats.app_users || 0, icon: UserCog, color: 'bg-indigo-600', desc: 'Kayıtlı kullanıcılar' },
   ];
   return (
     <div>
@@ -1019,6 +1022,7 @@ export default function AdminPanelPage() {
       case 'community': return <CommunityManager />;
       case 'opportunities': return <OpportunitiesManager />;
       case 'market': return <MarketManager />;
+      case 'users': return <UsersManager />;
       default: return <DashboardContent stats={stats} onNavigate={setActivePage} />;
     }
   };
