@@ -100,6 +100,29 @@ Sidebar-based admin panel at `/admin` with 9 module pages:
 - Admin: ipatarazi@gmail.com / As537273
 - Test user: testuser@test.com / Test1234!
 
+## Yatırım Fonu Sayfası - Feb 2026
+
+### URL: `/yatirim-fonu`
+Tam fonksiyonel landing page:
+
+**10 Bölüm:**
+1. Hero - Aerial İstanbul görseli, koyu yeşil overlay, 4 CTA butonu
+2. Fon Nedir - 4 avantaj kartı
+3. Fon Süreci - 5 adımlı timeline (01-05)
+4. Yatırımcı Segmentleri - 3 premium tier kart (Başlangıç/Stratejik/Kurucu)
+5. Katılım Şartları - koyu yeşil arka plan, 5 madde + alt not
+6. Neden Bu Model - 4 değer önerisi kartı
+7. Sunum Dosyası - Mock PDF preview card (gerçek PDF URL eklenince bağlanacak)
+8. SSS - 6 sorulu accordion
+9. Yatırımcı Başvuru Formu - 9 alan + 2 checkbox + başarı mesajı
+10. Bekleme Listesi - 2 alan, yeşil arka plan section
+
+**Backend Endpoints:**
+- POST /api/yatirim-fonu/basvuru → db.yatirim_fonu_basvurulari
+- POST /api/yatirim-fonu/bekleme-listesi → db.yatirim_fonu_bekleme
+- GET /api/admin/yatirim-fonu/basvurular (admin JWT required)
+- GET /api/admin/yatirim-fonu/bekleme-listesi (admin JWT required)
+
 ## Backlog (Prioritized)
 - P1: Dependent İlçe dropdown in TOKI search (city → district)
 - P1: e-İPAT module from GitHub
