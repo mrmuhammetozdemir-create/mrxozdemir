@@ -1622,6 +1622,56 @@ async def delete_market_data(data_id: str, admin: dict = Depends(require_admin))
         raise HTTPException(status_code=404, detail="Not found")
     return {"message": "Deleted"}
 
+# ============= YATIRIM FONU =============
+
+class YatirimFonuBasvuruCreate(BaseModel):
+    ad_soyad: str
+    telefon: str
+    email: str
+    sehir: str = ""
+    meslek: str = ""
+    yatirim_butcesi: str
+    ilgi_duyulan_bolge: str
+    yatirim_suresi: str
+    aciklama: str = ""
+    genel_bilgilendirme_onay: bool = False
+    iletisim_onay: bool = False
+
+class BeklemeListesiCreate(BaseModel):
+    ad_soyad: str
+    telefon_veya_email: str
+
+@api_router.post("/yatirim-fonu/basvuru")
+async def create_yatirim_fonu_basvuru(data: YatirimFonuBasvuruCreate):
+    basvuru = {
+        "id": str(uuid.uuid4()),
+        **data.dict(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "status": "pending",
+    }
+    await db.yatirim_fonu_basvurulari.insert_one(basvuru)
+    basvuru.pop("_id", None)
+    return {"message": "Başvurunuz alınmıştır.", "id": basvuru["id"]}
+
+@api_router.post("/yatirim-fonu/bekleme-listesi")
+async def join_bekleme_listesi(data: BeklemeListesiCreate):
+    kayit = {
+        "id": str(uuid.uuid4()),
+        **data.dict(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.yatirim_fonu_bekleme.insert_one(kayit)
+    kayit.pop("_id", None)
+    return {"message": "Bekleme listesine eklendiniz.", "id": kayit["id"]}
+
+@api_router.get("/admin/yatirim-fonu/basvurular")
+async def get_yatirim_fonu_basvurulari(admin: dict = Depends(require_admin)):
+    return await db.yatirim_fonu_basvurulari.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+
+@api_router.get("/admin/yatirim-fonu/bekleme-listesi")
+async def get_bekleme_listesi_admin(admin: dict = Depends(require_admin)):
+    return await db.yatirim_fonu_bekleme.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+
 # ============= ADMIN STATS =============
 
 @api_router.get("/admin/stats")

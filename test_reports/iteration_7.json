@@ -1,0 +1,46 @@
+{
+  "summary": "Full frontend testing of /yatirim-fonu page (İPAT Arazi Fonu landing page). All 12 test scenarios executed and passed. Page loads correctly, all sections render, both API forms (basvuru + bekleme-listesi) POST successfully with success messages shown.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/test_reports/iteration_7.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "PDF Sunum dosyası is MOCKED (mock placeholder, no real file URL). This is by design per review request.",
+    "Sunum Görüntüle and PDF İndir buttons in Sunum Dosyası section are present but have no real PDF link (mock). Should be connected to a real PDF URL when ready."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend-only testing)",
+    "frontend": "100% - All 12 test scenarios PASS"
+  },
+  "test_credentials": {
+    "note": "No auth required for /yatirim-fonu public page"
+  },
+  "seed_data_creation": "Created test investor basvuru (test@example.com) and bekleme listesi entry (test@bekleme.com) via form submissions during testing.",
+  "features_tested": {
+    "test_1_page_load": "PASS - /yatirim-fonu URL loads, hero section with 'İPAT Arazi Fonu' title visible",
+    "test_2_hero_cta_buttons": "PASS - All 4 CTA buttons present: Sunumu Görüntüle, Sunumu İndir, Başvuru Yap, Fon Açıldığında Haber Ver (all have data-testid attributes)",
+    "test_3_fon_nedir": "PASS - 'İPAT Arazi Fonu Nedir?' section with all 4 advantage cards: Gelişim Bölgelerine Odaklı, Analiz Destekli Fırsat Seçimi, Segment Bazlı Yatırımcı Yapısı, Şeffaf Bilgilendirme Süreci",
+    "test_4_fon_sureci": "PASS - 'Fon Süreci Nasıl İşler?' section with 5-step timeline, steps 01-05 all rendered with correct titles",
+    "test_5_segments": "PASS - All 3 segment cards found (segment-card-baslangic, segment-card-stratejik, segment-card-kurucu). Stratejik card correctly has dark green bg (rgb(15, 61, 46)) with gold border",
+    "test_6_katilim_sartlari": "PASS - 'Katılım Şartları' section with dark green background (#0F3D2E), all 5 items present, good text contrast",
+    "test_7_sunum_dosyasi": "PASS (MOCKED) - Sunum section visible with mock PDF preview, 'ipat-arazi-fonu-sunumu.pdf' filename, Görüntüle (sunum-view-btn) and PDF İndir (sunum-download-btn) buttons present",
+    "test_8_sss_accordion": "PASS - All 6 FAQ items (faq-item-0 through faq-item-5) present. Clicking faq-item-0 opens accordion with data-state=open, content visible",
+    "test_9_investor_form": "PASS - All form fields fillable (ad_soyad, telefon, email, sehir, meslek, yatirim_butcesi select, ilgi_duyulan_bolge select, yatirim_suresi select, aciklama textarea). Both checkboxes checkable. Submit button visible. POST /api/yatirim-fonu/basvuru API called on submit",
+    "test_10_form_success": "PASS - Success message 'Başvurunuz Alınmıştır' shown in green card after form submission (form-success-msg data-testid present)",
+    "test_11_bekleme_listesi": "PASS - Bekleme form (bekleme-form) with ad_soyad and telefon_veya_email fields, submit button (bekleme-submit-btn). POST /api/yatirim-fonu/bekleme-listesi called. Success message 'Bekleme listesine başarıyla eklendiniz!' shown (bekleme-success-msg)",
+    "test_12_segment_scroll": "PASS - Clicking 'Bu Segmente Başvur' on any segment card scrolls page from position 0 to ~5287 (investor form area). Form visible after scroll. All 3 segment apply buttons present (segment-apply-baslangic, segment-apply-stratejik, segment-apply-kurucu)"
+  },
+  "mocked_apis": ["PDF sunum dosyası - Görüntüle and PDF İndir buttons present but no real file URL. Mock placeholder shown as expected per design."],
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "The /yatirim-fonu page is fully functional. All 12 features tested and passing. Backend endpoints POST /api/yatirim-fonu/basvuru and POST /api/yatirim-fonu/bekleme-listesi both working. The only mock item is the PDF sunum file (intentional). No issues found.",
+  "rca_of_issue": "No issues found. All features working as expected."
+}

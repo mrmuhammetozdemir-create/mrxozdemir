@@ -13,6 +13,7 @@ import OpportunitiesPage from '@/pages/OpportunitiesPage';
 import MarketAnalysisPage from '@/pages/MarketAnalysisPage';
 import AdminPanelPage from '@/pages/AdminPanelPage';
 import CourseDetailPage from '@/pages/CourseDetailPage';
+import YatirimFonuPage from '@/pages/YatirimFonuPage';
 import AuthPage, { AuthCallback } from '@/pages/AuthPage';
 import '@/App.css';
 
@@ -36,6 +37,7 @@ function App() {
           <Route path="/opportunities" element={<OpportunitiesPage />} />
           <Route path="/market" element={<MarketAnalysisPage />} />
           <Route path="/course/:id" element={<CourseDetailPage />} />
+          <Route path="/yatirim-fonu" element={<YatirimFonuPage />} />
           <Route path="/admin" element={<AdminPanelPage />} />
         </Routes>
       </BrowserRouter>
