@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   ArrowLeft, Building2, MapPin, FileText, Image as ImageIcon,
   Video, Layers, Home, Calendar, Ruler, ChevronDown, ChevronRight,
-  ExternalLink, Play
+  ExternalLink, Play, ChevronLeft, X
 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
@@ -260,6 +260,96 @@ function DocumentsView({ projectId }) {
   );
 }
 
+// ========== TOP GALLERY BANNER ==========
+function TopGalleryBanner({ projectId }) {
+  const [media, setMedia] = useState([]);
+  const [lightboxIdx, setLightboxIdx] = useState(null);
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    api.get(`/projects/${projectId}/media`)
+      .then(({ data }) => setMedia(data.filter(m => m.media_type === 'IMAGE' || !m.media_type)))
+      .catch(() => {});
+  }, [projectId]);
+
+  if (media.length === 0) return null;
+
+  const scroll = (dir) => {
+    if (scrollRef.current) scrollRef.current.scrollBy({ left: dir * 300, behavior: 'smooth' });
+  };
+
+  const goLightbox = (dir) => {
+    setLightboxIdx(prev => (prev + dir + media.length) % media.length);
+  };
+
+  return (
+    <>
+      {/* Gallery Strip */}
+      <div className="relative bg-slate-900 w-full overflow-hidden" data-testid="top-gallery-banner">
+        <div className="flex items-center">
+          {media.length > 3 && (
+            <button onClick={() => scroll(-1)} className="absolute left-2 z-10 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 flex items-center justify-center text-white transition-colors">
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          )}
+          <div ref={scrollRef} className="flex gap-2 overflow-x-auto scrollbar-hide p-2 scroll-smooth" style={{ scrollbarWidth: 'none' }}>
+            {media.map((m, i) => (
+              <div
+                key={m.id}
+                onClick={() => setLightboxIdx(i)}
+                className="flex-shrink-0 cursor-pointer rounded-xl overflow-hidden group relative"
+                style={{ width: i === 0 ? 420 : 200, height: 260 }}
+                data-testid={`top-gallery-thumb-${i}`}
+              >
+                <img
+                  src={`${API_BASE}/api/files/${m.storage_path}`}
+                  alt={m.original_filename || `Gorsel ${i + 1}`}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors" />
+                {i === 0 && media.length > 1 && (
+                  <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                    <ImageIcon className="w-3 h-3 inline mr-1" />{media.length} Fotograf
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          {media.length > 3 && (
+            <button onClick={() => scroll(1)} className="absolute right-2 z-10 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 flex items-center justify-center text-white transition-colors">
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Lightbox */}
+      {lightboxIdx !== null && (
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={() => setLightboxIdx(null)}>
+          <button onClick={(e) => { e.stopPropagation(); goLightbox(-1); }} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white">
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          <img
+            src={`${API_BASE}/api/files/${media[lightboxIdx]?.storage_path}`}
+            alt=""
+            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button onClick={(e) => { e.stopPropagation(); goLightbox(1); }} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white">
+            <ChevronRight className="w-6 h-6" />
+          </button>
+          <button onClick={() => setLightboxIdx(null)} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white">
+            <X className="w-5 h-5" />
+          </button>
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-sm">
+            {lightboxIdx + 1} / {media.length}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 // ========== MAIN COMPONENT ==========
 export default function ProjectDetailPage() {
   const { id } = useParams();
@@ -329,6 +419,9 @@ export default function ProjectDetailPage() {
           </div>
         </div>
       </header>
+
+      {/* Top Gallery Banner — visible immediately on page load */}
+      <TopGalleryBanner projectId={project.id} />
 
       <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
         {/* Stats Cards */}
