@@ -503,28 +503,45 @@ export default function ProjectDetailPage() {
         {/* Dramatic Progress Bar */}
         {(project.progress_percentage > 0 || project.start_date) && <ProgressBar project={project} />}
 
-        {/* Tabbed Content */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <div className="border-b border-slate-100 px-2 pt-2">
-              <TabsList className="flex gap-1 bg-transparent h-auto p-0 w-full justify-start overflow-x-auto scrollbar-hide">
-                {[
-                  { value: 'info', label: 'Genel Bilgi', testId: 'tab-info' },
-                  { value: 'parcels', label: 'Ada/Parsel', testId: 'tab-parcels' },
-                  { value: 'map', label: 'Harita', testId: 'tab-map' },
-                  { value: 'gallery', label: 'Galeri', testId: 'tab-gallery' },
-                  { value: 'videos', label: 'Videolar', testId: 'tab-videos' },
-                  { value: 'docs', label: 'Belgeler', testId: 'tab-docs' },
-                ].map(tab => (
-                  <TabsTrigger key={tab.value} value={tab.value} data-testid={tab.testId}
-                    className="px-4 py-2.5 text-sm font-medium rounded-t-lg rounded-b-none text-slate-500 border-b-2 border-transparent
-                      data-[state=active]:text-blue-600 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-50/50
-                      hover:text-slate-700 transition-colors whitespace-nowrap">
-                    {tab.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+        {/* Tabs Section */}
+        <div>
+          {/* Section header */}
+          <div className="flex items-center gap-3 mb-3 px-1">
+            <div className="flex-1">
+              <p className="text-xs text-slate-500">Aşağıda proje detaylarını tek tek inceleyebilirsiniz</p>
             </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              {/* Colorful tab bar */}
+              <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-3 pt-3 pb-0">
+                <TabsList className="flex gap-1.5 bg-transparent h-auto p-0 w-full justify-start overflow-x-auto" style={{scrollbarWidth:'none'}}>
+                  {[
+                    { value: 'info',    label: 'Genel Bilgi',  testId: 'tab-info',    emoji: '📋', color: '#3b82f6' },
+                    { value: 'parcels', label: 'Ada/Parsel',   testId: 'tab-parcels', emoji: '🗂️', color: '#10b981' },
+                    { value: 'map',     label: 'Harita',       testId: 'tab-map',     emoji: '🗺️', color: '#14b8a6' },
+                    { value: 'gallery', label: 'Galeri',       testId: 'tab-gallery', emoji: '🖼️', color: '#a855f7' },
+                    { value: 'videos',  label: 'Videolar',     testId: 'tab-videos',  emoji: '▶️', color: '#f43f5e' },
+                    { value: 'docs',    label: 'Belgeler',     testId: 'tab-docs',    emoji: '📄', color: '#f59e0b' },
+                  ].map(tab => (
+                    <button
+                      key={tab.value}
+                      data-testid={tab.testId}
+                      onClick={() => setActiveTab(tab.value)}
+                      className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold rounded-t-lg whitespace-nowrap transition-all duration-200"
+                      style={{
+                        background: activeTab === tab.value ? tab.color : 'transparent',
+                        color: activeTab === tab.value ? 'white' : 'rgba(255,255,255,0.45)',
+                        boxShadow: activeTab === tab.value ? `0 4px 12px ${tab.color}55` : 'none',
+                      }}
+                    >
+                      <span>{tab.emoji}</span>
+                      {tab.label}
+                    </button>
+                  ))}
+                </TabsList>
+              </div>
 
             <div className="p-5">
               <TabsContent value="info" className="mt-0">
@@ -577,6 +594,7 @@ export default function ProjectDetailPage() {
               </TabsContent>
             </div>
           </Tabs>
+        </div>
         </div>
       </div>
     </div>
