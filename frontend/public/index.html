@@ -22,24 +22,8 @@
         Learn how to configure a non-root public URL by running `npm run build`.
         -->
         <title>mrxakademi</title>
-        <style>#emergent-badge { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }</style>
-        <script>
-          (function() {
-            function removeBadge() {
-              var el = document.getElementById('emergent-badge');
-              if (el) el.remove();
-              var els = document.querySelectorAll('a[href*="emergent"]');
-              els.forEach(function(e) { e.remove(); });
-            }
-            var obs = new MutationObserver(removeBadge);
-            function start() {
-              removeBadge();
-              obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
-            }
-            if (document.body) { start(); } else { document.addEventListener('DOMContentLoaded', start); }
-            setInterval(removeBadge, 500);
-          })();
-        </script>
+        <style>#emergent-badge { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }</style>
+        
         <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
         
         <!--
