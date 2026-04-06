@@ -156,7 +156,6 @@ function AdaParselView({ projectId }) {
 
 function MapView({ project, projectId }) {
   const [layers, setLayers] = useState([]);
-  const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
 
@@ -169,73 +168,115 @@ function MapView({ project, projectId }) {
     let destroyed = false;
 
     const loadMap = async () => {
-      const L = (await import('leaflet')).default;
-      await import('leaflet/dist/leaflet.css');
-      const { kml: toGeoJSON } = await import('@tmcw/togeojson');
+      // Dynamic imports for OpenLayers
+      const ol = await import('ol');
+      const { Tile: TileLayer, Vector: VectorLayer } = await import('ol/layer');
+      const { XYZ, Vector: VectorSource } = await import('ol/source');
+      const { KML, GeoJSON } = await import('ol/format');
+      const { fromLonLat, transformExtent } = await import('ol/proj');
+      const { Style, Fill, Stroke, Circle: CircleStyle } = await import('ol/style');
+      await import('ol/ol.css');
 
       if (destroyed || !mapContainerRef.current) return;
 
-      // Cleanup previous instance
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
+      // Cleanup previous
+      if (mapInstanceRef.current) { mapInstanceRef.current.setTarget(undefined); mapInstanceRef.current = null; }
 
-      const center = project?.location ? [project.location.lat, project.location.lng] : [41.015137, 28.979530];
-      const map = L.map(mapContainerRef.current, { zoomControl: true, attributionControl: false }).setView(center, 14);
+      const center = project?.location
+        ? fromLonLat([project.location.lng, project.location.lat])
+        : fromLonLat([28.9784, 41.0082]); // Istanbul default
+
+      // Satellite tile layer
+      const satelliteLayer = new TileLayer({
+        source: new XYZ({
+          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          maxZoom: 20,
+          attributions: '© Esri World Imagery'
+        })
+      });
+
+      // Labels overlay
+      const labelsLayer = new TileLayer({
+        source: new XYZ({
+          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+          maxZoom: 20
+        }),
+        opacity: 0.7
+      });
+
+      const map = new ol.Map({
+        target: mapContainerRef.current,
+        layers: [satelliteLayer, labelsLayer],
+        view: new ol.View({ center, zoom: 14 })
+      });
       mapInstanceRef.current = map;
 
-      // Satellite tiles
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 20
-      }).addTo(map);
+      // Google Earth style
+      const kmlStyle = new Style({
+        fill: new Fill({ color: 'rgba(0, 229, 255, 0.30)' }),
+        stroke: new Stroke({ color: '#ff00ff', width: 3 }),
+        image: new CircleStyle({
+          radius: 8,
+          fill: new Fill({ color: '#00e5ff' }),
+          stroke: new Stroke({ color: '#ff00ff', width: 2 })
+        })
+      });
 
-      const allBounds = [];
+      const allExtents = [];
 
       for (const layer of layers) {
         if (destroyed) break;
         try {
-          let geoJson;
+          let vectorSource;
+
           if (layer.file_type === 'KML' || layer.file_type === 'KMZ') {
+            // OpenLayers KML format — read raw KML text
             const resp = await fetch(`${API_BASE}/api/projects/${projectId}/map-layers/${layer.id}/data`);
-            const text = await resp.text();
-            const parser = new DOMParser();
-            geoJson = toGeoJSON(parser.parseFromString(text, 'text/xml'));
+            const kmlText = await resp.text();
+            const kmlFormat = new KML({ extractStyles: false });
+            const features = kmlFormat.readFeatures(kmlText, {
+              dataProjection: 'EPSG:4326',
+              featureProjection: 'EPSG:3857'
+            });
+            vectorSource = new VectorSource({ features });
+
           } else if (layer.file_type === 'GEOJSON' || layer.file_type === 'JSON') {
             const { data } = await api.get(`/projects/${projectId}/map-layers/${layer.id}/data`);
-            geoJson = data;
+            const geojsonFormat = new GeoJSON();
+            const features = geojsonFormat.readFeatures(data, {
+              dataProjection: 'EPSG:4326',
+              featureProjection: 'EPSG:3857'
+            });
+            vectorSource = new VectorSource({ features });
           }
-          if (geoJson && !destroyed) {
-            const geoLayer = L.geoJSON(geoJson, {
-              style: () => ({ color: '#ff00ff', weight: 3, fillColor: '#00e5ff', fillOpacity: 0.30, opacity: 1 }),
-              pointToLayer: (_, latlng) =>
-                L.circleMarker(latlng, { radius: 8, fillColor: '#00e5ff', color: '#ff00ff', weight: 2, fillOpacity: 0.9 }),
-              onEachFeature: (feature, lyr) => {
-                const name = feature?.properties?.name || feature?.properties?.Name || '';
-                if (name) lyr.bindTooltip(name);
-              }
-            }).addTo(map);
-            const b = geoLayer.getBounds();
-            if (b.isValid()) allBounds.push(b);
+
+          if (vectorSource && !destroyed) {
+            const vectorLayer = new VectorLayer({ source: vectorSource, style: kmlStyle });
+            map.addLayer(vectorLayer);
+            const extent = vectorSource.getExtent();
+            if (extent && !extent.some(v => !isFinite(v))) {
+              allExtents.push(extent);
+            }
           }
-        } catch (e) { console.warn('Layer error:', e); }
+        } catch (e) { console.warn('Layer load error:', layer.original_filename, e); }
       }
 
       if (destroyed) return;
 
-      if (allBounds.length > 0) {
-        const combined = allBounds.reduce((acc, b) => acc.extend(b));
-        map.fitBounds(combined, { padding: [30, 30], maxZoom: 17 });
+      // Auto-zoom to all features
+      if (allExtents.length > 0) {
+        const combined = allExtents.reduce((acc, ext) => [
+          Math.min(acc[0], ext[0]), Math.min(acc[1], ext[1]),
+          Math.max(acc[2], ext[2]), Math.max(acc[3], ext[3])
+        ]);
+        map.getView().fit(combined, { padding: [40, 40, 40, 40], maxZoom: 18, duration: 800 });
       }
     };
 
     loadMap();
     return () => {
       destroyed = true;
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
+      if (mapInstanceRef.current) { mapInstanceRef.current.setTarget(undefined); mapInstanceRef.current = null; }
     };
   }, [project, projectId, layers]);
 
