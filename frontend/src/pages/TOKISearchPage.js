@@ -100,12 +100,20 @@ export default function TOKISearchPage() {
             <ArrowLeft className="w-5 h-5 text-slate-600" />
           </Button>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-sm">
-              <Building2 className="w-5 h-5 text-white" />
+            {/* Professional e-Konut Logo Icon */}
+            <div className="w-10 h-10 rounded-xl bg-[#1a3a6e] flex items-center justify-center shadow-md flex-shrink-0" style={{background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)'}}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 10.5L12 3L21 10.5V21H15V15H9V21H3V10.5Z" fill="white" fillOpacity="0.95"/>
+                <rect x="9.5" y="15.5" width="5" height="5" rx="0.5" fill="#2a5298"/>
+                <path d="M6 19.5V17" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M18 19.5V17" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                <circle cx="19" cy="8" r="4" fill="#f97316"/>
+                <path d="M17 8.5L18.5 10L21 7" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
             <div>
               <h1 className="text-base font-bold text-slate-900 leading-tight">e-Konut</h1>
-              <p className="text-xs text-slate-500 leading-tight">Toplu konut ve proje analiz sistemi</p>
+              <p className="text-xs text-slate-500 leading-tight">Toplu Konut ve Proje Analiz Sistemi</p>
             </div>
           </div>
         </div>
