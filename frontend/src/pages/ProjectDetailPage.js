@@ -505,18 +505,19 @@ export default function ProjectDetailPage() {
 
         {/* Tabs Section */}
         <div>
-          {/* Section header */}
-          <div className="flex items-center gap-3 mb-3 px-1">
-            <div className="flex-1">
-              <p className="text-xs text-slate-500">Aşağıda proje detaylarını tek tek inceleyebilirsiniz</p>
+          {/* Colorful section label */}
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <div className="flex items-center gap-2 bg-gradient-to-r from-blue-600 via-purple-500 to-rose-500 rounded-full px-4 py-1.5 shadow-md">
+              <span className="text-white text-xs font-bold tracking-wide">Aşağıda proje detaylarını tek tek inceleyebilirsiniz</span>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          {/* Single unified card — tabs + content together */}
+          <div className="rounded-2xl shadow-md overflow-hidden border border-slate-200">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              {/* Colorful tab bar */}
+              {/* Colorful tab bar — flush top, no gap */}
               <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-3 pt-3 pb-0">
-                <TabsList className="flex gap-1.5 bg-transparent h-auto p-0 w-full justify-start overflow-x-auto" style={{scrollbarWidth:'none'}}>
+                <div className="flex gap-1.5 overflow-x-auto" style={{scrollbarWidth:'none'}}>
                   {[
                     { value: 'info',    label: 'Genel Bilgi',  testId: 'tab-info',    emoji: '📋', color: '#3b82f6' },
                     { value: 'parcels', label: 'Ada/Parsel',   testId: 'tab-parcels', emoji: '🗂️', color: '#10b981' },
@@ -529,72 +530,73 @@ export default function ProjectDetailPage() {
                       key={tab.value}
                       data-testid={tab.testId}
                       onClick={() => setActiveTab(tab.value)}
-                      className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold rounded-t-lg whitespace-nowrap transition-all duration-200"
+                      className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold rounded-t-lg whitespace-nowrap transition-all duration-200 flex-shrink-0"
                       style={{
                         background: activeTab === tab.value ? tab.color : 'transparent',
                         color: activeTab === tab.value ? 'white' : 'rgba(255,255,255,0.45)',
-                        boxShadow: activeTab === tab.value ? `0 4px 12px ${tab.color}55` : 'none',
+                        boxShadow: activeTab === tab.value ? `0 -2px 12px ${tab.color}55` : 'none',
                       }}
                     >
                       <span>{tab.emoji}</span>
                       {tab.label}
                     </button>
                   ))}
-                </TabsList>
+                </div>
               </div>
 
-            <div className="p-5">
-              <TabsContent value="info" className="mt-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {[
-                    { label: 'Proje Adı', value: project.project_name },
-                    { label: 'Proje Tipi', value: project.project_type },
-                    { label: 'İl', value: project.city },
-                    { label: 'İlçe', value: project.district },
-                    { label: 'Mahalle', value: project.neighborhood },
-                    { label: 'Proje Alanı', value: project.project_area_sqm ? `${project.project_area_sqm.toLocaleString('tr-TR')} m²` : null },
-                    { label: 'Başlangıç Tarihi', value: project.start_date },
-                    { label: 'Planlanan Bitiş', value: project.planned_end_date },
-                  ].filter(r => r.value).map((r, i) => (
-                    <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0" />
-                      <div>
-                        <p className="text-xs text-slate-400 font-medium">{r.label}</p>
-                        <p className="text-sm font-semibold text-slate-800 mt-0.5">{r.value}</p>
+              {/* Content — white, flush bottom */}
+              <div className="bg-white p-5">
+                <TabsContent value="info" className="mt-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {[
+                      { label: 'Proje Adı', value: project.project_name },
+                      { label: 'Proje Tipi', value: project.project_type },
+                      { label: 'İl', value: project.city },
+                      { label: 'İlçe', value: project.district },
+                      { label: 'Mahalle', value: project.neighborhood },
+                      { label: 'Proje Alanı', value: project.project_area_sqm ? `${project.project_area_sqm.toLocaleString('tr-TR')} m²` : null },
+                      { label: 'Başlangıç Tarihi', value: project.start_date },
+                      { label: 'Planlanan Bitiş', value: project.planned_end_date },
+                    ].filter(r => r.value).map((r, i) => (
+                      <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0" />
+                        <div>
+                          <p className="text-xs text-slate-400 font-medium">{r.label}</p>
+                          <p className="text-sm font-semibold text-slate-800 mt-0.5">{r.value}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-                {project.description && (
-                  <div className="mt-4 p-4 rounded-xl bg-blue-50 border border-blue-100">
-                    <p className="text-xs font-semibold text-blue-600 mb-1 uppercase tracking-wide">Açıklama</p>
-                    <p className="text-sm text-slate-700 leading-relaxed">{project.description}</p>
+                    ))}
                   </div>
-                )}
-              </TabsContent>
+                  {project.description && (
+                    <div className="mt-4 p-4 rounded-xl bg-blue-50 border border-blue-100">
+                      <p className="text-xs font-semibold text-blue-600 mb-1 uppercase tracking-wide">Açıklama</p>
+                      <p className="text-sm text-slate-700 leading-relaxed">{project.description}</p>
+                    </div>
+                  )}
+                </TabsContent>
 
-              <TabsContent value="parcels" className="mt-0">
-                <AdaParselView projectId={project.id} />
-              </TabsContent>
+                <TabsContent value="parcels" className="mt-0">
+                  <AdaParselView projectId={project.id} />
+                </TabsContent>
 
-              <TabsContent value="map" className="mt-0">
-                <MapView project={project} projectId={project.id} />
-              </TabsContent>
+                <TabsContent value="map" className="mt-0">
+                  <MapView project={project} projectId={project.id} />
+                </TabsContent>
 
-              <TabsContent value="gallery" className="mt-0">
-                <GalleryView projectId={project.id} />
-              </TabsContent>
+                <TabsContent value="gallery" className="mt-0">
+                  <GalleryView projectId={project.id} />
+                </TabsContent>
 
-              <TabsContent value="videos" className="mt-0">
-                <VideosView videos={project.youtube_videos} />
-              </TabsContent>
+                <TabsContent value="videos" className="mt-0">
+                  <VideosView videos={project.youtube_videos} />
+                </TabsContent>
 
-              <TabsContent value="docs" className="mt-0">
-                <DocumentsView projectId={project.id} />
-              </TabsContent>
-            </div>
-          </Tabs>
-        </div>
+                <TabsContent value="docs" className="mt-0">
+                  <DocumentsView projectId={project.id} />
+                </TabsContent>
+              </div>
+            </Tabs>
+          </div>
         </div>
       </div>
     </div>
