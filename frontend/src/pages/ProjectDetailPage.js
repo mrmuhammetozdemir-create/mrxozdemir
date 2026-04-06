@@ -491,6 +491,15 @@ export default function ProjectDetailPage() {
           </div>
         )}
 
+        {/* Divider */}
+        {stats.some(s => s.value > 0) && (project.progress_percentage > 0 || project.start_date) && (
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-slate-200" />
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">İlerleme</span>
+            <div className="flex-1 h-px bg-slate-200" />
+          </div>
+        )}
+
         {/* Dramatic Progress Bar */}
         {(project.progress_percentage > 0 || project.start_date) && <ProgressBar project={project} />}
 
