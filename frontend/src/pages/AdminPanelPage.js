@@ -126,7 +126,7 @@ function Sidebar({ active, onSelect, collapsed, onToggle }) {
 // ==================== DASHBOARD PAGE ====================
 function DashboardContent({ stats, onNavigate }) {
   const cards = [
-    { id: 'toki', label: 'TOKİ Projeleri', count: stats.projects, icon: Building2, color: 'bg-blue-600', desc: 'Proje ve ada/parsel yönetimi' },
+    { id: 'toki', label: 'e-Konut Projeleri', count: stats.projects, icon: Building2, color: 'bg-blue-600', desc: 'Toplu konut ve proje analiz sistemi' },
     { id: 'ipat', label: 'e-İPAT Arsaları', count: stats.land_parcels, icon: Map, color: 'bg-green-600', desc: 'Arsa parsel analizi' },
     { id: 'mega', label: 'Mega Projeler', count: stats.mega_projects, icon: MapPin, color: 'bg-cyan-600', desc: 'Altyapı projeleri' },
     { id: 'education', label: 'Eğitim', count: (stats.courses || 0) + (stats.seminars || 0), icon: GraduationCap, color: 'bg-amber-500', desc: 'Kurs ve seminerler' },
@@ -265,7 +265,7 @@ function TokiManager() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-slate-900">TOKİ Projeleri ({projects.length})</h2>
+        <h2 className="text-xl font-bold text-slate-900">e-Konut Projeleri ({projects.length})</h2>
         <div className="flex gap-2">
           <Button onClick={() => window.open(`${API_BASE}/api/admin/project-excel-template`, '_blank')} variant="outline" size="sm" data-testid="project-template-btn">
             <Download className="w-4 h-4 mr-1" />Excel Şablonu
