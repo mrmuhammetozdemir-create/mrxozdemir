@@ -368,6 +368,55 @@ function ProjectDescriptionView({ project }) {
         </div>
       )}
 
+      {/* Blok Dağılımı */}
+      {project.blocks && project.blocks.length > 0 && (
+        <div>
+          <h3 className="text-sm font-bold text-slate-700 uppercase tracking-widest mb-3 flex items-center gap-2">
+            <div className="w-1 h-4 rounded bg-indigo-500" />
+            Blok Dağılımı
+          </h3>
+          <div className="overflow-x-auto rounded-xl border border-slate-200">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  <th className="text-left px-4 py-2.5 text-xs font-bold text-slate-500 uppercase tracking-wide">Blok Grubu</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-bold text-slate-500 uppercase tracking-wide">Bloklar</th>
+                  <th className="text-center px-4 py-2.5 text-xs font-bold text-slate-500 uppercase tracking-wide">Daire Tipi</th>
+                  <th className="text-center px-4 py-2.5 text-xs font-bold text-slate-500 uppercase tracking-wide">Kat</th>
+                </tr>
+              </thead>
+              <tbody>
+                {project.blocks.map((b, i) => {
+                  const colors = {
+                    yellow: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                    blue:   'bg-blue-100 text-blue-800 border-blue-200',
+                    green:  'bg-emerald-100 text-emerald-800 border-emerald-200',
+                  };
+                  const rowColors = {
+                    yellow: 'bg-yellow-50/40',
+                    blue:   'bg-blue-50/40',
+                    green:  'bg-emerald-50/40',
+                  };
+                  return (
+                    <tr key={i} className={`border-b border-slate-100 last:border-0 ${rowColors[b.renk] || ''}`}>
+                      <td className="px-4 py-3 font-bold text-slate-700">{b.grup}</td>
+                      <td className="px-4 py-3 text-slate-600 text-xs leading-relaxed">{b.bloklar}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold border ${colors[b.renk] || 'bg-slate-100 text-slate-700'}`}>
+                          {b.tip}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center text-xs text-slate-500 font-medium">{b.kat}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-[10px] text-slate-400 mt-2">* T harfi ticari birimleri (dükkan) belirtir. B=Bodrum, Z=Zemin</p>
+        </div>
+      )}
+
       {/* Kapsam Listesi */}
       <div>
         <h3 className="text-sm font-bold text-slate-700 uppercase tracking-widest mb-3 flex items-center gap-2">
