@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { LogIn, X, BookOpen, Lock } from 'lucide-react';
+import { LogIn, X, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function LoginRequiredModal({ onClose }) {
@@ -36,11 +36,9 @@ export default function LoginRequiredModal({ onClose }) {
               <Lock className="w-8 h-8 text-white" />
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                <BookOpen className="w-3.5 h-3.5 text-white" />
-              </div>
+              <img src="/images/logo-icon.png" alt="mrxakademi logo" className="h-6 w-6 rounded-md object-cover" />
               <span className="text-sm font-extrabold text-slate-900">
-                mrx<span className="text-emerald-600">akademi</span>
+                mrx<span className="text-orange-500">akademi</span>
               </span>
             </div>
           </div>
