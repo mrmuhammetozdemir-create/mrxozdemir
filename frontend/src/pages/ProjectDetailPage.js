@@ -186,27 +186,22 @@ function MapView({ project, projectId }) {
         ? fromLonLat([project.location.lng, project.location.lat])
         : fromLonLat([28.9784, 41.0082]); // Istanbul default
 
-      // Satellite tile layer
+      // Google Maps Hybrid (Satellite + Labels) — most up-to-date imagery
       const satelliteLayer = new TileLayer({
         source: new XYZ({
-          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          tileUrlFunction: (tileCoord) => {
+            const [z, x, y] = tileCoord;
+            const s = Math.abs(x + y) % 4;
+            return `https://mt${s}.google.com/vt/lyrs=y&x=${x}&y=${y}&z=${z}`;
+          },
           maxZoom: 20,
-          attributions: '© Esri World Imagery'
+          crossOrigin: 'anonymous'
         })
-      });
-
-      // Labels overlay
-      const labelsLayer = new TileLayer({
-        source: new XYZ({
-          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-          maxZoom: 20
-        }),
-        opacity: 0.7
       });
 
       const map = new ol.Map({
         target: mapContainerRef.current,
-        layers: [satelliteLayer, labelsLayer],
+        layers: [satelliteLayer],
         view: new ol.View({ center, zoom: 14 })
       });
       mapInstanceRef.current = map;
