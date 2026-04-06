@@ -6,26 +6,31 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  ArrowLeft, Building2, MapPin, FileText, Image as ImageIcon,
-  Video, Layers, Home, Calendar, Ruler, ChevronDown, ChevronRight,
-  ExternalLink, Play, ChevronLeft, X
-} from 'lucide-react';import api from '@/utils/api';
+  ArrowLeft, MapPin, FileText, Image as ImageIcon,
+  Layers, Home, ChevronDown, ChevronRight,
+  ExternalLink, Play, ChevronLeft, X,
+  Store, GraduationCap, Landmark, Users, Building2
+} from 'lucide-react';
+import api from '@/utils/api';
 import { toast } from 'sonner';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL;
 
 // ========== STAT CARD ==========
-function StatCard({ value, label, icon: Icon, color, bgColor }) {
+function StatCard({ value, label, icon: Icon, bgColor }) {
   if (!value || value === 0) return null;
   return (
-    <div className={`relative overflow-hidden rounded-2xl ${bgColor} shadow-lg flex-1 min-w-[100px]`} data-testid={`stat-${label}`}>
-      <div className="absolute top-0 right-0 w-16 h-16 rounded-full opacity-10 -mr-3 -mt-3 bg-white" />
-      <div className="p-4 flex flex-col gap-2">
-        <div className={`w-9 h-9 rounded-xl ${color} flex items-center justify-center shadow-md`}>
-          <Icon className="w-4 h-4 text-white" />
+    <div
+      className={`relative overflow-hidden rounded-xl ${bgColor} shadow-md flex-shrink-0`}
+      style={{ minWidth: '80px', maxWidth: '110px', flex: '1 1 80px' }}
+      data-testid={`stat-${label}`}
+    >
+      <div className="px-3 py-2.5 flex flex-col items-center gap-1 text-center">
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.2)' }}>
+          <Icon className="w-3.5 h-3.5 text-white" />
         </div>
-        <p className="text-2xl font-black text-white leading-none">{value.toLocaleString('tr-TR')}</p>
-        <p className="text-xs font-medium opacity-80 text-white whitespace-nowrap">{label}</p>
+        <p className="text-lg font-black text-white leading-none">{value.toLocaleString('tr-TR')}</p>
+        <p className="text-[9px] font-semibold text-white/80 whitespace-nowrap uppercase tracking-wide">{label}</p>
       </div>
     </div>
   );
@@ -582,12 +587,11 @@ export default function ProjectDetailPage() {
 
   const videos = project.youtube_videos || [];
   const stats = [
-    { value: project.total_housing, label: 'Konut', icon: Home, color: 'bg-yellow-400', bgColor: 'bg-gradient-to-br from-yellow-400 to-yellow-500' },
-    { value: project.commercial_count, label: 'Ticari Alan', icon: Building2, color: 'bg-red-500', bgColor: 'bg-gradient-to-br from-red-500 to-red-600' },
-    { value: project.school_count, label: 'Okul', icon: Building2, color: 'bg-sky-400', bgColor: 'bg-gradient-to-br from-sky-400 to-sky-500' },
-    { value: project.mosque_count, label: 'Cami', icon: Building2, color: 'bg-blue-700', bgColor: 'bg-gradient-to-br from-blue-700 to-blue-800' },
-    { value: project.social_facility_count, label: 'Sosyal Tesis', icon: Building2, color: 'bg-indigo-900', bgColor: 'bg-gradient-to-br from-indigo-900 to-slate-900' },
-    { value: videos.length, label: 'Video', icon: Play, color: 'bg-rose-500', bgColor: 'bg-gradient-to-br from-rose-500 to-rose-600' },
+    { value: project.total_housing,         label: 'Konut',        icon: Home,          bgColor: 'bg-gradient-to-br from-yellow-400 to-yellow-500' },
+    { value: project.commercial_count,       label: 'Ticari Alan',  icon: Store,         bgColor: 'bg-gradient-to-br from-red-500 to-red-600' },
+    { value: project.school_count,           label: 'Okul',         icon: GraduationCap, bgColor: 'bg-gradient-to-br from-sky-400 to-sky-500' },
+    { value: project.mosque_count,           label: 'Cami',         icon: Landmark,      bgColor: 'bg-gradient-to-br from-blue-700 to-blue-800' },
+    { value: project.social_facility_count,  label: 'Sosyal Tesis', icon: Users,         bgColor: 'bg-gradient-to-br from-indigo-900 to-slate-900' },
   ];
 
   return (
