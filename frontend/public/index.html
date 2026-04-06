@@ -24,18 +24,24 @@
         <title>mrxakademi</title>
         <style>#emergent-badge { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }</style>
         <script>
-          document.addEventListener('DOMContentLoaded', function() {
-            var observer = new MutationObserver(function() {
-              var badge = document.getElementById('emergent-badge');
-              if (badge) { badge.remove(); }
-            });
-            observer.observe(document.body, { childList: true, subtree: true });
-            var badge = document.getElementById('emergent-badge');
-            if (badge) { badge.remove(); }
-          });
+          (function() {
+            function removeBadge() {
+              var el = document.getElementById('emergent-badge');
+              if (el) el.remove();
+              var els = document.querySelectorAll('a[href*="emergent"]');
+              els.forEach(function(e) { e.remove(); });
+            }
+            var obs = new MutationObserver(removeBadge);
+            function start() {
+              removeBadge();
+              obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
+            }
+            if (document.body) { start(); } else { document.addEventListener('DOMContentLoaded', start); }
+            setInterval(removeBadge, 500);
+          })();
         </script>
         <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
-        <script src="https://assets.emergent.sh/scripts/emergent-main.js"></script>
+        
         <!--
         These two scripts have been added for the Visual Edits, please do not edit or remove them
         -->
