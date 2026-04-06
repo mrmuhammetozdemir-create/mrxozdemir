@@ -22,7 +22,18 @@
         Learn how to configure a non-root public URL by running `npm run build`.
         -->
         <title>mrxakademi</title>
-        <style>#emergent-badge { display: none !important; }</style>
+        <style>#emergent-badge { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }</style>
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            var observer = new MutationObserver(function() {
+              var badge = document.getElementById('emergent-badge');
+              if (badge) { badge.remove(); }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+            var badge = document.getElementById('emergent-badge');
+            if (badge) { badge.remove(); }
+          });
+        </script>
         <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
         <script src="https://assets.emergent.sh/scripts/emergent-main.js"></script>
         <!--
