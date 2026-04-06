@@ -80,7 +80,7 @@ function AdminLogin({ onLogin }) {
 // ==================== SIDEBAR ====================
 const SIDEBAR_ITEMS = [
   { id: 'dashboard', label: 'Ana Sayfa', icon: Home, color: 'text-slate-600' },
-  { id: 'toki', label: 'TOKİ Yönetimi', icon: Building2, color: 'text-blue-600' },
+  { id: 'toki', label: 'e-Konut Yönetimi', icon: Building2, color: 'text-blue-600' },
   { id: 'ipat', label: 'e-İPAT Yönetimi', icon: Map, color: 'text-green-600' },
   { id: 'mega', label: 'Mega Projeler', icon: MapPin, color: 'text-cyan-600' },
   { id: 'education', label: 'Eğitim Yönetimi', icon: GraduationCap, color: 'text-amber-600' },
