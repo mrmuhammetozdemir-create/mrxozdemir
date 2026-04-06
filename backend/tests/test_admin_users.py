@@ -7,7 +7,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://proptech-tr.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://ekonut-preview.preview.emergentagent.com').rstrip('/')
 ADMIN_EMAIL = "ipatarazi@gmail.com"
 ADMIN_PASSWORD = "As537273"
 TEST_USER_EMAIL = "testuser@test.com"

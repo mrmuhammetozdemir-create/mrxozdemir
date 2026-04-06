@@ -9,8 +9,7 @@ import {
   ArrowLeft, Building2, MapPin, FileText, Image as ImageIcon,
   Video, Layers, Home, Calendar, Ruler, ChevronDown, ChevronRight,
   ExternalLink, Play, ChevronLeft, X
-} from 'lucide-react';
-import api from '@/utils/api';
+} from 'lucide-react';import api from '@/utils/api';
 import { toast } from 'sonner';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL;
@@ -108,7 +107,32 @@ function ProgressBar({ project }) {
   );
 }
 
-function AdaParselView({ projectId }) {
+// ========== VIDEO HELPERS ==========
+function getYouTubeId(url) {
+  if (!url) return null;
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^?&\s]+)/);
+  return m ? m[1] : null;
+}
+
+function VideoCard({ url, index }) {
+  const id = getYouTubeId(url);
+  if (!id) return null;
+  return (
+    <div className="rounded-2xl overflow-hidden shadow-lg border border-slate-200 bg-black group">
+      <div className="relative" style={{paddingTop: '56.25%'}}>
+        <iframe
+          className="absolute inset-0 w-full h-full"
+          src={`https://www.youtube.com/embed/${id}`}
+          title={`Video ${index + 1}`}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    </div>
+  );
+}
+
+// ========== ADA PARSEL VIEW ==========
   const [adas, setAdas] = useState([]);
   const [parsels, setParsels] = useState([]);
   const [expanded, setExpanded] = useState({});
@@ -555,12 +579,14 @@ export default function ProjectDetailPage() {
     </div>
   );
 
+  const videos = project.youtube_videos || [];
   const stats = [
     { value: project.total_housing, label: 'Konut', icon: Home, color: 'bg-yellow-400', bgColor: 'bg-gradient-to-br from-yellow-400 to-yellow-500' },
     { value: project.commercial_count, label: 'Ticari Alan', icon: Building2, color: 'bg-red-500', bgColor: 'bg-gradient-to-br from-red-500 to-red-600' },
     { value: project.school_count, label: 'Okul', icon: Building2, color: 'bg-sky-400', bgColor: 'bg-gradient-to-br from-sky-400 to-sky-500' },
     { value: project.mosque_count, label: 'Cami', icon: Building2, color: 'bg-blue-700', bgColor: 'bg-gradient-to-br from-blue-700 to-blue-800' },
     { value: project.social_facility_count, label: 'Sosyal Tesis', icon: Building2, color: 'bg-indigo-900', bgColor: 'bg-gradient-to-br from-indigo-900 to-slate-900' },
+    { value: videos.length, label: 'Video', icon: Play, color: 'bg-rose-500', bgColor: 'bg-gradient-to-br from-rose-500 to-rose-600' },
   ];
 
   return (
@@ -674,6 +700,23 @@ export default function ProjectDetailPage() {
             </Tabs>
           </div>
         </div>
+
+        {/* Bottom Video Section — always visible */}
+        {videos.length > 0 && (
+          <div>
+            <div className="flex items-center gap-3 mb-3 px-1">
+              <div className="flex items-center gap-2 bg-gradient-to-r from-rose-600 to-rose-500 rounded-full px-4 py-1.5 shadow-md">
+                <Play className="w-3 h-3 text-white fill-white" />
+                <span className="text-white text-xs font-bold tracking-wide">Proje Videoları</span>
+                <span className="bg-white/20 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{videos.length}</span>
+              </div>
+            </div>
+            <div className={`grid gap-4 ${videos.length === 1 ? 'grid-cols-1 max-w-2xl mx-auto' : 'grid-cols-1 md:grid-cols-2'}`}>
+              {videos.map((url, i) => <VideoCard key={i} url={url} index={i} />)}
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
