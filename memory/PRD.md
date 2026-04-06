@@ -123,9 +123,18 @@ Tam fonksiyonel landing page:
 - GET /api/admin/yatirim-fonu/basvurular (admin JWT required)
 - GET /api/admin/yatirim-fonu/bekleme-listesi (admin JWT required)
 
+## e-Konut Module Updates - Feb 2026
+- Redesigned ProjectDetailPage: top gallery banner, colorful stat cards, progress bar, colorful tabs
+- Video stat card + bottom video section (YouTube embed)
+- OpenLayers map with Google Maps satellite imagery
+- KMZ/KML file support with auto lat/lon extraction
+- Claude Sonnet AI Agent in AdminPanel for project CRUD via chat
+- AdaParselView syntax error fixed (function declaration was missing)
+- İl-İlçe dependent dropdown: districts now derived dynamically from project data
+
 ## Backlog (Prioritized)
-- P1: Dependent İlçe dropdown in TOKI search (city → district)
 - P1: e-İPAT module from GitHub
+- P1: Yatırımcı Başvuru Formu email confirmation (Resend/SendGrid)
 - P2: User Dashboard (my courses, my seminars, certificates)
 - P2: Add real seminar/course content via admin panel
 - P2: User-facing pages for each module (detailed TOKI, Land analysis, etc.)

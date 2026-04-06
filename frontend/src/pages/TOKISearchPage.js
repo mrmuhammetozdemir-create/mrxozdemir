@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,14 +23,7 @@ const TURKISH_CITIES = [
   'Tekirdağ', 'Tokat', 'Trabzon', 'Tunceli', 'Uşak', 'Van', 'Yalova', 'Yozgat', 'Zonguldak'
 ];
 
-const ISTANBUL_DISTRICTS = [
-  'Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler', 'Bakırköy',
-  'Başakşehir', 'Bayrampaşa', 'Beşiktaş', 'Beykoz', 'Beylikdüzü', 'Beyoğlu', 'Büyükçekmece',
-  'Çatalca', 'Çekmeköy', 'Esenler', 'Esenyurt', 'Eyüpsultan', 'Fatih', 'Gaziosmanpaşa',
-  'Güngören', 'Kadıköy', 'Kağıthane', 'Kartal', 'Küçükçekmece', 'Maltepe', 'Pendik',
-  'Sancaktepe', 'Sarıyer', 'Silivri', 'Sultanbeyli', 'Sultangazi', 'Şile', 'Şişli',
-  'Tuzla', 'Ümraniye', 'Üsküdar', 'Zeytinburnu'
-];
+// Districts are derived dynamically from project data
 
 export default function TOKISearchPage() {
   const navigate = useNavigate();
@@ -38,11 +31,22 @@ export default function TOKISearchPage() {
   const [district, setDistrict] = useState('');
   const [projectName, setProjectName] = useState('');
   const [projects, setProjects] = useState([]);
+  const [allProjects, setAllProjects] = useState([]);
   const [allProjectNames, setAllProjectNames] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   const isLoggedIn = () => !!(localStorage.getItem('app_user') || localStorage.getItem('admin_token'));
+
+  // Derive available districts from existing project data for the selected city
+  const availableDistricts = useMemo(() => {
+    if (!city) return [];
+    return [...new Set(
+      allProjects
+        .filter(p => p.city === city && p.district)
+        .map(p => p.district)
+    )].sort((a, b) => a.localeCompare(b, 'tr'));
+  }, [city, allProjects]);
 
   useEffect(() => {
     fetchProjects();
@@ -53,6 +57,7 @@ export default function TOKISearchPage() {
     try {
       const { data } = await api.get('/toki/projects');
       setProjects(data);
+      setAllProjects(data);
       const uniqueNames = [...new Set(data.map(p => p.project_name))];
       setAllProjectNames(uniqueNames);
     } catch (error) {
@@ -170,17 +175,14 @@ export default function TOKISearchPage() {
 
               <div>
                 <Label htmlFor="district" className="text-slate-700 font-medium text-sm">İlçe</Label>
-                <Select value={district} onValueChange={setDistrict} disabled={!city}>
+                <Select value={district} onValueChange={setDistrict} disabled={!city || availableDistricts.length === 0}>
                   <SelectTrigger className="mt-1.5 h-10" data-testid="district-select">
-                    <SelectValue placeholder={city ? "İlçe seçiniz" : "Önce il seçiniz"} />
+                    <SelectValue placeholder={!city ? "Önce il seçiniz" : availableDistricts.length === 0 ? "Bu il için ilçe yok" : "İlçe seçiniz"} />
                   </SelectTrigger>
                   <SelectContent className="max-h-[300px]">
-                    {city === 'İstanbul' && ISTANBUL_DISTRICTS.map((districtName) => (
+                    {availableDistricts.map((districtName) => (
                       <SelectItem key={districtName} value={districtName}>{districtName}</SelectItem>
                     ))}
-                    {city && city !== 'İstanbul' && (
-                      <SelectItem value={city}>Tüm İlçeler</SelectItem>
-                    )}
                   </SelectContent>
                 </Select>
               </div>
