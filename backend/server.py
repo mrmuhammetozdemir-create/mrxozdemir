@@ -1068,7 +1068,18 @@ async def get_map_layer_data(project_id: str, layer_id: str):
         data, _ = get_object(layer["storage_path"])
         if layer["file_type"] in ("GEOJSON", "JSON"):
             return json.loads(data)
+        # KMZ: unzip and return inner KML
+        if layer["file_type"] == "KMZ":
+            import zipfile, io
+            with zipfile.ZipFile(io.BytesIO(data)) as z:
+                kml_files = [n for n in z.namelist() if n.endswith('.kml')]
+                if not kml_files:
+                    raise HTTPException(status_code=400, detail="No KML found inside KMZ")
+                kml_content = z.read(kml_files[0])
+            return Response(content=kml_content, media_type="application/vnd.google-earth.kml+xml")
         return Response(content=data, media_type=layer["content_type"])
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Cannot read layer: {str(e)}")
 
