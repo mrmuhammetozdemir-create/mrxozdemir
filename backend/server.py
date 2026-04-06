@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, UploadFile, File, Form, Query, Response, Request, Body
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from emergentintegrations.llm.chat import LlmChat, UserMessage as LlmUserMessage
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
@@ -1688,6 +1689,89 @@ async def get_admin_stats(admin: dict = Depends(require_admin)):
         "app_users": await db.app_users.count_documents({}),
     }
 
+# ==================== AI AGENT ====================
+
+AGENT_SYSTEM_PROMPT = """Sen bir e-Konut Veri Yönetim Asistanısın. Kullanıcı sana Türkçe komutlar gönderecek ve sen bu komutları anlayıp yapılacak veritabanı işlemlerini JSON formatında döndüreceksin.
+
+Desteklenen işlemler:
+- create: Yeni proje oluştur
+- bulk_create: Birden fazla proje oluştur (data.projects array içinde)
+- update: Mevcut projeyi güncelle
+- delete: Projeyi sil
+- query: Projeleri listele/sorgula
+
+Proje alanları: project_name (zorunlu), city (İl), district (İlçe), neighborhood (Mahalle), project_type (TOKİ/Emlak Konut/Özel Proje), total_housing, commercial_count, school_count, mosque_count, social_facility_count, progress_percentage (0-100), start_date, planned_end_date, description
+
+SADECE geçerli JSON döndür:
+{"message":"Türkçe açıklama","actions":[{"type":"create|bulk_create|update|delete|query","data":{...},"search_name":"güncelle/sil için proje adı","filters":{"city":"...","district":"..."}}]}
+
+bulk_create için: "data":{"projects":[{...},{...}]}
+update/delete için: "search_name" zorunlu"""
+
+class AgentMessage(BaseModel):
+    message: str
+    session_id: str = "default"
+
+@api_router.post("/admin/agent/chat")
+async def agent_chat(body: AgentMessage, admin: dict = Depends(require_admin)):
+    llm_key = os.environ.get('EMERGENT_LLM_KEY')
+    if not llm_key:
+        raise HTTPException(status_code=500, detail="LLM key yapılandırılmamış")
+
+    projects_cursor = db.projects.find({}, {"_id": 0, "id": 1, "project_name": 1, "city": 1, "district": 1, "progress_percentage": 1}).limit(200)
+    existing_projects = await projects_cursor.to_list(length=200)
+    context_msg = f"\nMevcut projeler: {json.dumps([{'id':p['id'],'ad':p.get('project_name'),'il':p.get('city'),'ilce':p.get('district')} for p in existing_projects], ensure_ascii=False)}"
+
+    chat = LlmChat(api_key=llm_key, session_id=f"agent_{body.session_id}", system_message=AGENT_SYSTEM_PROMPT).with_model("anthropic", "claude-sonnet-4-5-20250929")
+    response_text = await chat.send_message(LlmUserMessage(text=body.message + context_msg))
+
+    try:
+        raw = response_text.strip()
+        if "```json" in raw: raw = raw.split("```json")[1].split("```")[0].strip()
+        elif "```" in raw: raw = raw.split("```")[1].split("```")[0].strip()
+        agent_response = json.loads(raw)
+    except Exception as e:
+        return {"message": f"Yanıt işlenemedi: {str(e)}", "actions": [], "results": []}
+
+    results = []
+    for action in agent_response.get("actions", []):
+        atype = action.get("type")
+        try:
+            if atype in ("create", "bulk_create"):
+                items = action.get("data", {}).get("projects", [action.get("data", {})]) if atype == "bulk_create" else [action.get("data", {})]
+                created = []
+                for d in items:
+                    p = {"id": str(uuid.uuid4()), "project_name": d.get("project_name",""), "city": d.get("city",""), "district": d.get("district",""), "neighborhood": d.get("neighborhood",""), "description": d.get("description",""), "project_type": d.get("project_type","TOKİ"), "total_housing": int(d.get("total_housing",0)), "commercial_count": int(d.get("commercial_count",0)), "school_count": int(d.get("school_count",0)), "mosque_count": int(d.get("mosque_count",0)), "social_facility_count": int(d.get("social_facility_count",0)), "progress_percentage": int(d.get("progress_percentage",0)), "start_date": d.get("start_date",""), "planned_end_date": d.get("planned_end_date",""), "created_at": datetime.now(timezone.utc).isoformat()}
+                    await db.projects.insert_one(p)
+                    created.append(p["project_name"])
+                results.append({"type": atype, "status": "ok", "count": len(created), "names": created})
+            elif atype == "update":
+                sname = action.get("search_name","")
+                existing = await db.projects.find_one({"project_name": {"$regex": sname, "$options": "i"}}, {"_id": 0})
+                if existing:
+                    await db.projects.update_one({"id": existing["id"]}, {"$set": {k:v for k,v in action.get("data",{}).items() if v is not None and k!="id"}})
+                    results.append({"type": "update", "status": "ok", "name": existing["project_name"]})
+                else:
+                    results.append({"type": "update", "status": "not_found", "search": sname})
+            elif atype == "delete":
+                sname = action.get("search_name","")
+                existing = await db.projects.find_one({"project_name": {"$regex": sname, "$options": "i"}}, {"_id": 0})
+                if existing:
+                    await db.projects.delete_one({"id": existing["id"]})
+                    results.append({"type": "delete", "status": "ok", "name": existing["project_name"]})
+                else:
+                    results.append({"type": "delete", "status": "not_found", "search": sname})
+            elif atype == "query":
+                f = action.get("filters", {})
+                q = {k: {"$regex": v, "$options": "i"} for k, v in [("city", f.get("city")), ("district", f.get("district"))] if v}
+                if f.get("project_type"): q["project_type"] = f["project_type"]
+                found = await db.projects.find(q, {"_id": 0, "id": 1, "project_name": 1, "city": 1, "district": 1, "progress_percentage": 1, "total_housing": 1}).to_list(50)
+                results.append({"type": "query", "status": "ok", "count": len(found), "projects": found})
+        except Exception as e:
+            results.append({"type": atype, "status": "error", "error": str(e)})
+
+    return {"message": agent_response.get("message","İşlem tamamlandı."), "results": results}
+
 # ============= STARTUP =============
 
 @app.on_event("startup")
@@ -1722,3 +1806,4 @@ app.add_middleware(
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+

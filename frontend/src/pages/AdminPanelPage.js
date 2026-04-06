@@ -13,7 +13,8 @@ import {
   ArrowLeft, Shield, Plus, Trash2, Edit, Upload, Download, FileText,
   Image as ImageIcon, Video, Map, Layers, Building2, X, Check,
   Home, MapPin, GraduationCap, Users, Target, TrendingUp, BarChart3,
-  Menu, LogOut, ChevronRight, UserCog
+  Menu, LogOut, ChevronRight, UserCog, Bot, Send, Sparkles, CheckCircle2,
+  AlertCircle, Search, ListFilter
 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
@@ -165,6 +166,133 @@ function DashboardContent({ stats, onNavigate }) {
   );
 }
 
+// ==================== AI AGENT PANEL ====================
+function AgentPanel({ onClose, onRefresh }) {
+  const [messages, setMessages] = useState([
+    { role: 'agent', text: '👋 Merhaba! Ben e-Konut Veri Asistanıyım.\n\nBana şunları söyleyebilirsiniz:\n• "İstanbul Arnavutköy\'de 120 konutlu TOKİ projesi ekle"\n• "Ankara\'daki tüm projeleri listele"\n• "1. Etap projesinin ilerleme yüzdesini 75 yap"\n• "X projesini sil"\n• Birden fazla projeyi tek seferde de girebilirsiniz!' }
+  ]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const bottomRef = useRef(null);
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+  const send = async () => {
+    if (!input.trim() || loading) return;
+    const userMsg = input.trim();
+    setInput('');
+    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    setLoading(true);
+    try {
+      const { data } = await api.post('/admin/agent/chat',
+        { message: userMsg, session_id: 'toki-agent-' + Date.now() },
+        { headers: authHeaders() }
+      );
+      // Build result summary
+      let resultSummary = '';
+      for (const r of (data.results || [])) {
+        if (r.type === 'create' && r.status === 'ok') resultSummary += `\n✅ Oluşturuldu: ${r.name}`;
+        else if (r.type === 'bulk_create' && r.status === 'ok') resultSummary += `\n✅ ${r.count} proje eklendi:\n${r.names.map(n => '  • ' + n).join('\n')}`;
+        else if (r.type === 'update' && r.status === 'ok') resultSummary += `\n✅ Güncellendi: ${r.name}`;
+        else if (r.type === 'delete' && r.status === 'ok') resultSummary += `\n🗑️ Silindi: ${r.name}`;
+        else if (r.type === 'query' && r.status === 'ok') {
+          resultSummary += `\n📋 ${r.count} proje bulundu:`;
+          r.projects?.slice(0, 10).forEach(p => { resultSummary += `\n  • ${p.project_name} (${p.city}/${p.district}) — %${p.progress_percentage || 0}`; });
+          if (r.count > 10) resultSummary += `\n  ... ve ${r.count - 10} proje daha`;
+        }
+        else if (r.status === 'not_found') resultSummary += `\n⚠️ Bulunamadı: "${r.search}"`;
+        else if (r.status === 'error') resultSummary += `\n❌ Hata: ${r.error}`;
+      }
+      setMessages(prev => [...prev, { role: 'agent', text: data.message + resultSummary, results: data.results }]);
+      if (data.results?.some(r => ['create','bulk_create','update','delete'].includes(r.type) && r.status === 'ok')) {
+        onRefresh();
+      }
+    } catch (e) {
+      setMessages(prev => [...prev, { role: 'agent', text: '❌ Bir hata oluştu. Tekrar deneyin.', error: true }]);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-end p-4 pointer-events-none">
+      <div className="pointer-events-auto w-full max-w-md h-[600px] flex flex-col rounded-2xl shadow-2xl overflow-hidden border border-slate-200"
+        style={{ background: 'linear-gradient(160deg, #0f172a 0%, #1e293b 100%)' }}>
+        {/* Header */}
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{background: 'linear-gradient(135deg, #6366f1, #8b5cf6)'}}>
+            <Sparkles className="w-4 h-4 text-white" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-bold text-white">e-Konut Asistanı</p>
+            <p className="text-[10px] text-white/50">Claude Sonnet • Veri Yönetim Ajanı</p>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              {msg.role === 'agent' && (
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mr-2 mt-1 shrink-0">
+                  <Bot className="w-3.5 h-3.5 text-white" />
+                </div>
+              )}
+              <div className={`max-w-[80%] px-3 py-2.5 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap ${
+                msg.role === 'user'
+                  ? 'bg-violet-600 text-white rounded-tr-sm'
+                  : 'bg-white/10 text-white/90 rounded-tl-sm border border-white/10'
+              }`}>
+                {msg.text}
+              </div>
+            </div>
+          ))}
+          {loading && (
+            <div className="flex justify-start">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mr-2 shrink-0">
+                <Bot className="w-3.5 h-3.5 text-white" />
+              </div>
+              <div className="bg-white/10 border border-white/10 px-4 py-3 rounded-2xl rounded-tl-sm flex gap-1.5 items-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-bounce" style={{animationDelay:'0ms'}} />
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-bounce" style={{animationDelay:'150ms'}} />
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-bounce" style={{animationDelay:'300ms'}} />
+              </div>
+            </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
+
+        {/* Input */}
+        <div className="p-3 border-t border-white/10">
+          <div className="flex gap-2 bg-white/10 border border-white/15 rounded-xl px-3 py-2 items-end">
+            <textarea
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+              placeholder="Komut girin... (Enter ile gönder)"
+              rows={2}
+              className="flex-1 bg-transparent text-white text-xs placeholder:text-white/30 resize-none outline-none leading-relaxed"
+              data-testid="agent-input"
+            />
+            <button
+              onClick={send}
+              disabled={loading || !input.trim()}
+              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all shrink-0"
+              style={{background: input.trim() && !loading ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'rgba(255,255,255,0.1)'}}
+              data-testid="agent-send-btn"
+            >
+              <Send className="w-3.5 h-3.5 text-white" />
+            </button>
+          </div>
+          <p className="text-[10px] text-white/30 text-center mt-1.5">Shift+Enter yeni satır</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ==================== TOKI PROJECT MANAGEMENT ====================
 function TokiManager() {
   const [projects, setProjects] = useState([]);
@@ -174,6 +302,7 @@ function TokiManager() {
   const [manageTab, setManageTab] = useState('ada');
   const [projectImporting, setProjectImporting] = useState(false);
   const [projectImportResult, setProjectImportResult] = useState(null);
+  const [showAgent, setShowAgent] = useState(false);
 
   const load = useCallback(async () => {
     const { data } = await api.get('/projects');
@@ -264,9 +393,19 @@ function TokiManager() {
 
   return (
     <div>
+      {showAgent && <AgentPanel onClose={() => setShowAgent(false)} onRefresh={load} />}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-slate-900">e-Konut Projeleri ({projects.length})</h2>
         <div className="flex gap-2">
+          <Button
+            onClick={() => setShowAgent(true)}
+            className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-md"
+            size="sm"
+            data-testid="agent-open-btn"
+          >
+            <Sparkles className="w-4 h-4 mr-1.5" />
+            AI Asistan
+          </Button>
           <Button onClick={() => window.open(`${API_BASE}/api/admin/project-excel-template`, '_blank')} variant="outline" size="sm" data-testid="project-template-btn">
             <Download className="w-4 h-4 mr-1" />Excel Şablonu
           </Button>
