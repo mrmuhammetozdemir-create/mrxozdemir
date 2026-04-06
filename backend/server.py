@@ -1783,6 +1783,61 @@ async def agent_chat(body: AgentMessage, admin: dict = Depends(require_admin)):
 
     return {"message": agent_response.get("message","İşlem tamamlandı."), "results": results}
 
+# ---- Agent ZIP Upload ----
+@api_router.post("/admin/agent/upload-zip")
+async def agent_upload_zip(
+    project_id: str = Form(...),
+    file: UploadFile = File(...),
+    admin: dict = Depends(require_admin)
+):
+    """Accept a ZIP (or single KML/KMZ/GeoJSON) and add all geo files as map layers to the project."""
+    import zipfile, io as _io
+
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Proje bulunamadı")
+
+    raw = await file.read()
+    fname = file.filename or ""
+    ext = fname.rsplit(".", 1)[-1].lower() if "." in fname else ""
+
+    # Collect (filename, bytes) pairs to process
+    files_to_process = []
+
+    if ext == "zip":
+        with zipfile.ZipFile(_io.BytesIO(raw)) as z:
+            for name in z.namelist():
+                fext = name.rsplit(".", 1)[-1].lower() if "." in name else ""
+                if fext in ("kml", "kmz", "geojson", "json") and not name.startswith("__MACOSX"):
+                    files_to_process.append((name.split("/")[-1], fext, z.read(name)))
+    elif ext in ("kml", "kmz", "geojson", "json"):
+        files_to_process.append((fname, ext, raw))
+    else:
+        raise HTTPException(status_code=400, detail="ZIP, KML, KMZ veya GeoJSON dosyası yükleyin")
+
+    if not files_to_process:
+        raise HTTPException(status_code=400, detail="ZIP içinde KML/KMZ/GeoJSON dosyası bulunamadı")
+
+    added = []
+    for (orig_name, fext, data) in files_to_process:
+        storage_path = f"{APP_NAME}/map-layers/{project_id}/{uuid.uuid4()}.{fext}"
+        content_type = MIME_TYPES.get(fext, "application/octet-stream")
+        put_object(storage_path, data, content_type)
+        layer = {
+            "id": str(uuid.uuid4()),
+            "project_id": project_id,
+            "storage_path": storage_path,
+            "original_filename": orig_name,
+            "content_type": content_type,
+            "file_type": fext.upper(),
+            "size": len(data),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.project_map_layers.insert_one(layer)
+        added.append(orig_name)
+
+    return {"added": added, "count": len(added), "project_name": project.get("project_name", "")}
+
 # ============= STARTUP =============
 
 @app.on_event("startup")

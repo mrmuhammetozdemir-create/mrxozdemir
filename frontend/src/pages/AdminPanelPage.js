@@ -167,18 +167,60 @@ function DashboardContent({ stats, onNavigate }) {
 }
 
 // ==================== AI AGENT PANEL ====================
-function AgentPanel({ onClose, onRefresh }) {
+function AgentPanel({ onClose, onRefresh, selectedProject }) {
   const [messages, setMessages] = useState([
-    { role: 'agent', text: '👋 Merhaba! Ben e-Konut Veri Asistanıyım.\n\nBana şunları söyleyebilirsiniz:\n• "İstanbul Arnavutköy\'de 120 konutlu TOKİ projesi ekle"\n• "Ankara\'daki tüm projeleri listele"\n• "1. Etap projesinin ilerleme yüzdesini 75 yap"\n• "X projesini sil"\n• Birden fazla projeyi tek seferde de girebilirsiniz!' }
+    { role: 'agent', text: `👋 Merhaba! Ben e-Konut Veri Asistanıyım.\n\n📎 **Harita Katmanı Yükle:** Aşağıdaki ataç ikonuna tıklayarak ZIP, KMZ, KML veya GeoJSON dosyası yükleyebilirsiniz. Dosyalar seçili projeye otomatik eklenir.\n\n💬 **Yazılı Komutlar:**\n• "Proje ekle / güncelle / sil"\n• "İstanbul'daki projeleri listele"\n\n${selectedProject ? `🎯 Seçili Proje: **${selectedProject.project_name}**` : '⚠️ Lütfen önce bir proje seçin.'}` }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [attachedFile, setAttachedFile] = useState(null);
+  const fileInputRef = useRef(null);
   const bottomRef = useRef(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
+  const handleFileSelect = (e) => {
+    const f = e.target.files?.[0];
+    if (f) setAttachedFile(f);
+    e.target.value = '';
+  };
+
   const send = async () => {
-    if (!input.trim() || loading) return;
+    if ((!input.trim() && !attachedFile) || loading) return;
+
+    // --- File upload flow ---
+    if (attachedFile) {
+      if (!selectedProject) {
+        setMessages(prev => [...prev, { role: 'agent', text: '⚠️ Harita katmanı eklemek için önce bir proje seçin.' }]);
+        setAttachedFile(null);
+        return;
+      }
+      const fileMsg = attachedFile.name;
+      setMessages(prev => [...prev, { role: 'user', text: `📎 ${fileMsg}${input.trim() ? '\n' + input.trim() : ''}` }]);
+      setInput('');
+      setAttachedFile(null);
+      setLoading(true);
+      try {
+        const formData = new FormData();
+        formData.append('project_id', selectedProject.id);
+        formData.append('file', attachedFile);
+        const { data } = await api.post('/admin/agent/upload-zip', formData, {
+          headers: { ...authHeaders(), 'Content-Type': 'multipart/form-data' }
+        });
+        const names = data.added?.map(n => `  • ${n}`).join('\n') || '';
+        setMessages(prev => [...prev, {
+          role: 'agent',
+          text: `✅ ${data.count} harita katmanı **${data.project_name}** projesine eklendi:\n${names}\n\n🗺️ Harita sekmesini açarak kontrol edebilirsiniz.`
+        }]);
+        onRefresh();
+      } catch (e) {
+        setMessages(prev => [...prev, { role: 'agent', text: `❌ Dosya yüklenemedi: ${e.response?.data?.detail || e.message}` }]);
+      }
+      setLoading(false);
+      return;
+    }
+
+    // --- Text command flow ---
     const userMsg = input.trim();
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
@@ -188,7 +230,6 @@ function AgentPanel({ onClose, onRefresh }) {
         { message: userMsg, session_id: 'toki-agent-' + Date.now() },
         { headers: authHeaders() }
       );
-      // Build result summary
       let resultSummary = '';
       for (const r of (data.results || [])) {
         if (r.type === 'create' && r.status === 'ok') resultSummary += `\n✅ Oluşturuldu: ${r.name}`;
@@ -204,9 +245,7 @@ function AgentPanel({ onClose, onRefresh }) {
         else if (r.status === 'error') resultSummary += `\n❌ Hata: ${r.error}`;
       }
       setMessages(prev => [...prev, { role: 'agent', text: data.message + resultSummary, results: data.results }]);
-      if (data.results?.some(r => ['create','bulk_create','update','delete'].includes(r.type) && r.status === 'ok')) {
-        onRefresh();
-      }
+      if (data.results?.some(r => ['create','bulk_create','update','delete'].includes(r.type) && r.status === 'ok')) onRefresh();
     } catch (e) {
       setMessages(prev => [...prev, { role: 'agent', text: '❌ Bir hata oluştu. Tekrar deneyin.', error: true }]);
     }
@@ -224,8 +263,13 @@ function AgentPanel({ onClose, onRefresh }) {
           </div>
           <div className="flex-1">
             <p className="text-sm font-bold text-white">e-Konut Asistanı</p>
-            <p className="text-[10px] text-white/50">Claude Sonnet • Veri Yönetim Ajanı</p>
+            <p className="text-[10px] text-white/50">Claude Sonnet • Veri & Harita Yönetimi</p>
           </div>
+          {selectedProject && (
+            <div className="bg-violet-500/20 border border-violet-400/30 rounded-lg px-2 py-1">
+              <p className="text-[9px] text-violet-300 font-medium truncate max-w-[100px]">{selectedProject.project_name}</p>
+            </div>
+          )}
           <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors">
             <X className="w-4 h-4" />
           </button>
@@ -264,29 +308,50 @@ function AgentPanel({ onClose, onRefresh }) {
           <div ref={bottomRef} />
         </div>
 
+        {/* Attached file preview */}
+        {attachedFile && (
+          <div className="mx-3 mb-1 flex items-center gap-2 bg-violet-500/20 border border-violet-400/30 rounded-xl px-3 py-2">
+            <FileText className="w-4 h-4 text-violet-300 shrink-0" />
+            <span className="text-xs text-violet-200 flex-1 truncate">{attachedFile.name}</span>
+            <button onClick={() => setAttachedFile(null)} className="text-violet-400 hover:text-white">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
         {/* Input */}
         <div className="p-3 border-t border-white/10">
           <div className="flex gap-2 bg-white/10 border border-white/15 rounded-xl px-3 py-2 items-end">
+            {/* File attach button */}
+            <input ref={fileInputRef} type="file" accept=".zip,.kmz,.kml,.geojson,.json" className="hidden" onChange={handleFileSelect} />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-violet-300 hover:bg-white/10 transition-colors shrink-0"
+              title="ZIP, KMZ, KML veya GeoJSON yükle"
+              data-testid="agent-attach-btn"
+            >
+              <FileText className="w-4 h-4" />
+            </button>
             <textarea
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-              placeholder="Komut girin... (Enter ile gönder)"
+              placeholder={attachedFile ? "Mesaj ekleyin (isteğe bağlı)..." : "Komut girin... (Enter ile gönder)"}
               rows={2}
               className="flex-1 bg-transparent text-white text-xs placeholder:text-white/30 resize-none outline-none leading-relaxed"
               data-testid="agent-input"
             />
             <button
               onClick={send}
-              disabled={loading || !input.trim()}
+              disabled={loading || (!input.trim() && !attachedFile)}
               className="w-8 h-8 rounded-lg flex items-center justify-center transition-all shrink-0"
-              style={{background: input.trim() && !loading ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'rgba(255,255,255,0.1)'}}
+              style={{background: (input.trim() || attachedFile) && !loading ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'rgba(255,255,255,0.1)'}}
               data-testid="agent-send-btn"
             >
               <Send className="w-3.5 h-3.5 text-white" />
             </button>
           </div>
-          <p className="text-[10px] text-white/30 text-center mt-1.5">Shift+Enter yeni satır</p>
+          <p className="text-[10px] text-white/30 text-center mt-1.5">📎 ZIP/KMZ/KML/GeoJSON harita katmanı için</p>
         </div>
       </div>
     </div>
@@ -352,6 +417,14 @@ function TokiManager() {
             </div>
           </div>
           <div className="flex gap-2">
+            <Button
+              onClick={() => setShowAgent(true)}
+              size="sm"
+              className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-sm"
+              data-testid="agent-open-btn"
+            >
+              <Sparkles className="w-3.5 h-3.5 mr-1.5" />AI Asistan
+            </Button>
             <Button variant="outline" size="sm" onClick={() => { setEditing(selected); setShowForm(true); }} data-testid="edit-project-btn">
               <Edit className="w-4 h-4 mr-1" />Düzenle
             </Button>
@@ -393,7 +466,7 @@ function TokiManager() {
 
   return (
     <div>
-      {showAgent && <AgentPanel onClose={() => setShowAgent(false)} onRefresh={load} />}
+      {showAgent && <AgentPanel onClose={() => setShowAgent(false)} onRefresh={load} selectedProject={selected} />}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-slate-900">e-Konut Projeleri ({projects.length})</h2>
         <div className="flex gap-2">
