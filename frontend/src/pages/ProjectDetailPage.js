@@ -133,6 +133,7 @@ function VideoCard({ url, index }) {
 }
 
 // ========== ADA PARSEL VIEW ==========
+function AdaParselView({ projectId }) {
   const [adas, setAdas] = useState([]);
   const [parsels, setParsels] = useState([]);
   const [expanded, setExpanded] = useState({});
