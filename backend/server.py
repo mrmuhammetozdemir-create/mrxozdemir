@@ -1790,8 +1790,14 @@ async def agent_upload_zip(
     file: UploadFile = File(...),
     admin: dict = Depends(require_admin)
 ):
-    """Accept a ZIP (or single KML/KMZ/GeoJSON) and add all geo files as map layers to the project."""
+    """Accept a ZIP/RAR (or single KML/KMZ/GeoJSON/image) and process all contents:
+    - KML/KMZ/GeoJSON → map layers
+    - JPG/PNG/WEBP    → project gallery (auto-resized to max 1280px)
+    - DOCX            → extract description text
+    """
     import zipfile, io as _io
+    import rarfile
+    from PIL import Image as PilImage
 
     project = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if not project:
@@ -1801,70 +1807,153 @@ async def agent_upload_zip(
     fname = file.filename or ""
     ext = fname.rsplit(".", 1)[-1].lower() if "." in fname else ""
 
-    # Collect (filename, bytes) pairs to process
-    files_to_process = []
+    GEO_EXTS   = {"kml", "kmz", "geojson", "json"}
+    IMG_EXTS   = {"jpg", "jpeg", "png", "webp"}
+    DOC_EXTS   = {"docx"}
+
+    # --- collect (basename, ext, bytes) from archive or single file ---
+    all_files = []
+
+    def _add(name, data):
+        bname = name.replace("\\", "/").split("/")[-1]
+        if not bname or bname.startswith(".") or bname.lower() == "thumbs.db":
+            return
+        fext = bname.rsplit(".", 1)[-1].lower() if "." in bname else ""
+        if fext in GEO_EXTS | IMG_EXTS | DOC_EXTS:
+            all_files.append((bname, fext, data))
 
     if ext == "zip":
         with zipfile.ZipFile(_io.BytesIO(raw)) as z:
             for name in z.namelist():
-                fext = name.rsplit(".", 1)[-1].lower() if "." in name else ""
-                if fext in ("kml", "kmz", "geojson", "json") and not name.startswith("__MACOSX"):
-                    files_to_process.append((name.split("/")[-1], fext, z.read(name)))
-    elif ext in ("kml", "kmz", "geojson", "json"):
-        files_to_process.append((fname, ext, raw))
+                if not name.startswith("__MACOSX") and not name.endswith("/"):
+                    _add(name, z.read(name))
+    elif ext == "rar":
+        import tempfile, os as _os
+        with tempfile.NamedTemporaryFile(suffix=".rar", delete=False) as tmp:
+            tmp.write(raw); tmp_path = tmp.name
+        try:
+            with rarfile.RarFile(tmp_path) as rf:
+                for info in rf.infolist():
+                    if not info.is_dir():
+                        _add(info.filename, rf.read(info.filename))
+        finally:
+            _os.unlink(tmp_path)
+    elif ext in GEO_EXTS | IMG_EXTS:
+        all_files.append((fname, ext, raw))
     else:
-        raise HTTPException(status_code=400, detail="ZIP, KML, KMZ veya GeoJSON dosyası yükleyin")
+        raise HTTPException(status_code=400, detail="ZIP, RAR, KML, KMZ, GeoJSON veya görsel dosyası yükleyin")
 
-    if not files_to_process:
-        raise HTTPException(status_code=400, detail="ZIP içinde KML/KMZ/GeoJSON dosyası bulunamadı")
+    if not all_files:
+        raise HTTPException(status_code=400, detail="Desteklenen dosya bulunamadı (KML/KMZ/GeoJSON/JPG/PNG/DOCX)")
 
-    added = []
+    added_layers = []
+    added_images = []
+    description_text = None
     project_center = None
 
-    for (orig_name, fext, data) in files_to_process:
-        storage_path = f"{APP_NAME}/map-layers/{project_id}/{uuid.uuid4()}.{fext}"
-        content_type = MIME_TYPES.get(fext, "application/octet-stream")
-        put_object(storage_path, data, content_type)
-        layer = {
-            "id": str(uuid.uuid4()),
-            "project_id": project_id,
-            "storage_path": storage_path,
-            "original_filename": orig_name,
-            "content_type": content_type,
-            "file_type": fext.upper(),
-            "size": len(data),
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        }
-        await db.project_map_layers.insert_one(layer)
-        added.append(orig_name)
+    def _compress_image(data: bytes) -> bytes:
+        """Resize image to max 1280px wide and compress."""
+        img = PilImage.open(_io.BytesIO(data))
+        img.thumbnail((1280, 960), PilImage.LANCZOS)
+        if img.mode in ("RGBA", "P"):
+            img = img.convert("RGB")
+        buf = _io.BytesIO()
+        img.save(buf, "JPEG", quality=82, optimize=True)
+        return buf.getvalue()
 
-        # Extract center coordinates from KML/KMZ to auto-set project location
-        if project_center is None and fext in ("kml", "kmz"):
+    def _extract_kml_center(fext, data):
+        import re, xml.etree.ElementTree as ET
+        kml_bytes = data
+        if fext == "kmz":
+            import zipfile as _zf, io as _io2
+            with _zf.ZipFile(_io2.BytesIO(data)) as z2:
+                kfiles = [n for n in z2.namelist() if n.endswith('.kml')]
+                if kfiles:
+                    kml_bytes = z2.read(kfiles[0])
+        kml_text = kml_bytes.decode('utf-8', errors='ignore')
+        coords_raw = ' '.join(el.text or '' for el in ET.fromstring(kml_text).iter() if el.tag.endswith('coordinates'))
+        pairs = re.findall(r'([-\d.]+),([-\d.]+)', coords_raw)
+        if pairs:
+            lons = [float(p[0]) for p in pairs]
+            lats = [float(p[1]) for p in pairs]
+            return {"lat": sum(lats)/len(lats), "lng": sum(lons)/len(lons)}
+        return None
+
+    for (orig_name, fext, data) in all_files:
+        # --- Geo files → map layers ---
+        if fext in GEO_EXTS:
+            storage_path = f"{APP_NAME}/map-layers/{project_id}/{uuid.uuid4()}.{fext}"
+            content_type = MIME_TYPES.get(fext, "application/octet-stream")
+            put_object(storage_path, data, content_type)
+            layer = {
+                "id": str(uuid.uuid4()),
+                "project_id": project_id,
+                "storage_path": storage_path,
+                "original_filename": orig_name,
+                "content_type": content_type,
+                "file_type": fext.upper(),
+                "size": len(data),
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
+            await db.project_map_layers.insert_one(layer)
+            added_layers.append(orig_name)
+            if project_center is None and fext in ("kml", "kmz"):
+                try:
+                    project_center = _extract_kml_center(fext, data)
+                except Exception:
+                    pass
+
+        # --- Images → project media (auto-resized) ---
+        elif fext in IMG_EXTS:
             try:
-                import re, xml.etree.ElementTree as ET
-                kml_bytes = data
-                if fext == "kmz":
-                    import zipfile as _zf, io as _io2
-                    with _zf.ZipFile(_io2.BytesIO(data)) as z2:
-                        kml_files2 = [n for n in z2.namelist() if n.endswith('.kml')]
-                        if kml_files2:
-                            kml_bytes = z2.read(kml_files2[0])
-                kml_text = kml_bytes.decode('utf-8', errors='ignore')
-                # Collect all coordinate pairs
-                coords_raw = ' '.join(el.text or '' for el in ET.fromstring(kml_text).iter() if el.tag.endswith('coordinates'))
-                pairs = re.findall(r'([-\d.]+),([-\d.]+)', coords_raw)
-                if pairs:
-                    lons = [float(p[0]) for p in pairs]
-                    lats = [float(p[1]) for p in pairs]
-                    project_center = {"lat": sum(lats)/len(lats), "lng": sum(lons)/len(lons)}
+                compressed = _compress_image(data)
+            except Exception:
+                compressed = data
+            storage_path = f"{APP_NAME}/media/{project_id}/{uuid.uuid4()}.jpg"
+            put_object(storage_path, compressed, "image/jpeg")
+            media_doc = {
+                "id": str(uuid.uuid4()),
+                "project_id": project_id,
+                "storage_path": storage_path,
+                "original_filename": orig_name,
+                "media_type": "IMAGE",
+                "category": "Görsel",
+                "title": orig_name,
+                "content_type": "image/jpeg",
+                "size": len(compressed),
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
+            await db.project_media.insert_one(media_doc)
+            added_images.append(orig_name)
+
+        # --- DOCX → extract description ---
+        elif fext in DOC_EXTS and description_text is None:
+            try:
+                from docx import Document as DocxDoc
+                doc = DocxDoc(_io.BytesIO(data))
+                lines = [p.text.strip() for p in doc.paragraphs if p.text.strip()][:30]
+                description_text = "\n".join(lines[:15])
             except Exception:
                 pass
 
-    # Save extracted location to project
+    # Save location & description updates
+    update_fields = {}
     if project_center:
-        await db.projects.update_one({"id": project_id}, {"$set": {"location": project_center}})
+        update_fields["location"] = project_center
+    if description_text and not project.get("description"):
+        update_fields["description"] = description_text
+    if update_fields:
+        await db.projects.update_one({"id": project_id}, {"$set": update_fields})
 
-    return {"added": added, "count": len(added), "project_name": project.get("project_name", ""), "location_updated": project_center is not None}
+    return {
+        "added_layers": added_layers,
+        "added_images": added_images,
+        "layers_count": len(added_layers),
+        "images_count": len(added_images),
+        "project_name": project.get("project_name", ""),
+        "location_updated": project_center is not None,
+        "description_extracted": description_text is not None,
+    }
 
 # ============= STARTUP =============
 

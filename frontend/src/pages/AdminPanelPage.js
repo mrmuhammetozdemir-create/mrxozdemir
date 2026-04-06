@@ -169,7 +169,7 @@ function DashboardContent({ stats, onNavigate }) {
 // ==================== AI AGENT PANEL ====================
 function AgentPanel({ onClose, onRefresh, selectedProject }) {
   const [messages, setMessages] = useState([
-    { role: 'agent', text: `👋 Merhaba! Ben e-Konut Veri Asistanıyım.\n\n📎 **Harita Katmanı Yükle:** Aşağıdaki ataç ikonuna tıklayarak ZIP, KMZ, KML veya GeoJSON dosyası yükleyebilirsiniz. Dosyalar seçili projeye otomatik eklenir.\n\n💬 **Yazılı Komutlar:**\n• "Proje ekle / güncelle / sil"\n• "İstanbul'daki projeleri listele"\n\n${selectedProject ? `🎯 Seçili Proje: **${selectedProject.project_name}**` : '⚠️ Lütfen önce bir proje seçin.'}` }
+    { role: 'agent', text: `👋 Merhaba! Ben e-Konut Veri Asistanıyım.\n\n📎 **Dosya Yükle:** Aşağıdaki ataç ikonuna tıklayarak dosya yükleyebilirsiniz:\n• **RAR / ZIP** → KML harita + resimler + dökümanları otomatik işler\n• **KMZ / KML** → Harita katmanı\n• **JPG / PNG** → Proje görseli\n\n💬 **Yazılı Komutlar:**\n• "Proje ekle / güncelle / sil"\n• "İstanbul'daki projeleri listele"\n\n${selectedProject ? `🎯 Seçili Proje: **${selectedProject.project_name}**` : '⚠️ Lütfen önce bir proje seçin.'}` }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -323,11 +323,11 @@ function AgentPanel({ onClose, onRefresh, selectedProject }) {
         <div className="p-3 border-t border-white/10">
           <div className="flex gap-2 bg-white/10 border border-white/15 rounded-xl px-3 py-2 items-end">
             {/* File attach button */}
-            <input ref={fileInputRef} type="file" accept=".zip,.kmz,.kml,.geojson,.json" className="hidden" onChange={handleFileSelect} />
+            <input ref={fileInputRef} type="file" accept=".zip,.rar,.kmz,.kml,.geojson,.json,.jpg,.jpeg,.png" className="hidden" onChange={handleFileSelect} />
             <button
               onClick={() => fileInputRef.current?.click()}
               className="w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-violet-300 hover:bg-white/10 transition-colors shrink-0"
-              title="ZIP, KMZ, KML veya GeoJSON yükle"
+              title="RAR, ZIP, KMZ, KML, JPG veya PNG yükle"
               data-testid="agent-attach-btn"
             >
               <FileText className="w-4 h-4" />
@@ -351,7 +351,7 @@ function AgentPanel({ onClose, onRefresh, selectedProject }) {
               <Send className="w-3.5 h-3.5 text-white" />
             </button>
           </div>
-          <p className="text-[10px] text-white/30 text-center mt-1.5">📎 ZIP/KMZ/KML/GeoJSON harita katmanı için</p>
+          <p className="text-[10px] text-white/30 text-center mt-1.5">📎 RAR/ZIP → harita + resimler otomatik işlenir</p>
         </div>
       </div>
     </div>
