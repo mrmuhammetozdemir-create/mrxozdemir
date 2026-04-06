@@ -19,13 +19,15 @@ const API_BASE = process.env.REACT_APP_BACKEND_URL;
 function StatCard({ value, label, icon: Icon, color, bgColor }) {
   if (!value || value === 0) return null;
   return (
-    <div className={`relative overflow-hidden rounded-2xl p-4 ${bgColor} shadow-lg`} data-testid={`stat-${label}`}>
-      <div className="absolute top-0 right-0 w-20 h-20 rounded-full opacity-10 -mr-4 -mt-4" style={{background: 'white'}} />
-      <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center mb-3 shadow-md`}>
-        <Icon className="w-5 h-5 text-white" />
+    <div className={`relative overflow-hidden rounded-2xl ${bgColor} shadow-lg flex-1 min-w-[100px]`} data-testid={`stat-${label}`}>
+      <div className="absolute top-0 right-0 w-16 h-16 rounded-full opacity-10 -mr-3 -mt-3 bg-white" />
+      <div className="p-4 flex flex-col gap-2">
+        <div className={`w-9 h-9 rounded-xl ${color} flex items-center justify-center shadow-md`}>
+          <Icon className="w-4 h-4 text-white" />
+        </div>
+        <p className="text-2xl font-black text-white leading-none">{value.toLocaleString('tr-TR')}</p>
+        <p className="text-xs font-medium opacity-80 text-white whitespace-nowrap">{label}</p>
       </div>
-      <p className="text-3xl font-black text-white leading-none">{value.toLocaleString('tr-TR')}</p>
-      <p className="text-xs font-medium mt-1 opacity-80 text-white">{label}</p>
     </div>
   );
 }
@@ -554,11 +556,11 @@ export default function ProjectDetailPage() {
   );
 
   const stats = [
-    { value: project.total_housing, label: 'Konut', icon: Home, color: 'bg-blue-500', bgColor: 'bg-gradient-to-br from-blue-600 to-blue-700' },
-    { value: project.commercial_count, label: 'Ticari Alan', icon: Building2, color: 'bg-emerald-500', bgColor: 'bg-gradient-to-br from-emerald-600 to-emerald-700' },
-    { value: project.school_count, label: 'Okul', icon: Building2, color: 'bg-amber-500', bgColor: 'bg-gradient-to-br from-amber-500 to-amber-600' },
-    { value: project.mosque_count, label: 'Cami', icon: Building2, color: 'bg-purple-500', bgColor: 'bg-gradient-to-br from-purple-600 to-purple-700' },
-    { value: project.social_facility_count, label: 'Sosyal Tesis', icon: Building2, color: 'bg-teal-500', bgColor: 'bg-gradient-to-br from-teal-600 to-teal-700' },
+    { value: project.total_housing, label: 'Konut', icon: Home, color: 'bg-yellow-400', bgColor: 'bg-gradient-to-br from-yellow-400 to-yellow-500' },
+    { value: project.commercial_count, label: 'Ticari Alan', icon: Building2, color: 'bg-red-500', bgColor: 'bg-gradient-to-br from-red-500 to-red-600' },
+    { value: project.school_count, label: 'Okul', icon: Building2, color: 'bg-sky-400', bgColor: 'bg-gradient-to-br from-sky-400 to-sky-500' },
+    { value: project.mosque_count, label: 'Cami', icon: Building2, color: 'bg-blue-700', bgColor: 'bg-gradient-to-br from-blue-700 to-blue-800' },
+    { value: project.social_facility_count, label: 'Sosyal Tesis', icon: Building2, color: 'bg-indigo-900', bgColor: 'bg-gradient-to-br from-indigo-900 to-slate-900' },
   ];
 
   return (
@@ -588,9 +590,9 @@ export default function ProjectDetailPage() {
 
       <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-5">
 
-        {/* Stats Grid */}
+        {/* Stats Grid - horizontal scroll on mobile */}
         {stats.some(s => s.value > 0) && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" data-testid="stats-grid">
+          <div className="flex gap-3 overflow-x-auto pb-1" style={{scrollbarWidth:'none'}} data-testid="stats-grid">
             {stats.map((s, i) => <StatCard key={i} {...s} />)}
           </div>
         )}
