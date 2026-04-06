@@ -6,7 +6,7 @@ import api from '@/utils/api';
 import { toast } from 'sonner';
 
 const topModules = [
-  { id: 'toki', title: 'e-TOKİ', subtitle: 'Konut Piyasası Analizleri', icon: Building2, color: 'bg-blue-500', path: '/toki', testId: 'module-toki' },
+  { id: 'toki', title: 'e-Konut', subtitle: 'Toplu konut ve proje analiz sistemi', icon: Building2, color: 'bg-blue-500', path: '/toki', testId: 'module-toki' },
   { id: 'land', title: 'e-İPAT', subtitle: 'Arazi Parsel Veri Erişimi', icon: Map, color: 'bg-green-600', path: '/land', testId: 'module-land' },
   { id: 'investment', title: 'Yatırım Simülatörü', subtitle: 'Proje ROI Tahmini', icon: Calculator, color: 'bg-amber-500', path: '/investment', testId: 'module-investment' },
   { id: 'mega', title: 'Mega Projeler Haritası', subtitle: 'Altyapı Öngörüleri', icon: MapPin, color: 'bg-cyan-500', path: '/mega-projects', testId: 'module-mega' },
@@ -122,20 +122,20 @@ export default function DashboardPage() {
         <div className="flex-1 flex flex-col gap-1.5 min-h-0">
           {/* 2x2 grid */}
           <div className="flex-[2] grid grid-cols-2 gap-1.5 min-h-0">
-            {/* e-TOKI */}
+            {/* e-Konut */}
             <div onClick={() => go('/toki')} className="relative rounded-xl overflow-hidden shadow-md cursor-pointer hover:shadow-lg transition-all" data-testid="feature-toki">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-700" />
               <div className="relative p-2 h-full flex flex-col">
                 <div className="flex items-start justify-between">
-                  <h3 className="text-sm font-bold text-white leading-tight">e-TOKİ</h3>
+                  <h3 className="text-sm font-bold text-white leading-tight">e-Konut</h3>
                   <div className="bg-white/90 rounded px-1 py-0.5 shadow-sm">
                     <p className="text-[6px] font-medium text-slate-800 leading-tight">Öğren: Fiyat<br/>Trendleri</p>
                   </div>
                 </div>
-                <p className="text-[7px] text-white/70">Konut Piyasası Analizleri</p>
+                <p className="text-[7px] text-white/70">Toplu konut ve proje analiz sistemi</p>
                 <div className="flex-1 flex items-end justify-center">
                   <img src="https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/734282e01767374da9bc679f601f445092a7881c4b10dacf1c3d8a95df28ace5.png"
-                    alt="e-TOKI" className="w-4/5 max-h-full object-contain" />
+                    alt="e-Konut" className="w-4/5 max-h-full object-contain" />
                 </div>
               </div>
             </div>
