@@ -323,6 +323,79 @@ function MapView({ project, projectId }) {
   );
 }
 
+function ProjectDescriptionView({ project }) {
+  const stats = [
+    { label: 'Konut Sayısı', value: project.total_housing ? `${project.total_housing.toLocaleString('tr-TR')} Adet` : null, color: 'bg-yellow-50 border-yellow-200 text-yellow-800' },
+    { label: 'Ticari Alan', value: project.commercial_count ? `${project.commercial_count} Adet` : null, color: 'bg-red-50 border-red-200 text-red-800' },
+    { label: 'Okul', value: project.school_count ? `${project.school_count} Adet` : null, color: 'bg-sky-50 border-sky-200 text-sky-800' },
+    { label: 'Cami', value: project.mosque_count ? `${project.mosque_count} Adet` : null, color: 'bg-blue-50 border-blue-200 text-blue-800' },
+    { label: 'Sosyal Tesis', value: project.social_facility_count ? `${project.social_facility_count} Adet` : null, color: 'bg-indigo-50 border-indigo-200 text-indigo-800' },
+    { label: 'Proje Alanı', value: project.project_area_sqm ? `${project.project_area_sqm.toLocaleString('tr-TR')} m²` : null, color: 'bg-emerald-50 border-emerald-200 text-emerald-800' },
+    { label: 'Başlangıç', value: project.start_date || null, color: 'bg-slate-50 border-slate-200 text-slate-800' },
+    { label: 'Tahmini Bitiş', value: project.planned_end_date || null, color: 'bg-slate-50 border-slate-200 text-slate-800' },
+  ].filter(s => s.value);
+
+  return (
+    <div className="space-y-5" data-testid="project-description-tab">
+      {/* Proje Özeti */}
+      {stats.length > 0 && (
+        <div>
+          <h3 className="text-sm font-bold text-slate-700 uppercase tracking-widest mb-3 flex items-center gap-2">
+            <div className="w-1 h-4 rounded bg-indigo-500" />
+            Proje Özeti
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+            {stats.map((s, i) => (
+              <div key={i} className={`rounded-xl border px-4 py-3 ${s.color}`}>
+                <p className="text-[10px] font-bold uppercase tracking-wide opacity-60 mb-0.5">{s.label}</p>
+                <p className="text-sm font-black">{s.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Açıklama Metni */}
+      {project.description && (
+        <div>
+          <h3 className="text-sm font-bold text-slate-700 uppercase tracking-widest mb-3 flex items-center gap-2">
+            <div className="w-1 h-4 rounded bg-indigo-500" />
+            Proje Hakkında
+          </h3>
+          <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{project.description}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Kapsam Listesi */}
+      <div>
+        <h3 className="text-sm font-bold text-slate-700 uppercase tracking-widest mb-3 flex items-center gap-2">
+          <div className="w-1 h-4 rounded bg-indigo-500" />
+          Proje Kapsamı
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          {[
+            'Anahtar teslimi götürü bedelli inşaat',
+            'Tüm mimari ve statik projeler',
+            'Elektrik, mekanik ve altyapı tesisatları',
+            'Doğalgaz, su ve kanalizasyon bağlantıları',
+            'İmar uygulaması ve parselasyon',
+            'Peyzaj, yol ve otopark imalatları',
+            'Enerji kimlik belgesi ve iskan ruhsatı',
+            'Kat mülkiyeti tapuları',
+          ].map((item, i) => (
+            <div key={i} className="flex items-start gap-2 text-sm text-slate-600">
+              <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
+              {item}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function GalleryView({ projectId }) {
   const [media, setMedia] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -656,11 +729,12 @@ export default function ProjectDetailPage() {
               <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-3 pt-3 pb-0">
                 <div className="flex gap-1.5 overflow-x-auto" style={{scrollbarWidth:'none'}}>
                   {[
-                    { value: 'map',     label: 'Harita',       testId: 'tab-map',     emoji: '🗺️', color: '#14b8a6' },
-                    { value: 'parcels', label: 'Ada/Parsel',   testId: 'tab-parcels', emoji: '🗂️', color: '#10b981' },
-                    { value: 'gallery', label: 'Galeri',       testId: 'tab-gallery', emoji: '🖼️', color: '#a855f7' },
-                    { value: 'videos',  label: 'Videolar',     testId: 'tab-videos',  emoji: '▶️', color: '#f43f5e' },
-                    { value: 'docs',    label: 'Belgeler',     testId: 'tab-docs',    emoji: '📄', color: '#f59e0b' },
+                    { value: 'map',      label: 'Harita',      testId: 'tab-map',      emoji: '🗺️', color: '#14b8a6' },
+                    { value: 'info',     label: 'Açıklama',    testId: 'tab-info',     emoji: 'ℹ️', color: '#6366f1' },
+                    { value: 'parcels',  label: 'Ada/Parsel',  testId: 'tab-parcels',  emoji: '🗂️', color: '#10b981' },
+                    { value: 'gallery',  label: 'Galeri',      testId: 'tab-gallery',  emoji: '🖼️', color: '#a855f7' },
+                    { value: 'videos',   label: 'Videolar',    testId: 'tab-videos',   emoji: '▶️', color: '#f43f5e' },
+                    { value: 'docs',     label: 'Belgeler',    testId: 'tab-docs',     emoji: '📄', color: '#f59e0b' },
                   ].map(tab => (
                     <button
                       key={tab.value}
@@ -684,6 +758,10 @@ export default function ProjectDetailPage() {
               <div className="bg-white p-5">
                 <TabsContent value="map" className="mt-0">
                   <MapView project={project} projectId={project.id} />
+                </TabsContent>
+
+                <TabsContent value="info" className="mt-0">
+                  <ProjectDescriptionView project={project} />
                 </TabsContent>
 
                 <TabsContent value="parcels" className="mt-0">
