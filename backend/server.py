@@ -1819,6 +1819,8 @@ async def agent_upload_zip(
         raise HTTPException(status_code=400, detail="ZIP içinde KML/KMZ/GeoJSON dosyası bulunamadı")
 
     added = []
+    project_center = None
+
     for (orig_name, fext, data) in files_to_process:
         storage_path = f"{APP_NAME}/map-layers/{project_id}/{uuid.uuid4()}.{fext}"
         content_type = MIME_TYPES.get(fext, "application/octet-stream")
@@ -1836,7 +1838,33 @@ async def agent_upload_zip(
         await db.project_map_layers.insert_one(layer)
         added.append(orig_name)
 
-    return {"added": added, "count": len(added), "project_name": project.get("project_name", "")}
+        # Extract center coordinates from KML/KMZ to auto-set project location
+        if project_center is None and fext in ("kml", "kmz"):
+            try:
+                import re, xml.etree.ElementTree as ET
+                kml_bytes = data
+                if fext == "kmz":
+                    import zipfile as _zf, io as _io2
+                    with _zf.ZipFile(_io2.BytesIO(data)) as z2:
+                        kml_files2 = [n for n in z2.namelist() if n.endswith('.kml')]
+                        if kml_files2:
+                            kml_bytes = z2.read(kml_files2[0])
+                kml_text = kml_bytes.decode('utf-8', errors='ignore')
+                # Collect all coordinate pairs
+                coords_raw = ' '.join(el.text or '' for el in ET.fromstring(kml_text).iter() if el.tag.endswith('coordinates'))
+                pairs = re.findall(r'([-\d.]+),([-\d.]+)', coords_raw)
+                if pairs:
+                    lons = [float(p[0]) for p in pairs]
+                    lats = [float(p[1]) for p in pairs]
+                    project_center = {"lat": sum(lats)/len(lats), "lng": sum(lons)/len(lons)}
+            except Exception:
+                pass
+
+    # Save extracted location to project
+    if project_center:
+        await db.projects.update_one({"id": project_id}, {"$set": {"location": project_center}})
+
+    return {"added": added, "count": len(added), "project_name": project.get("project_name", ""), "location_updated": project_center is not None}
 
 # ============= STARTUP =============
 
