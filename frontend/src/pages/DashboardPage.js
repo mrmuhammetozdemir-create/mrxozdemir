@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Building2, Map, Calculator, MapPin, GraduationCap, LogIn, LogOut, Settings, UserCircle } from 'lucide-react';
+import { Building2, Map, Calculator, MapPin, GraduationCap, LogIn, LogOut, Settings, BookOpen, UserCircle } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 
@@ -55,10 +55,12 @@ export default function DashboardPage() {
       <div className="bg-white border-b border-slate-200 px-4 py-3 flex-shrink-0">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-            <img src="/images/logo-icon.png" alt="mrxakademi logo" className="h-10 w-10 rounded-xl object-cover shadow-sm" />
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-sm">
+              <BookOpen className="w-5 h-5 text-white" />
+            </div>
             <span className="text-base font-extrabold tracking-tight text-slate-900" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-              mrx<span className="text-orange-500">akademi</span>
+              mrx<span className="text-emerald-600">akademi</span>
             </span>
           </div>
           {/* Auth */}

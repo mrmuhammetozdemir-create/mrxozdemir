@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';import { Button } fr
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, EyeOff } from 'lucide-react';
+import { BookOpen, Eye, EyeOff } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 
@@ -119,8 +119,10 @@ export default function AuthPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-6">
-          <img src="/images/logo-icon.png" alt="mrxakademi logo" className="h-10 w-10 rounded-xl object-cover shadow-sm" />
-          <span className="text-xl font-extrabold text-slate-900">mrx<span className="text-orange-500">akademi</span></span>
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow">
+            <BookOpen className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-xl font-extrabold text-slate-900">mrx<span className="text-emerald-600">akademi</span></span>
         </div>
 
         {/* Card */}
