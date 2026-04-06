@@ -15,34 +15,93 @@ import { toast } from 'sonner';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL;
 
-function StatCard({ value, label, icon: Icon, color }) {
+// ========== STAT CARD ==========
+function StatCard({ value, label, icon: Icon, color, bgColor }) {
   if (!value || value === 0) return null;
   return (
-    <div className={`flex items-center gap-3 p-4 rounded-xl bg-white border shadow-sm`} data-testid={`stat-${label}`}>
-      <div className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center`}>
-        <Icon className="w-6 h-6 text-white" />
+    <div className={`relative overflow-hidden rounded-2xl p-4 ${bgColor} shadow-lg`} data-testid={`stat-${label}`}>
+      <div className="absolute top-0 right-0 w-20 h-20 rounded-full opacity-10 -mr-4 -mt-4" style={{background: 'white'}} />
+      <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center mb-3 shadow-md`}>
+        <Icon className="w-5 h-5 text-white" />
       </div>
-      <div>
-        <p className="text-2xl font-bold text-slate-900">{value.toLocaleString('tr-TR')}</p>
-        <p className="text-xs text-slate-500">{label}</p>
-      </div>
+      <p className="text-3xl font-black text-white leading-none">{value.toLocaleString('tr-TR')}</p>
+      <p className="text-xs font-medium mt-1 opacity-80 text-white">{label}</p>
     </div>
   );
 }
 
+// ========== DRAMATIC PROGRESS BAR ==========
 function ProgressBar({ project }) {
   const pct = project.progress_percentage || 0;
+  const getColor = (p) => p < 30 ? '#ef4444' : p < 60 ? '#f97316' : p < 85 ? '#eab308' : '#22c55e';
+  const color = getColor(pct);
+  const statusText = pct < 30 ? 'Başlangıç Aşaması' : pct < 60 ? 'İnşaat Devam Ediyor' : pct < 85 ? 'İlerleme Hızlandı' : pct < 100 ? 'Tamamlanmak Üzere' : 'Tamamlandı';
+
   return (
-    <div className="p-4 rounded-xl bg-white border shadow-sm">
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-medium text-slate-700">Insaat Ilerleme Durumu</span>
-        <span className="text-lg font-bold text-emerald-600">%{pct}</span>
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 p-5 shadow-xl">
+      {/* Background decoration */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white -mr-16 -mt-16" />
       </div>
-      <Progress value={pct} className="h-3" />
-      <div className="flex justify-between mt-2 text-xs text-slate-500">
-        {project.start_date && <span>Baslangic: {project.start_date}</span>}
-        {project.planned_end_date && <span>Planlanan Bitis: {project.planned_end_date}</span>}
+
+      <div className="relative">
+        {/* Header row */}
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <p className="text-white/60 text-xs font-medium uppercase tracking-widest mb-0.5">İnşaat İlerleme Durumu</p>
+            <p className="text-white font-semibold text-sm">{statusText}</p>
+          </div>
+          {/* Big percentage badge */}
+          <div className="relative">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg" style={{background: color}}>
+              <div className="text-center">
+                <span className="text-white font-black text-xl leading-none">%{pct}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress track */}
+        <div className="relative h-4 rounded-full bg-white/10 overflow-hidden shadow-inner mb-3">
+          <div
+            className="h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden"
+            style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${color}99, ${color})` }}
+          >
+            {/* Shimmer effect */}
+            <div className="absolute inset-0 opacity-40"
+              style={{background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)',
+                      backgroundSize: '200% 100%', animation: 'shimmer 2s infinite'}} />
+          </div>
+          {/* Milestone dots */}
+          {[25, 50, 75].map(m => (
+            <div key={m} className="absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full"
+              style={{ left: `${m}%`, background: pct >= m ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.2)' }} />
+          ))}
+        </div>
+
+        {/* Dates row */}
+        <div className="flex justify-between text-xs text-white/50">
+          {project.start_date && (
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-white/40" />
+              <span>Başlangıç: {project.start_date}</span>
+            </div>
+          )}
+          {project.planned_end_date && (
+            <div className="flex items-center gap-1">
+              <span>Bitiş: {project.planned_end_date}</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-white/40" />
+            </div>
+          )}
+        </div>
       </div>
+
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -394,99 +453,122 @@ export default function ProjectDetailPage() {
   );
 
   const stats = [
-    { value: project.total_housing, label: 'Konut', icon: Home, color: 'bg-blue-600' },
-    { value: project.commercial_count, label: 'Ticari Alan', icon: Building2, color: 'bg-emerald-600' },
-    { value: project.school_count, label: 'Okul', icon: Building2, color: 'bg-amber-500' },
-    { value: project.mosque_count, label: 'Cami', icon: Building2, color: 'bg-purple-600' },
-    { value: project.social_facility_count, label: 'Sosyal Tesis', icon: Building2, color: 'bg-teal-600' },
+    { value: project.total_housing, label: 'Konut', icon: Home, color: 'bg-blue-500', bgColor: 'bg-gradient-to-br from-blue-600 to-blue-700' },
+    { value: project.commercial_count, label: 'Ticari Alan', icon: Building2, color: 'bg-emerald-500', bgColor: 'bg-gradient-to-br from-emerald-600 to-emerald-700' },
+    { value: project.school_count, label: 'Okul', icon: Building2, color: 'bg-amber-500', bgColor: 'bg-gradient-to-br from-amber-500 to-amber-600' },
+    { value: project.mosque_count, label: 'Cami', icon: Building2, color: 'bg-purple-500', bgColor: 'bg-gradient-to-br from-purple-600 to-purple-700' },
+    { value: project.social_facility_count, label: 'Sosyal Tesis', icon: Building2, color: 'bg-teal-500', bgColor: 'bg-gradient-to-br from-teal-600 to-teal-700' },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-100">
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate(-1)} data-testid="back-button">
-            <ArrowLeft className="w-5 h-5" />
+      <header className="bg-white/95 backdrop-blur border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={() => navigate(-1)} data-testid="back-button" className="rounded-full w-9 h-9 p-0 hover:bg-slate-100">
+            <ArrowLeft className="w-5 h-5 text-slate-600" />
           </Button>
-          <div className="flex-1">
-            <h1 className="text-xl font-bold text-slate-900" data-testid="project-title">{project.project_name}</h1>
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              <MapPin className="w-3 h-3" />
-              <span>{project.city} / {project.district}{project.neighborhood ? ` / ${project.neighborhood}` : ''}</span>
-              {project.project_type && <Badge className="bg-blue-100 text-blue-700 text-xs ml-2">{project.project_type}</Badge>}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base font-bold text-slate-900 truncate" data-testid="project-title">{project.project_name}</h1>
+            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+              <MapPin className="w-3 h-3 shrink-0" />
+              <span className="truncate">{project.city} / {project.district}{project.neighborhood ? ` / ${project.neighborhood}` : ''}</span>
+              {project.project_type && <Badge className="bg-blue-100 text-blue-700 text-[10px] ml-1 shrink-0">{project.project_type}</Badge>}
             </div>
           </div>
         </div>
       </header>
 
-      {/* Top Gallery Banner — visible immediately on page load */}
+      {/* Top Gallery Banner */}
       <TopGalleryBanner projectId={project.id} />
 
-      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
-        {/* Stats Cards */}
+      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-5">
+
+        {/* Stats Grid */}
         {stats.some(s => s.value > 0) && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" data-testid="stats-grid">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" data-testid="stats-grid">
             {stats.map((s, i) => <StatCard key={i} {...s} />)}
           </div>
         )}
 
-        {/* Progress Bar */}
+        {/* Dramatic Progress Bar */}
         {(project.progress_percentage > 0 || project.start_date) && <ProgressBar project={project} />}
 
         {/* Tabbed Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-6 w-full bg-white border rounded-xl p-1">
-            <TabsTrigger value="info" data-testid="tab-info">Genel Bilgi</TabsTrigger>
-            <TabsTrigger value="parcels" data-testid="tab-parcels">Ada/Parsel</TabsTrigger>
-            <TabsTrigger value="map" data-testid="tab-map">Harita</TabsTrigger>
-            <TabsTrigger value="gallery" data-testid="tab-gallery">Galeri</TabsTrigger>
-            <TabsTrigger value="videos" data-testid="tab-videos">Videolar</TabsTrigger>
-            <TabsTrigger value="docs" data-testid="tab-docs">Belgeler</TabsTrigger>
-          </TabsList>
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <div className="border-b border-slate-100 px-2 pt-2">
+              <TabsList className="flex gap-1 bg-transparent h-auto p-0 w-full justify-start overflow-x-auto scrollbar-hide">
+                {[
+                  { value: 'info', label: 'Genel Bilgi', testId: 'tab-info' },
+                  { value: 'parcels', label: 'Ada/Parsel', testId: 'tab-parcels' },
+                  { value: 'map', label: 'Harita', testId: 'tab-map' },
+                  { value: 'gallery', label: 'Galeri', testId: 'tab-gallery' },
+                  { value: 'videos', label: 'Videolar', testId: 'tab-videos' },
+                  { value: 'docs', label: 'Belgeler', testId: 'tab-docs' },
+                ].map(tab => (
+                  <TabsTrigger key={tab.value} value={tab.value} data-testid={tab.testId}
+                    className="px-4 py-2.5 text-sm font-medium rounded-t-lg rounded-b-none text-slate-500 border-b-2 border-transparent
+                      data-[state=active]:text-blue-600 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-50/50
+                      hover:text-slate-700 transition-colors whitespace-nowrap">
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
 
-          <TabsContent value="info" className="mt-4">
-            <Card className="p-6">
-              <h2 className="text-lg font-bold text-slate-900 mb-4">Proje Bilgileri</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InfoRow label="Proje Adi" value={project.project_name} />
-                <InfoRow label="Proje Tipi" value={project.project_type} />
-                <InfoRow label="Il" value={project.city} />
-                <InfoRow label="Ilce" value={project.district} />
-                <InfoRow label="Mahalle" value={project.neighborhood} />
-                <InfoRow label="Proje Alani" value={project.project_area_sqm ? `${project.project_area_sqm.toLocaleString('tr-TR')} m2` : null} />
-                <InfoRow label="Baslangic Tarihi" value={project.start_date} />
-                <InfoRow label="Planlanan Bitis" value={project.planned_end_date} />
-              </div>
-              {project.description && (
-                <div className="mt-4 pt-4 border-t">
-                  <p className="text-sm text-slate-500 mb-1">Aciklama</p>
-                  <p className="text-slate-700">{project.description}</p>
+            <div className="p-5">
+              <TabsContent value="info" className="mt-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {[
+                    { label: 'Proje Adı', value: project.project_name },
+                    { label: 'Proje Tipi', value: project.project_type },
+                    { label: 'İl', value: project.city },
+                    { label: 'İlçe', value: project.district },
+                    { label: 'Mahalle', value: project.neighborhood },
+                    { label: 'Proje Alanı', value: project.project_area_sqm ? `${project.project_area_sqm.toLocaleString('tr-TR')} m²` : null },
+                    { label: 'Başlangıç Tarihi', value: project.start_date },
+                    { label: 'Planlanan Bitiş', value: project.planned_end_date },
+                  ].filter(r => r.value).map((r, i) => (
+                    <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0" />
+                      <div>
+                        <p className="text-xs text-slate-400 font-medium">{r.label}</p>
+                        <p className="text-sm font-semibold text-slate-800 mt-0.5">{r.value}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              )}
-            </Card>
-          </TabsContent>
+                {project.description && (
+                  <div className="mt-4 p-4 rounded-xl bg-blue-50 border border-blue-100">
+                    <p className="text-xs font-semibold text-blue-600 mb-1 uppercase tracking-wide">Açıklama</p>
+                    <p className="text-sm text-slate-700 leading-relaxed">{project.description}</p>
+                  </div>
+                )}
+              </TabsContent>
 
-          <TabsContent value="parcels" className="mt-4">
-            <AdaParselView projectId={project.id} />
-          </TabsContent>
+              <TabsContent value="parcels" className="mt-0">
+                <AdaParselView projectId={project.id} />
+              </TabsContent>
 
-          <TabsContent value="map" className="mt-4">
-            <MapView project={project} projectId={project.id} />
-          </TabsContent>
+              <TabsContent value="map" className="mt-0">
+                <MapView project={project} projectId={project.id} />
+              </TabsContent>
 
-          <TabsContent value="gallery" className="mt-4">
-            <GalleryView projectId={project.id} />
-          </TabsContent>
+              <TabsContent value="gallery" className="mt-0">
+                <GalleryView projectId={project.id} />
+              </TabsContent>
 
-          <TabsContent value="videos" className="mt-4">
-            <VideosView videos={project.youtube_videos} />
-          </TabsContent>
+              <TabsContent value="videos" className="mt-0">
+                <VideosView videos={project.youtube_videos} />
+              </TabsContent>
 
-          <TabsContent value="docs" className="mt-4">
-            <DocumentsView projectId={project.id} />
-          </TabsContent>
-        </Tabs>
+              <TabsContent value="docs" className="mt-0">
+                <DocumentsView projectId={project.id} />
+              </TabsContent>
+            </div>
+          </Tabs>
+        </div>
       </div>
     </div>
   );
