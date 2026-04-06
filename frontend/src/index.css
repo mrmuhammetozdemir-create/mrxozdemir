@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
+#emergent-badge, a[href*="emergent.sh"] { right: -9999px !important; bottom: -9999px !important; }
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
