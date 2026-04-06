@@ -358,7 +358,6 @@ function DocumentsView({ projectId }) {
 function TopGalleryBanner({ projectId }) {
   const [media, setMedia] = useState([]);
   const [lightboxIdx, setLightboxIdx] = useState(null);
-  const scrollRef = useRef(null);
 
   useEffect(() => {
     api.get(`/projects/${projectId}/media`)
@@ -368,76 +367,76 @@ function TopGalleryBanner({ projectId }) {
 
   if (media.length === 0) return null;
 
-  const scroll = (dir) => {
-    if (scrollRef.current) scrollRef.current.scrollBy({ left: dir * 300, behavior: 'smooth' });
-  };
+  const goLightbox = (dir) => setLightboxIdx(prev => (prev + dir + media.length) % media.length);
 
-  const goLightbox = (dir) => {
-    setLightboxIdx(prev => (prev + dir + media.length) % media.length);
-  };
+  // Layout: first image big, rest in a 2-column right grid
+  const first = media[0];
+  const rest = media.slice(1, 5);
 
   return (
     <>
-      {/* Gallery Strip */}
-      <div className="relative bg-slate-900 w-full overflow-hidden" data-testid="top-gallery-banner">
-        <div className="flex items-center">
-          {media.length > 3 && (
-            <button onClick={() => scroll(-1)} className="absolute left-2 z-10 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 flex items-center justify-center text-white transition-colors">
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-          )}
-          <div ref={scrollRef} className="flex gap-2 overflow-x-auto scrollbar-hide p-2 scroll-smooth" style={{ scrollbarWidth: 'none' }}>
-            {media.map((m, i) => (
-              <div
-                key={m.id}
-                onClick={() => setLightboxIdx(i)}
-                className="flex-shrink-0 cursor-pointer rounded-xl overflow-hidden group relative"
-                style={{ width: i === 0 ? 420 : 200, height: 260 }}
-                data-testid={`top-gallery-thumb-${i}`}
-              >
-                <img
-                  src={`${API_BASE}/api/files/${m.storage_path}`}
-                  alt={m.original_filename || `Gorsel ${i + 1}`}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors" />
-                {i === 0 && media.length > 1 && (
-                  <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
-                    <ImageIcon className="w-3 h-3 inline mr-1" />{media.length} Fotograf
-                  </div>
-                )}
+      <div className="w-full bg-slate-900" data-testid="top-gallery-banner">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex h-64 md:h-80 lg:h-96">
+            {/* Featured image */}
+            <div
+              className="relative cursor-pointer overflow-hidden group flex-1"
+              onClick={() => setLightboxIdx(0)}
+            >
+              <img
+                src={`${API_BASE}/api/files/${first.storage_path}`}
+                alt="Ana Görsel"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+              <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                <ImageIcon className="w-3 h-3" /> {media.length} Fotoğraf
               </div>
-            ))}
+            </div>
+
+            {/* Side grid — up to 4 thumbs */}
+            {rest.length > 0 && (
+              <div className={`grid gap-0.5 ml-0.5 w-72 lg:w-96 ${rest.length <= 2 ? 'grid-rows-2' : 'grid-rows-2 grid-cols-2'}`}>
+                {rest.map((m, i) => (
+                  <div
+                    key={m.id}
+                    onClick={() => setLightboxIdx(i + 1)}
+                    className="relative cursor-pointer overflow-hidden group"
+                    style={{ gridColumn: rest.length === 1 ? 'span 2' : undefined }}
+                  >
+                    <img
+                      src={`${API_BASE}/api/files/${m.storage_path}`}
+                      alt={`Görsel ${i + 2}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors" />
+                    {i === 3 && media.length > 5 && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                        <span className="text-white font-bold text-lg">+{media.length - 5}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          {media.length > 3 && (
-            <button onClick={() => scroll(1)} className="absolute right-2 z-10 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 flex items-center justify-center text-white transition-colors">
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          )}
         </div>
       </div>
 
       {/* Lightbox */}
       {lightboxIdx !== null && (
-        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={() => setLightboxIdx(null)}>
-          <button onClick={(e) => { e.stopPropagation(); goLightbox(-1); }} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white">
+        <div className="fixed inset-0 z-50 bg-black/92 flex items-center justify-center p-4" onClick={() => setLightboxIdx(null)}>
+          <button onClick={(e) => { e.stopPropagation(); goLightbox(-1); }} className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white">
             <ChevronLeft className="w-6 h-6" />
           </button>
-          <img
-            src={`${API_BASE}/api/files/${media[lightboxIdx]?.storage_path}`}
-            alt=""
-            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
-          <button onClick={(e) => { e.stopPropagation(); goLightbox(1); }} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white">
+          <img src={`${API_BASE}/api/files/${media[lightboxIdx]?.storage_path}`} alt="" className="max-w-full max-h-[88vh] object-contain rounded-xl shadow-2xl" onClick={(e) => e.stopPropagation()} />
+          <button onClick={(e) => { e.stopPropagation(); goLightbox(1); }} className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white">
             <ChevronRight className="w-6 h-6" />
           </button>
           <button onClick={() => setLightboxIdx(null)} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white">
             <X className="w-5 h-5" />
           </button>
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-sm">
-            {lightboxIdx + 1} / {media.length}
-          </div>
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-sm">{lightboxIdx + 1} / {media.length}</div>
         </div>
       )}
     </>
@@ -460,14 +459,16 @@ function ProjectInfoBar({ project }) {
   if (items.length === 0) return null;
 
   return (
-    <div className="relative z-10 -mt-2 mx-3 mb-0" data-testid="project-info-bar">
-      <div className="flex gap-2 overflow-x-auto py-2 px-1" style={{scrollbarWidth:'none'}}>
-        {items.map((item, i) => (
-          <div key={i} className="flex-shrink-0 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-white/80 px-4 py-2.5 flex flex-col min-w-[110px]">
-            <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">{item.label}</span>
-            <span className="text-sm font-bold text-slate-800 mt-0.5 whitespace-nowrap">{item.value}</span>
-          </div>
-        ))}
+    <div className="bg-white border-b border-slate-100 shadow-sm" data-testid="project-info-bar">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex items-stretch justify-center gap-0 overflow-x-auto" style={{scrollbarWidth:'none'}}>
+          {items.map((item, i) => (
+            <div key={i} className={`flex flex-col items-center justify-center px-5 py-3 min-w-[100px] ${i < items.length - 1 ? 'border-r border-slate-100' : ''}`}>
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap mb-1">{item.label}</span>
+              <span className="text-sm font-bold text-slate-900 whitespace-nowrap">{item.value}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
