@@ -1416,10 +1416,14 @@ async def admin_delete_lesson(course_id: str, module_id: str, lesson_id: str, ad
 
 @api_router.get("/admin/education/seminars")
 async def admin_list_seminars(admin: dict = Depends(require_admin)):
-    seminars = await db.seminars.find({}, {"_id": 0}).sort("date", -1).limit(500).to_list(500)
-    for s in seminars:
-        s["registration_count"] = await db.seminar_registrations.count_documents({"seminar_id": s["id"]})
-    return seminars
+    pipeline = [
+        {"$sort": {"date": -1}},
+        {"$limit": 500},
+        {"$lookup": {"from": "seminar_registrations", "localField": "id", "foreignField": "seminar_id", "as": "_regs"}},
+        {"$addFields": {"registration_count": {"$size": "$_regs"}}},
+        {"$project": {"_id": 0, "_regs": 0}},
+    ]
+    return await db.seminars.aggregate(pipeline).to_list(500)
 
 @api_router.post("/admin/education/seminars")
 async def admin_create_seminar(data: SeminarCreate, admin: dict = Depends(require_admin)):
