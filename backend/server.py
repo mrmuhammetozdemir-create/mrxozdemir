@@ -1,6 +1,7 @@
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, UploadFile, File, Form, Query, Response, Request, Body
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from emergentintegrations.llm.chat import LlmChat, UserMessage as LlmUserMessage
+from seed_data import SEED_DATA
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
@@ -2019,111 +2020,24 @@ async def startup():
     except Exception as e:
         logger.error(f"Admin seed error: {e}")
 
-    # ---- Seed initial projects if empty ----
-    try:
-        project_count = await db.projects.count_documents({})
-        if project_count == 0:
-            logger.info("Seeding initial projects...")
-            seed_projects = [
-                {
-                    "id": "f70c57f6-28a6-4dbd-a4d3-5ea8e4bce6a6",
-                    "project_name": "1. Bölge 1. Etap",
-                    "project_type": "TOKİ",
-                    "city": "İstanbul",
-                    "district": "Arnavutköy",
-                    "neighborhood": "Sazlıbosna",
-                    "total_housing": 900,
-                    "commercial_count": 60,
-                    "school_count": 1,
-                    "mosque_count": 1,
-                    "social_facility_count": 1,
-                    "progress_percentage": 69,
-                    "construction_status": "İnşaat Devam Ediyor",
-                    "location": {"lat": 41.148, "lng": 28.692},
-                    "youtube_videos": ["https://www.youtube.com/watch?v=okTQZ03nIdI"],
-                    "description": "1. Bölge 1. Etap projesi, İstanbul Arnavutköy Sazlıbosna'da TOKİ tarafından hayata geçirilmektedir.",
-                    "blocks": [
-                        {"grup": "A Blokları", "bloklar": "A/1 – A/13 (13 blok) + A-T1", "tip": "2+1", "kat": "B+Z+5", "renk": "yellow"},
-                        {"grup": "C Blokları", "bloklar": "C/1 – C/21 (21 blok) + C-T1, C-T2/1", "tip": "3+1 / 2+1", "kat": "B+Z+5", "renk": "blue"},
-                        {"grup": "D Blokları", "bloklar": "D/1 – D/10 (10 blok) + D-T1/1 – D-T1/4", "tip": "2+1", "kat": "B+Z+5", "renk": "green"},
-                    ],
-                    "created_at": datetime.now(timezone.utc).isoformat(),
-                },
-                {
-                    "id": "6c49e58e-750e-4950-abbe-d01e36691688",
-                    "project_name": "1. Bölge 2. Etap",
-                    "project_type": "TOKİ",
-                    "city": "İstanbul",
-                    "district": "Arnavutköy",
-                    "neighborhood": "Sazlıbosna",
-                    "total_housing": 800,
-                    "commercial_count": 56,
-                    "school_count": 0,
-                    "mosque_count": 0,
-                    "social_facility_count": 0,
-                    "progress_percentage": 30,
-                    "construction_status": "İnşaat Devam Ediyor",
-                    "location": {"lat": 41.152286, "lng": 28.689402},
-                    "youtube_videos": ["https://www.youtube.com/watch?v=okTQZ03nIdI"],
-                    "description": "1. Bölge 2. Etap projesi, İstanbul Arnavutköy Sazlıbosna'da TOKİ tarafından hayata geçirilmektedir. Proje kapsamında 800 adet konut ve 56 adet dükkan inşa edilmektedir.",
-                    "blocks": [
-                        {"grup": "A Blokları", "bloklar": "A/1 – A/13 (13 blok) + A-T1", "tip": "2+1", "kat": "B+Z+5", "renk": "yellow"},
-                        {"grup": "C Blokları", "bloklar": "C/1 – C/21 (21 blok) + C-T1, C-T2/1", "tip": "3+1 / 2+1", "kat": "B+Z+5", "renk": "blue"},
-                        {"grup": "D Blokları", "bloklar": "D/1 – D/10 (10 blok) + D-T1/1 – D-T1/4", "tip": "2+1", "kat": "B+Z+5", "renk": "green"},
-                    ],
-                    "created_at": datetime.now(timezone.utc).isoformat(),
-                },
-                {
-                    "id": "9cfcb16d-c351-4bd2-a939-fb8c7f18e69a",
-                    "project_name": "1. Bölge 3. Etap",
-                    "project_type": "TOKİ",
-                    "city": "İstanbul",
-                    "district": "Arnavutköy",
-                    "neighborhood": "Sazlıbosna",
-                    "total_housing": 840,
-                    "commercial_count": 27,
-                    "school_count": 0,
-                    "mosque_count": 0,
-                    "social_facility_count": 0,
-                    "progress_percentage": 30,
-                    "construction_status": "İnşaat Devam Ediyor",
-                    "location": {"lat": 41.152558, "lng": 28.693419},
-                    "youtube_videos": ["https://www.youtube.com/watch?v=okTQZ03nIdI"],
-                    "description": "1. Bölge 3. Etap projesi, İstanbul Arnavutköy Sazlıbosna'da TOKİ tarafından hayata geçirilmektedir. Proje kapsamında 840 adet konut ve 27 adet dükkan inşa edilmektedir.",
-                    "blocks": [
-                        {"grup": "A Blokları", "bloklar": "A/1, A/2, A/3 – A/8 (8 blok) + A-T1/1, A-T1/2", "tip": "2+1", "kat": "B+Z+4 / B+Z+5", "renk": "yellow"},
-                        {"grup": "C Blokları", "bloklar": "C/1 – C/24 (24 blok) + C-T1, C-T2", "tip": "3+1 / 2+1", "kat": "B+Z+5", "renk": "blue"},
-                        {"grup": "D Blokları", "bloklar": "D (ana) + D/1 – D/17 (15 blok) + D-T1", "tip": "2+1", "kat": "2B+Z+4 / B+Z+5", "renk": "green"},
-                    ],
-                    "created_at": datetime.now(timezone.utc).isoformat(),
-                },
-            ]
-            for p in seed_projects:
-                await db.projects.update_one({"id": p["id"]}, {"$setOnInsert": p}, upsert=True)
-            logger.info(f"Seeded {len(seed_projects)} projects")
-        else:
-            logger.info(f"Projects already exist: {project_count}")
-    except Exception as e:
-        logger.error(f"Project seed error: {e}")
-
-    # ---- Seed shared facilities if empty ----
-    try:
-        fac_count = await db.shared_facilities.count_documents({})
-        if fac_count == 0:
-            logger.info("Seeding shared facilities...")
-            seed_facilities = [
-                {"id": str(uuid.uuid4()), "name": "Sazlıbosna İlkokulu", "type": "okul", "lat": 41.1510, "lng": 28.6880, "description": "İlköğretim okulu", "created_at": datetime.now(timezone.utc).isoformat()},
-                {"id": str(uuid.uuid4()), "name": "Sazlıbosna Camii", "type": "cami", "lat": 41.1528, "lng": 28.6905, "description": "", "created_at": datetime.now(timezone.utc).isoformat()},
-                {"id": str(uuid.uuid4()), "name": "Sazlıbosna Parkı", "type": "park", "lat": 41.1519, "lng": 28.6892, "description": "Yeşil alan", "created_at": datetime.now(timezone.utc).isoformat()},
-                {"id": str(uuid.uuid4()), "name": "Sosyal Hizmetler Merkezi", "type": "sosyal_tesis", "lat": 41.1535, "lng": 28.6898, "description": "", "created_at": datetime.now(timezone.utc).isoformat()},
-            ]
-            for f in seed_facilities:
-                await db.shared_facilities.insert_one(f)
-            logger.info(f"Seeded {len(seed_facilities)} shared facilities")
-        else:
-            logger.info(f"Shared facilities already exist: {fac_count}")
-    except Exception as e:
-        logger.error(f"Shared facilities seed error: {e}")
+    # ---- Seed all collections from exported data if empty ----
+    SEED_COLLECTIONS = [
+        "projects", "shared_facilities", "project_map_layers", "project_media",
+        "courses", "seminars", "land_parcels", "land_opportunities",
+        "mega_projects", "market_data", "edu_page_settings", "weekly_live",
+    ]
+    for col_name in SEED_COLLECTIONS:
+        try:
+            col = db[col_name]
+            count = await col.count_documents({})
+            if count == 0 and col_name in SEED_DATA and SEED_DATA[col_name]:
+                docs = SEED_DATA[col_name]
+                await col.insert_many(docs)
+                logger.info(f"Seeded {col_name}: {len(docs)} documents")
+            elif count > 0:
+                logger.info(f"{col_name}: {count} mevcut, seed atlandı")
+        except Exception as e:
+            logger.error(f"Seed error for {col_name}: {e}")
 
 app.include_router(api_router)
 

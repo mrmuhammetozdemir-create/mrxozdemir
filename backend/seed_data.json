@@ -1,0 +1,598 @@
+{
+  "projects": [
+    {
+      "id": "f70c57f6-28a6-4dbd-a4d3-5ea8e4bce6a6",
+      "project_name": "1. Bölge 1. Etap",
+      "city": "İstanbul",
+      "district": "Arnavutköy",
+      "neighborhood": "Sazlıbosna",
+      "description": "",
+      "project_type": "TOKİ",
+      "total_housing": 126,
+      "commercial_count": 4,
+      "school_count": 1,
+      "mosque_count": 1,
+      "social_facility_count": 1,
+      "project_area_sqm": 100000.0,
+      "start_date": "2025-02-27",
+      "planned_end_date": "2027-12-28",
+      "progress_percentage": 69,
+      "location": {
+        "lat": 41.13803970237181,
+        "lng": 28.70982465494202
+      },
+      "youtube_videos": [
+        "https://www.youtube.com/watch?v=okTQZ03nIdI"
+      ],
+      "created_at": "2026-03-04T02:58:59.910378+00:00"
+    },
+    {
+      "id": "c2e0f46c-0703-42d3-9e64-3efda116c3fb",
+      "project_name": "Test Projesi",
+      "city": "Ankara",
+      "district": "Mamak",
+      "neighborhood": "",
+      "description": "",
+      "project_type": "TOKİ",
+      "total_housing": 50,
+      "commercial_count": 0,
+      "school_count": 0,
+      "mosque_count": 0,
+      "social_facility_count": 0,
+      "progress_percentage": 0,
+      "start_date": "",
+      "planned_end_date": "",
+      "created_at": "2026-04-06T21:07:25.202234+00:00"
+    },
+    {
+      "id": "6c49e58e-750e-4950-abbe-d01e36691688",
+      "project_name": "1. Bölge 2. Etap",
+      "city": "İstanbul",
+      "district": "Arnavutköy",
+      "neighborhood": "Sazlıbosna",
+      "description": "1. Bölge 2. Etap projesi, İstanbul Arnavutköy Sazlıbosna'da TOKİ tarafından hayata geçirilmektedir. Proje kapsamında 800 adet konut ve 56 adet dükkan inşa edilmektedir. Anahtar teslimi götürü bedelli olarak ihaleye çıkarılan projede",
+      "project_type": "TOKİ",
+      "total_housing": 800,
+      "commercial_count": 56,
+      "school_count": 0,
+      "mosque_count": 0,
+      "social_facility_count": 0,
+      "project_area_sqm": 0.0,
+      "start_date": "2025-02-05",
+      "planned_end_date": "2027-06-16",
+      "progress_percentage": 62,
+      "location": {
+        "lat": 41.152286,
+        "lng": 28.689402
+      },
+      "youtube_videos": [
+        "https://www.youtube.com/watch?v=okTQZ03nIdI"
+      ],
+      "created_at": "2026-04-06T22:42:09.678942+00:00",
+      "blocks": [
+        {
+          "grup": "A Blokları",
+          "bloklar": "A/1 – A/13 (13 blok) + A-T1",
+          "tip": "2+1",
+          "kat": "B+Z+5",
+          "renk": "yellow"
+        },
+        {
+          "grup": "C Blokları",
+          "bloklar": "C/1 – C/21 (21 blok) + C-T1, C-T2/1",
+          "tip": "3+1 / 2+1",
+          "kat": "B+Z+5",
+          "renk": "blue"
+        },
+        {
+          "grup": "D Blokları",
+          "bloklar": "D/1 – D/10 (10 blok) + D-T1/1 – D-T1/4",
+          "tip": "2+1",
+          "kat": "B+Z+5",
+          "renk": "green"
+        }
+      ]
+    },
+    {
+      "id": "9cfcb16d-c351-4bd2-a939-fb8c7f18e69a",
+      "project_name": "1. Bölge 3. Etap",
+      "city": "İstanbul",
+      "district": "Arnavutköy",
+      "neighborhood": "Sazlıbosna",
+      "description": "1. Bölge 3. Etap projesi, İstanbul Arnavutköy Sazlıbosna'da TOKİ tarafından hayata geçirilmektedir. Proje kapsamında 840 adet konut ve 27 adet dükkan inşa edilmektedir. Anahtar teslimi götürü bedelli olarak ihaleye çıkarılan projede",
+      "project_type": "TOKİ",
+      "total_housing": 840,
+      "commercial_count": 27,
+      "school_count": 0,
+      "mosque_count": 0,
+      "social_facility_count": 0,
+      "project_area_sqm": 0.0,
+      "start_date": "",
+      "planned_end_date": "",
+      "progress_percentage": 66,
+      "location": {
+        "lat": 41.152558,
+        "lng": 28.693419
+      },
+      "youtube_videos": [
+        "https://www.youtube.com/watch?v=okTQZ03nIdI"
+      ],
+      "created_at": "2026-04-06T22:55:18.503375+00:00",
+      "blocks": [
+        {
+          "grup": "A Blokları",
+          "bloklar": "A/1, A/2, A/3 – A/8 (8 blok) + A-T1/1, A-T1/2",
+          "tip": "2+1",
+          "kat": "B+Z+4 / B+Z+5",
+          "renk": "yellow"
+        },
+        {
+          "grup": "C Blokları",
+          "bloklar": "C/1 – C/24 (24 blok) + C-T1, C-T2",
+          "tip": "3+1 / 2+1",
+          "kat": "B+Z+5",
+          "renk": "blue"
+        },
+        {
+          "grup": "D Blokları",
+          "bloklar": "D (ana) + D/1 – D/17 (15 blok) + D-T1",
+          "tip": "2+1",
+          "kat": "2B+Z+4 / B+Z+5",
+          "renk": "green"
+        }
+      ]
+    }
+  ],
+  "shared_facilities": [
+    {
+      "id": "11f35f9f-4793-4dd2-bd9e-d9b5ee7822e3",
+      "name": "Sazlıbosna İlkokulu",
+      "type": "okul",
+      "lat": 41.151,
+      "lng": 28.688,
+      "description": "İlköğretim okulu",
+      "created_at": "2026-04-07T06:36:47.713591+00:00"
+    },
+    {
+      "id": "5db2475f-47ab-4f5b-b9b4-eece547ad13b",
+      "name": "Sazlıbosna Camii",
+      "type": "cami",
+      "lat": 41.1528,
+      "lng": 28.6905,
+      "description": "",
+      "created_at": "2026-04-07T06:36:55.266852+00:00"
+    },
+    {
+      "id": "ac1e577d-1a1b-4240-b6f8-7aa067de2ec1",
+      "name": "Sazlıbosna Parkı",
+      "type": "park",
+      "lat": 41.1519,
+      "lng": 28.6892,
+      "description": "Yeşil alan",
+      "created_at": "2026-04-07T06:36:55.433972+00:00"
+    },
+    {
+      "id": "d1f26190-6441-462f-ba13-4042caf3c277",
+      "name": "Sosyal Hizmetler Merkezi",
+      "type": "sosyal_tesis",
+      "lat": 41.1535,
+      "lng": 28.6898,
+      "description": "",
+      "created_at": "2026-04-07T06:36:55.535477+00:00"
+    }
+  ],
+  "users": [
+    {
+      "email": "test@example.com",
+      "full_name": "Test User",
+      "password": "$2b$12$jd7Nu7kFbYjuI9i52ruPEOHGQjXiXuA3NH/lJcgoEV3LVS7r6sIx2",
+      "role": "user",
+      "created_at": "2026-03-01T22:00:59.821667+00:00"
+    },
+    {
+      "email": "admin@proptech.com",
+      "full_name": "Admin User",
+      "password": "$2b$12$XBmcUXrG185DDjOo2hZETum6KwXqHWcOFP7vmosT/lD1rVdjYV/Oi",
+      "role": "admin",
+      "created_at": "2026-03-01T22:01:16.561215+00:00"
+    },
+    {
+      "email": "ipatarazi@gmail.com",
+      "password": "$2b$12$O1Bl/kqU/zv3kTzJPHEpV.LIoe09NzQ9bt7eGqO5x/hTxSChY0B2.",
+      "full_name": "Admin",
+      "role": "admin",
+      "created_at": "2026-03-04T00:28:53.331Z"
+    }
+  ],
+  "project_map_layers": [
+    {
+      "id": "a7b6d245-dd97-49a0-9985-5de5b1e48072",
+      "project_id": "f70c57f6-28a6-4dbd-a4d3-5ea8e4bce6a6",
+      "storage_path": "proptech-turkey/map-layers/f70c57f6-28a6-4dbd-a4d3-5ea8e4bce6a6/ef9f8d28-e158-4e80-9236-b7c20a58f308.kmz",
+      "original_filename": "test.kmz",
+      "content_type": "application/vnd.google-earth.kmz",
+      "file_type": "KMZ",
+      "size": 461884,
+      "created_at": "2026-04-06T21:42:10.374253+00:00"
+    },
+    {
+      "id": "edbc3f77-a4e9-4844-870e-8209a33033c6",
+      "project_id": "6c49e58e-750e-4950-abbe-d01e36691688",
+      "storage_path": "proptech-turkey/map-layers/6c49e58e-750e-4950-abbe-d01e36691688/b9257b08-f232-411b-b7c7-426a438da56f.kmz",
+      "original_filename": "A6-1_BOLGE_2_ETAP.kmz",
+      "content_type": "application/vnd.google-earth.kmz",
+      "file_type": "KMZ",
+      "size": 1530232,
+      "created_at": "2026-04-06T22:42:40.608496+00:00"
+    },
+    {
+      "id": "7cadbd14-faee-4dff-a548-1befb7184c9c",
+      "project_id": "9cfcb16d-c351-4bd2-a939-fb8c7f18e69a",
+      "storage_path": "proptech-turkey/map-layers/9cfcb16d-c351-4bd2-a939-fb8c7f18e69a/6f43efcf-9e5c-47db-ba53-fc4411700769.kmz",
+      "original_filename": "A6-1_BOLGE_3_ETAP.kmz",
+      "content_type": "application/vnd.google-earth.kmz",
+      "file_type": "KMZ",
+      "size": 1249515,
+      "created_at": "2026-04-06T22:55:31.066778+00:00"
+    }
+  ],
+  "project_media": [
+    {
+      "id": "a4fb589d-98cf-4b7d-ada5-f7066c3feac6",
+      "project_id": "f70c57f6-28a6-4dbd-a4d3-5ea8e4bce6a6",
+      "category": "Altyapı",
+      "storage_path": "proptech-turkey/media/f70c57f6-28a6-4dbd-a4d3-5ea8e4bce6a6/c30254f6-854a-46f9-978b-31f15e5133ee.jpg",
+      "original_filename": "a blok konut copy.jpg",
+      "content_type": "image/jpeg",
+      "size": 2725687,
+      "created_at": "2026-03-04T03:00:59.351566+00:00"
+    },
+    {
+      "id": "845b2a08-155c-470a-b4c0-9df5a124e2dc",
+      "project_id": "f70c57f6-28a6-4dbd-a4d3-5ea8e4bce6a6",
+      "category": "Altyapı",
+      "storage_path": "proptech-turkey/media/f70c57f6-28a6-4dbd-a4d3-5ea8e4bce6a6/c5bedbb4-72cf-4544-9015-b27a1d78008a.jpg",
+      "original_filename": "a blok ticaret copy.jpg",
+      "content_type": "image/jpeg",
+      "size": 2825861,
+      "created_at": "2026-03-04T03:01:03.967280+00:00"
+    },
+    {
+      "id": "092d4172-3975-4bea-b184-a825588c0628",
+      "project_id": "f70c57f6-28a6-4dbd-a4d3-5ea8e4bce6a6",
+      "category": "Altyapı",
+      "storage_path": "proptech-turkey/media/f70c57f6-28a6-4dbd-a4d3-5ea8e4bce6a6/0be2c246-a6db-4e99-8e5b-a606d5ad5763.jpg",
+      "original_filename": "c blok konut copy.jpg",
+      "content_type": "image/jpeg",
+      "size": 2864172,
+      "created_at": "2026-03-04T03:01:30.420349+00:00"
+    },
+    {
+      "id": "9629d2eb-7948-4638-a006-c26ac9476e95",
+      "project_id": "f70c57f6-28a6-4dbd-a4d3-5ea8e4bce6a6",
+      "category": "Altyapı",
+      "storage_path": "proptech-turkey/media/f70c57f6-28a6-4dbd-a4d3-5ea8e4bce6a6/203bdcc2-a8e7-4861-831f-6460ea861634.jpg",
+      "original_filename": "c blok konut dükkan copy.jpg",
+      "content_type": "image/jpeg",
+      "size": 2877994,
+      "created_at": "2026-03-04T03:01:35.059593+00:00"
+    },
+    {
+      "id": "094f36c4-af22-4e15-943e-0c0ae6a46334",
+      "project_id": "6c49e58e-750e-4950-abbe-d01e36691688",
+      "category": "Görsel",
+      "storage_path": "proptech-turkey/media/6c49e58e-750e-4950-abbe-d01e36691688/bc50fd67-8daa-4d4a-b45b-4287c3769802.jpg",
+      "original_filename": "a blok konut copy.jpg",
+      "content_type": "image/jpeg",
+      "size": 186044,
+      "created_at": "2026-04-06T22:42:29.069613+00:00"
+    },
+    {
+      "id": "76021b49-0ef2-40ec-887c-19f1396b0bdf",
+      "project_id": "6c49e58e-750e-4950-abbe-d01e36691688",
+      "category": "Görsel",
+      "storage_path": "proptech-turkey/media/6c49e58e-750e-4950-abbe-d01e36691688/affa9c85-4a7a-4b9b-889e-47897aa2b219.jpg",
+      "original_filename": "a blok ticaret copy.jpg",
+      "content_type": "image/jpeg",
+      "size": 193076,
+      "created_at": "2026-04-06T22:42:29.435680+00:00"
+    },
+    {
+      "id": "d44edca4-2892-4933-b868-730d4cfaac90",
+      "project_id": "6c49e58e-750e-4950-abbe-d01e36691688",
+      "category": "Görsel",
+      "storage_path": "proptech-turkey/media/6c49e58e-750e-4950-abbe-d01e36691688/76ae6680-6da4-41d4-9add-7ed98cc4add9.jpg",
+      "original_filename": "c blok konut copy.jpg",
+      "content_type": "image/jpeg",
+      "size": 191273,
+      "created_at": "2026-04-06T22:42:29.837906+00:00"
+    },
+    {
+      "id": "502e859c-063c-42e1-84fd-5ae165c26e36",
+      "project_id": "6c49e58e-750e-4950-abbe-d01e36691688",
+      "category": "Görsel",
+      "storage_path": "proptech-turkey/media/6c49e58e-750e-4950-abbe-d01e36691688/2eb7c358-4d5b-433a-ab91-6e3d678881a3.jpg",
+      "original_filename": "c blok konut dükkan copy.jpg",
+      "content_type": "image/jpeg",
+      "size": 215173,
+      "created_at": "2026-04-06T22:42:30.246346+00:00"
+    },
+    {
+      "id": "72a64a76-c8e0-4352-837d-23cba160151d",
+      "project_id": "6c49e58e-750e-4950-abbe-d01e36691688",
+      "category": "Görsel",
+      "storage_path": "proptech-turkey/media/6c49e58e-750e-4950-abbe-d01e36691688/0a633343-5997-4206-a9f2-c3dc4ad03d55.jpg",
+      "original_filename": "d blok  konut copy.jpg",
+      "content_type": "image/jpeg",
+      "size": 181934,
+      "created_at": "2026-04-06T22:42:30.850014+00:00"
+    },
+    {
+      "id": "2215d289-9298-4e87-8033-116a992ea84f",
+      "project_id": "6c49e58e-750e-4950-abbe-d01e36691688",
+      "category": "Görsel",
+      "storage_path": "proptech-turkey/media/6c49e58e-750e-4950-abbe-d01e36691688/ec6456f4-8683-48ad-840d-0fff7986aed0.jpg",
+      "original_filename": "d blok ticaret copy.jpg",
+      "content_type": "image/jpeg",
+      "size": 174915,
+      "created_at": "2026-04-06T22:42:31.270804+00:00"
+    },
+    {
+      "id": "8f83fc1d-fba3-433d-83c9-c82d172471a8",
+      "project_id": "9cfcb16d-c351-4bd2-a939-fb8c7f18e69a",
+      "category": "Görsel",
+      "storage_path": "proptech-turkey/media/9cfcb16d-c351-4bd2-a939-fb8c7f18e69a/2f437b1b-4834-420e-be27-e15fd92265df.jpg",
+      "original_filename": "a blok konut copy.jpg",
+      "content_type": "image/jpeg",
+      "size": 186044,
+      "created_at": "2026-04-06T22:55:28.111717+00:00"
+    },
+    {
+      "id": "5f09b5df-4c5d-4e04-95cb-bfbe057c6f4e",
+      "project_id": "9cfcb16d-c351-4bd2-a939-fb8c7f18e69a",
+      "category": "Görsel",
+      "storage_path": "proptech-turkey/media/9cfcb16d-c351-4bd2-a939-fb8c7f18e69a/59a804af-9cda-4965-b53a-c4be0b67197a.jpg",
+      "original_filename": "a blok ticaret copy.jpg",
+      "content_type": "image/jpeg",
+      "size": 193076,
+      "created_at": "2026-04-06T22:55:28.469705+00:00"
+    },
+    {
+      "id": "68d6a8e0-8690-40e3-a3c1-f638764fd124",
+      "project_id": "9cfcb16d-c351-4bd2-a939-fb8c7f18e69a",
+      "category": "Görsel",
+      "storage_path": "proptech-turkey/media/9cfcb16d-c351-4bd2-a939-fb8c7f18e69a/f14745fc-be3e-402d-9b7c-c69c3c019295.jpg",
+      "original_filename": "c blok konut copy.jpg",
+      "content_type": "image/jpeg",
+      "size": 191273,
+      "created_at": "2026-04-06T22:55:28.890235+00:00"
+    },
+    {
+      "id": "64bf1155-20e3-4317-93b4-958f192c3513",
+      "project_id": "9cfcb16d-c351-4bd2-a939-fb8c7f18e69a",
+      "category": "Görsel",
+      "storage_path": "proptech-turkey/media/9cfcb16d-c351-4bd2-a939-fb8c7f18e69a/b5ee48cb-1c05-47cb-9e56-ca60e1c2deff.jpg",
+      "original_filename": "c blok konut dükkan copy.jpg",
+      "content_type": "image/jpeg",
+      "size": 215173,
+      "created_at": "2026-04-06T22:55:29.604874+00:00"
+    },
+    {
+      "id": "324778b8-48e0-4209-8855-e4283fba04d1",
+      "project_id": "9cfcb16d-c351-4bd2-a939-fb8c7f18e69a",
+      "category": "Görsel",
+      "storage_path": "proptech-turkey/media/9cfcb16d-c351-4bd2-a939-fb8c7f18e69a/21e2c303-7acb-4a71-be3b-97e9f426419a.jpg",
+      "original_filename": "d blok  konut copy.jpg",
+      "content_type": "image/jpeg",
+      "size": 181934,
+      "created_at": "2026-04-06T22:55:30.184014+00:00"
+    },
+    {
+      "id": "80a0630a-930a-49d9-bbbc-5664503ade9e",
+      "project_id": "9cfcb16d-c351-4bd2-a939-fb8c7f18e69a",
+      "category": "Görsel",
+      "storage_path": "proptech-turkey/media/9cfcb16d-c351-4bd2-a939-fb8c7f18e69a/36ad463e-7a2d-4b15-9770-c8ac71c15ae3.jpg",
+      "original_filename": "d blok ticaret copy.jpg",
+      "content_type": "image/jpeg",
+      "size": 174915,
+      "created_at": "2026-04-06T22:55:30.560335+00:00"
+    }
+  ],
+  "courses": [
+    {
+      "id": "37179d5a-f7a7-420f-9a57-9ed9285bdc06",
+      "title": "Gayrimenkul 101",
+      "description": "Başlangıç kursu",
+      "video_url": "https://youtube.com/watch?v=test",
+      "duration_minutes": 60,
+      "thumbnail": "",
+      "created_at": "2026-03-04T01:32:51.843099+00:00"
+    },
+    {
+      "id": "b1825aa2-caee-408c-b05c-253183d6f429",
+      "modules": [],
+      "created_at": "2026-03-04T10:36:09.632025+00:00",
+      "title": "TEST Arsa Yatırım Kursu",
+      "short_description": "",
+      "full_description": "",
+      "cover_image": "",
+      "promo_video": "",
+      "price": 0.0,
+      "discount_price": null,
+      "level": "başlangıç",
+      "tags": [],
+      "status": "active",
+      "order": 0,
+      "student_count": 0,
+      "rating": 5.0
+    }
+  ],
+  "seminars": [
+    {
+      "id": "85200b1a-3971-4c30-a381-21043f25ed3d",
+      "created_at": "2026-03-04T10:37:00.794288+00:00",
+      "title": "TEST Seminer",
+      "description": "",
+      "date": "",
+      "time": "",
+      "duration": "",
+      "speaker": "Muhammet Özdemir",
+      "seminar_type": "free",
+      "location": "",
+      "zoom_link": "",
+      "cover_image": "",
+      "status": "active"
+    }
+  ],
+  "land_parcels": [
+    {
+      "city": "İstanbul",
+      "district": "Çatalca",
+      "neighborhood": "Ferhatpaşa",
+      "ada": "152",
+      "parsel": "8",
+      "size_sqm": 2500.0,
+      "zoning_info": "Konut+Ticaret İmarlı",
+      "development_potential": "Yüksek - Ana cadde üzeri, konut+ticaret projesi için uygun",
+      "location": {
+        "lat": 41.1394,
+        "lng": 28.4646
+      },
+      "id": "34e82ec0-e614-4c72-aaf8-47c2e479e1b6",
+      "documents": [],
+      "images": [],
+      "created_at": "2026-03-01T22:01:48.375615+00:00"
+    },
+    {
+      "id": "e0a06698-ed2f-46d3-a285-1cad6c6c5da8",
+      "city": "İstanbul",
+      "district": "Arnavutköy",
+      "neighborhood": "Tayakadın",
+      "ada": "100",
+      "parsel": "5",
+      "size_sqm": 1500.0,
+      "zoning_info": "Konut",
+      "development_potential": "Yüksek",
+      "location": {
+        "lat": 41.0082,
+        "lng": 28.9784
+      },
+      "documents": [],
+      "images": [],
+      "created_at": "2026-03-04T01:32:51.550607+00:00"
+    }
+  ],
+  "land_opportunities": [
+    {
+      "location": "Arnavutköy - Merkez",
+      "parcel_size_sqm": 5000.0,
+      "zoning_type": "Konut İmarlı",
+      "investment_potential": "yüksek",
+      "risk_score": 3,
+      "development_potential": "3. Havalimanı yakını, yüksek değer artış potansiyeli",
+      "price_per_sqm": 12000.0,
+      "location_coords": {
+        "lat": 41.1891,
+        "lng": 28.7332
+      },
+      "id": "04cd9152-c27f-45ed-a52c-b8f717833b46",
+      "created_at": "2026-03-01T22:01:48.687346+00:00"
+    }
+  ],
+  "mega_projects": [
+    {
+      "name": "Kanal İstanbul",
+      "category": "Kanal",
+      "description": "Karadeniz ile Marmara Denizini birleştirecek dev proje. Bölgede konut ve ticari yatırımlar için büyük fırsatlar.",
+      "timeline": "2025-2030",
+      "location": {
+        "lat": 41.1094,
+        "lng": 28.5646
+      },
+      "id": "90b8ce26-cf6c-4b26-935f-4903e0355b23",
+      "images": [],
+      "created_at": "2026-03-01T22:01:48.558685+00:00"
+    }
+  ],
+  "market_data": [
+    {
+      "neighborhood": "Başakşehir Merkez",
+      "city": "İstanbul",
+      "district": "Başakşehir",
+      "avg_price_per_sqm": 25000.0,
+      "price_change_percentage": 18.5,
+      "data_date": "2026-03-01T00:00:00+00:00",
+      "id": "9f743928-d9f9-4b96-b54e-c584c7160fbc",
+      "created_at": "2026-03-01T22:01:48.850568+00:00"
+    },
+    {
+      "id": "6d7cde3b-91f9-4ae0-a6cb-378899c17e32",
+      "neighborhood": "Tayakadın",
+      "city": "İstanbul",
+      "district": "Arnavutköy",
+      "avg_price_per_sqm": 15000.0,
+      "price_change_percentage": 12.5,
+      "data_date": "2026-03-01",
+      "created_at": "2026-03-04T01:32:51.724465+00:00"
+    }
+  ],
+  "edu_page_settings": [
+    {
+      "sections": [
+        {
+          "key": "hero",
+          "title": "Arsa Eğitim Akademisi ",
+          "description": "Arsa yatırımında profesyonel ol.",
+          "button_text": "",
+          "order": 1,
+          "is_active": true
+        },
+        {
+          "key": "seminars",
+          "title": "Ücretsiz Seminerler",
+          "description": "Arsa yatırımına yeni başlayanlar için genel anlatım yapılan ücretsiz seminerler.",
+          "button_text": "Seminere Katıl",
+          "order": 2,
+          "is_active": true
+        },
+        {
+          "key": "courses",
+          "title": "Ücretli Eğitimler",
+          "description": "Arsa yatırımını profesyonel seviyede öğrenmek isteyenler için ayrıntılı eğitim programları.",
+          "button_text": "Eğitime Katıl",
+          "order": 3,
+          "is_active": true
+        },
+        {
+          "key": "live",
+          "title": "Her Hafta Canlı Online Eğitim",
+          "description": "Her hafta yatırımcılarla birlikte canlı analiz yapılır.",
+          "button_text": "Canlı Eğitime Katıl",
+          "order": 4,
+          "is_active": true
+        },
+        {
+          "key": "community",
+          "title": "Arsa Yatırımcı Topluluğu",
+          "description": "Yatırımcıların bir araya geldiği özel topluluk.",
+          "button_text": "Topluluğa Katıl",
+          "order": 5,
+          "is_active": true
+        }
+      ]
+    }
+  ],
+  "weekly_live": [
+    {
+      "id": "a24d08f7-87eb-40b2-8d17-960199ccd8a5",
+      "archives": [],
+      "title": "Her Hafta Canlı Arsa Eğitimi",
+      "description": "",
+      "day_of_week": "Çarşamba",
+      "time": "",
+      "zoom_link": "",
+      "status": "active",
+      "updated_at": "2026-03-04T10:37:41.290690+00:00"
+    }
+  ]
+}
