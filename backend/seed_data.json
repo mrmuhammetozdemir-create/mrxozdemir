@@ -18,31 +18,13 @@
       "planned_end_date": "2027-12-28",
       "progress_percentage": 69,
       "location": {
-        "lat": 41.13803970237181,
-        "lng": 28.70982465494202
+        "lat": 41.144,
+        "lng": 28.714
       },
       "youtube_videos": [
         "https://www.youtube.com/watch?v=okTQZ03nIdI"
       ],
       "created_at": "2026-03-04T02:58:59.910378+00:00"
-    },
-    {
-      "id": "c2e0f46c-0703-42d3-9e64-3efda116c3fb",
-      "project_name": "Test Projesi",
-      "city": "Ankara",
-      "district": "Mamak",
-      "neighborhood": "",
-      "description": "",
-      "project_type": "TOKİ",
-      "total_housing": 50,
-      "commercial_count": 0,
-      "school_count": 0,
-      "mosque_count": 0,
-      "social_facility_count": 0,
-      "progress_percentage": 0,
-      "start_date": "",
-      "planned_end_date": "",
-      "created_at": "2026-04-06T21:07:25.202234+00:00"
     },
     {
       "id": "6c49e58e-750e-4950-abbe-d01e36691688",
@@ -181,29 +163,6 @@
       "created_at": "2026-04-07T06:36:55.535477+00:00"
     }
   ],
-  "users": [
-    {
-      "email": "test@example.com",
-      "full_name": "Test User",
-      "password": "$2b$12$jd7Nu7kFbYjuI9i52ruPEOHGQjXiXuA3NH/lJcgoEV3LVS7r6sIx2",
-      "role": "user",
-      "created_at": "2026-03-01T22:00:59.821667+00:00"
-    },
-    {
-      "email": "admin@proptech.com",
-      "full_name": "Admin User",
-      "password": "$2b$12$XBmcUXrG185DDjOo2hZETum6KwXqHWcOFP7vmosT/lD1rVdjYV/Oi",
-      "role": "admin",
-      "created_at": "2026-03-01T22:01:16.561215+00:00"
-    },
-    {
-      "email": "ipatarazi@gmail.com",
-      "password": "$2b$12$O1Bl/kqU/zv3kTzJPHEpV.LIoe09NzQ9bt7eGqO5x/hTxSChY0B2.",
-      "full_name": "Admin",
-      "role": "admin",
-      "created_at": "2026-03-04T00:28:53.331Z"
-    }
-  ],
   "project_map_layers": [
     {
       "id": "a7b6d245-dd97-49a0-9985-5de5b1e48072",
@@ -234,6 +193,16 @@
       "file_type": "KMZ",
       "size": 1249515,
       "created_at": "2026-04-06T22:55:31.066778+00:00"
+    },
+    {
+      "id": "3a52e538-3b56-4a80-9919-d814e28bf698",
+      "project_id": "f70c57f6-28a6-4dbd-a4d3-5ea8e4bce6a6",
+      "storage_path": "proptech-turkey/map-layers/f70c57f6-28a6-4dbd-a4d3-5ea8e4bce6a6/cec37b74-9a69-479a-a24a-afd4191d5f39.geojson",
+      "original_filename": "test_layer.geojson",
+      "content_type": "application/geo+json",
+      "file_type": "GEOJSON",
+      "size": 298,
+      "created_at": "2026-04-07T16:15:32.756042+00:00"
     }
   ],
   "project_media": [
@@ -503,8 +472,8 @@
     {
       "name": "Kanal İstanbul",
       "category": "Kanal",
-      "description": "Karadeniz ile Marmara Denizini birleştirecek dev proje. Bölgede konut ve ticari yatırımlar için büyük fırsatlar.",
-      "timeline": "2025-2030",
+      "description": "Karadeniz ile Marmara Denizini birleştirecek dev proje - güncellendi",
+      "timeline": "2025-2032",
       "location": {
         "lat": 41.1094,
         "lng": 28.5646
@@ -593,6 +562,122 @@
       "zoom_link": "",
       "status": "active",
       "updated_at": "2026-03-04T10:37:41.290690+00:00"
+    }
+  ],
+  "app_users": [
+    {
+      "user_id": "user_e77f531cd141",
+      "full_name": "Test User Updated UI",
+      "phone": "05551234567",
+      "email": "testuser@test.com",
+      "password": "$2b$12$W5kClsD5PLJ.g09uO8OTzeRFA.Kyn0X6Oe3tEolR4P8ZtxTrUT7UW",
+      "role": "user",
+      "auth_provider": "email",
+      "created_at": "2026-03-04T02:40:27.615744+00:00",
+      "updated_at": "2026-03-04T03:18:07.941539+00:00",
+      "status": "active",
+      "membership_active": true,
+      "membership_plan": "pro",
+      "membership_end_at": "2026-05-03T00:00:00+00:00",
+      "permissions": {
+        "projects": "view",
+        "parcels": "edit",
+        "maps": "none",
+        "documents": "view"
+      },
+      "admin_note": "UI test note - automated test run",
+      "tags": [
+        "UITest"
+      ]
+    },
+    {
+      "user_id": "user_90e81cb16615",
+      "full_name": "TEST User",
+      "phone": "+905001234567",
+      "email": "TEST_newuser_af87ae@test.com",
+      "password": "$2b$12$bzWI8fywytopBmkuYycoFOENJObcv5LIXlwo.UCPd9Hmyqqa4D30e",
+      "role": "user",
+      "auth_provider": "email",
+      "created_at": "2026-03-04T02:42:09.173824+00:00"
+    },
+    {
+      "user_id": "user_a61c67d3f510",
+      "full_name": "KVKK Test",
+      "phone": "",
+      "email": "TEST_nkvkk_309237@test.com",
+      "password": "$2b$12$745699KmQuQxomfwVGIkge.1HYWaV536b39EXFlPQQyyUAFe2tXxS",
+      "role": "user",
+      "auth_provider": "email",
+      "created_at": "2026-03-04T02:42:09.789451+00:00"
+    },
+    {
+      "user_id": "user_9e39c7bf5a34",
+      "full_name": "UI Test Kullanıcı",
+      "phone": "+905551234567",
+      "email": "testui_592208@test.com",
+      "password": "$2b$12$3GK6cJ6P5OOA2g7h8YEQ1ef9bqxJWf4U9FVlr9X9VpZDwi1VDjC6e",
+      "role": "user",
+      "auth_provider": "email",
+      "created_at": "2026-03-04T02:43:30.231108+00:00"
+    },
+    {
+      "user_id": "user_ae5e9bede5f5",
+      "full_name": "Muhammet ÖZDEMİR",
+      "email": "mrmuhammetozdemir@gmail.com",
+      "phone": "",
+      "password": null,
+      "picture": "https://lh3.googleusercontent.com/a/ACg8ocL9FrgwLB1vHbdBcYfqDoNHCIwPCaI6ZMovQLl80hUY4PeODbRA=s96-c",
+      "role": "user",
+      "auth_provider": "google",
+      "created_at": "2026-03-04T03:13:05.333941+00:00"
+    }
+  ],
+  "yatirim_fonu_basvurulari": [
+    {
+      "id": "6cc30419-72b3-4dcc-abad-1747263c068b",
+      "ad_soyad": "Test Kullanıcı",
+      "telefon": "05551234567",
+      "email": "test@test.com",
+      "sehir": "İstanbul",
+      "meslek": "Mühendis",
+      "yatirim_butcesi": "500.000 TL – 2.000.000 TL",
+      "ilgi_duyulan_bolge": "Arnavutköy",
+      "yatirim_suresi": "3-5 yıl",
+      "aciklama": "Test başvurusu",
+      "genel_bilgilendirme_onay": true,
+      "iletisim_onay": true,
+      "created_at": "2026-03-15T02:46:18.640993+00:00",
+      "status": "pending"
+    },
+    {
+      "id": "1f3ea840-ed77-4c52-870d-fc04a87597ea",
+      "ad_soyad": "Test Kullanıcı",
+      "telefon": "+90 555 123 4567",
+      "email": "test@example.com",
+      "sehir": "İstanbul",
+      "meslek": "Yazılım Mühendisi",
+      "yatirim_butcesi": "2.000.000 TL – 10.000.000 TL",
+      "ilgi_duyulan_bolge": "Yenişehir",
+      "yatirim_suresi": "3-5 yıl",
+      "aciklama": "Test başvuru açıklaması",
+      "genel_bilgilendirme_onay": true,
+      "iletisim_onay": true,
+      "created_at": "2026-03-15T02:48:57.696430+00:00",
+      "status": "pending"
+    }
+  ],
+  "yatirim_fonu_bekleme": [
+    {
+      "id": "93e9c9dd-21b1-454b-b03a-dabddccb3ff8",
+      "ad_soyad": "Test Kullanıcı",
+      "telefon_veya_email": "test@test.com",
+      "created_at": "2026-03-15T02:46:18.852517+00:00"
+    },
+    {
+      "id": "b399a07f-2d0d-4adc-86c0-487042be7812",
+      "ad_soyad": "Test Ad Soyad",
+      "telefon_veya_email": "test@bekleme.com",
+      "created_at": "2026-03-15T02:49:20.711134+00:00"
     }
   ]
 }

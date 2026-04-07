@@ -2300,6 +2300,8 @@ async def startup():
         "projects", "shared_facilities", "project_map_layers", "project_media",
         "courses", "seminars", "land_parcels", "land_opportunities",
         "mega_projects", "market_data", "edu_page_settings", "weekly_live",
+        "app_users", "yatirim_fonu_basvurulari", "yatirim_fonu_bekleme",
+        "seo_settings",
     ]
     for col_name in SEED_COLLECTIONS:
         try:
