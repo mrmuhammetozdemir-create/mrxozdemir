@@ -84,7 +84,6 @@ const SIDEBAR_ITEMS = [
   { id: 'toki', label: 'e-Konut Yönetimi', icon: Building2, color: 'text-blue-600' },
   { id: 'ipat', label: 'e-İPAT Yönetimi', icon: Map, color: 'text-green-600' },
   { id: 'mega', label: 'Mega Projeler', icon: MapPin, color: 'text-cyan-600' },
-  { id: 'shared', label: 'Ortak Tesisler', icon: Layers, color: 'text-emerald-600' },
   { id: 'education', label: 'Eğitim Yönetimi', icon: GraduationCap, color: 'text-amber-600' },
   { id: 'community', label: 'Topluluk Yönetimi', icon: Users, color: 'text-purple-600' },
   { id: 'opportunities', label: 'Arsa Fırsatları', icon: Target, color: 'text-red-600' },
@@ -369,6 +368,7 @@ function TokiManager() {
   const [projectImporting, setProjectImporting] = useState(false);
   const [projectImportResult, setProjectImportResult] = useState(null);
   const [showAgent, setShowAgent] = useState(false);
+  const [subPage, setSubPage] = useState('projects'); // 'projects' | 'shared'
 
   const load = useCallback(async () => {
     const { data } = await api.get('/projects');
@@ -467,6 +467,26 @@ function TokiManager() {
 
   return (
     <div>
+      {/* Alt Sekme Seçici */}
+      <div className="flex gap-1 mb-5 bg-slate-100 rounded-xl p-1 w-fit">
+        <button
+          onClick={() => setSubPage('projects')}
+          className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${subPage === 'projects' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          data-testid="subtab-projects"
+        >
+          <Building2 className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />e-Konut Projeleri
+        </button>
+        <button
+          onClick={() => setSubPage('shared')}
+          className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${subPage === 'shared' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          data-testid="subtab-shared"
+        >
+          <Layers className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />Ortak Tesisler
+        </button>
+      </div>
+
+      {subPage === 'shared' ? <SharedFacilitiesManager /> : (
+      <div>
       {showAgent && <AgentPanel onClose={() => setShowAgent(false)} onRefresh={load} selectedProject={selected} />}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-slate-900">e-Konut Projeleri ({projects.length})</h2>
@@ -519,11 +539,11 @@ function TokiManager() {
           ))}
         </div>
       )}
+      </div>
+      )}
     </div>
   );
 }
-
-// ==================== PROJECT FORM ====================
 function ProjectForm({ project, onSave, onCancel }) {
   const [form, setForm] = useState({
     project_name: '', city: '', district: '', neighborhood: '', description: '',
@@ -1305,7 +1325,6 @@ export default function AdminPanelPage() {
       case 'toki': return <TokiManager />;
       case 'ipat': return <IpatManager />;
       case 'mega': return <MegaManager />;
-      case 'shared': return <SharedFacilitiesManager />;
       case 'education': return <EducationManagerPage />;
       case 'community': return <CommunityManager />;
       case 'opportunities': return <OpportunitiesManager />;
