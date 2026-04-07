@@ -133,10 +133,20 @@ Tam fonksiyonel landing page:
 - İl-İlçe dependent dropdown: districts now derived dynamically from project data
 - **Geolocation added to map (Apr 2026)**: Google Maps-style pulsing blue dot for user location; floating locate button (top-right on map); "Konumumu Göster" + "Yol Tarifi Al" buttons below map
 
+## Mega Projeler Haritası - Apr 2026
+- Tam yeniden yazıldı: Leaflet kaldırıldı, OpenLayers satellite (Google Maps tiles) eklendi
+- Liste/Harita toggle (header'da Harita / Liste butonları)
+- Kategori filtre chip'leri (Tümü, Kanal, TOKİ vb.)
+- Proje marker'ları haritada (kategori renkleriyle); tıklayınca sağ panelde detay
+- Seçili proje beyaz halka overlay ile işaretlendi, harita o konuma pan eder
+- e-Konut ile aynı geolocation özellikleri: Floating locate butonu + "Konumumu Göster" + "Yol Tarifi Al"
+- Mobil: Harita altında seçili proje detay kartı
+- Desktop: Harita sol 2/3, detay paneli sağ 1/3
+
 ## Backlog (Prioritized)
-- P1: e-İPAT module from GitHub
 - P1: Yatırımcı Başvuru Formu email confirmation (Resend/SendGrid)
 - P2: User Dashboard (my courses, my seminars, certificates)
 - P2: Add real seminar/course content via admin panel
 - P2: User-facing pages for each module (detailed TOKI, Land analysis, etc.)
 - P3: Backend modularization (split server.py into FastAPI routers)
+- P3: AdminPanelPage.js component split (1300+ lines)
