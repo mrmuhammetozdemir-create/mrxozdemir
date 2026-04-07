@@ -169,7 +169,7 @@ function DashboardContent({ stats, onNavigate }) {
 // ==================== AI AGENT PANEL ====================
 function AgentPanel({ onClose, onRefresh, selectedProject }) {
   const [messages, setMessages] = useState([
-    { role: 'agent', text: `👋 Merhaba! Ben e-Konut Veri Asistanıyım.\n\n📎 **Dosya Yükle:** Aşağıdaki ataç ikonuna tıklayarak dosya yükleyebilirsiniz:\n• **RAR / ZIP** → KML harita + resimler + dökümanları otomatik işler\n• **KMZ / KML** → Harita katmanı\n• **JPG / PNG** → Proje görseli\n\n💬 **Yazılı Komutlar:**\n• "Proje ekle / güncelle / sil"\n• "İstanbul'daki projeleri listele"\n\n${selectedProject ? `🎯 Seçili Proje: **${selectedProject.project_name}**` : '⚠️ Lütfen önce bir proje seçin.'}` }
+    { role: 'agent', text: `👋 Merhaba! Ben e-Konut Veri Asistanıyım.\n\n📎 **Dosya Yükle:** Ataç ikonuna tıklayarak:\n• **ZIP / RAR** → İçindeki KMZ + resimler + DOCX'tan **otomatik yeni proje oluşturur**\n• **KMZ / KML / GeoJSON** → Seçili projeye harita katmanı ekler\n• **JPG / PNG** → Seçili projeye görsel ekler\n\n💡 **İpucu:** Dosya ekleyip aynı anda proje bilgilerini de yazabilirsiniz:\n_"Ankara Mamak TOKİ, 300 konut, 2025-2027"_\n\n💬 **Yazılı Komutlar:**\n• "Proje ekle / güncelle / sil"\n• "İstanbul'daki projeleri listele"\n\n${selectedProject ? `🎯 Seçili Proje: **${selectedProject.project_name}**` : '📂 Proje seçilmedi — ZIP yüklerseniz yeni proje otomatik oluşturulur.'}` }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -190,28 +190,36 @@ function AgentPanel({ onClose, onRefresh, selectedProject }) {
 
     // --- File upload flow ---
     if (attachedFile) {
-      if (!selectedProject) {
-        setMessages(prev => [...prev, { role: 'agent', text: '⚠️ Harita katmanı eklemek için önce bir proje seçin.' }]);
-        setAttachedFile(null);
-        return;
-      }
       const fileMsg = attachedFile.name;
-      setMessages(prev => [...prev, { role: 'user', text: `📎 ${fileMsg}${input.trim() ? '\n' + input.trim() : ''}` }]);
+      const userText = input.trim();
+      setMessages(prev => [...prev, { role: 'user', text: `📎 ${fileMsg}${userText ? '\n' + userText : ''}` }]);
       setInput('');
       setAttachedFile(null);
       setLoading(true);
       try {
         const formData = new FormData();
-        formData.append('project_id', selectedProject.id);
         formData.append('file', attachedFile);
+        if (selectedProject) formData.append('project_id', selectedProject.id);
+        if (userText) formData.append('message', userText);
+
         const { data } = await api.post('/admin/agent/upload-zip', formData, {
           headers: { ...authHeaders(), 'Content-Type': 'multipart/form-data' }
         });
-        const names = data.added?.map(n => `  • ${n}`).join('\n') || '';
-        setMessages(prev => [...prev, {
-          role: 'agent',
-          text: `✅ ${data.count} harita katmanı **${data.project_name}** projesine eklendi:\n${names}\n\n🗺️ Harita sekmesini açarak kontrol edebilirsiniz.`
-        }]);
+
+        let summary = '';
+        if (data.new_project) {
+          summary += `✨ **Yeni Proje Oluşturuldu:** ${data.new_project.name}`;
+          if (data.new_project.city) summary += ` (${data.new_project.city}${data.new_project.district ? '/' + data.new_project.district : ''})`;
+          summary += '\n';
+        } else {
+          summary += `📁 Proje: **${data.project_name}**\n`;
+        }
+        if (data.layers_count > 0)  summary += `🗺️ ${data.layers_count} harita katmanı eklendi\n`;
+        if (data.images_count > 0)  summary += `🖼️ ${data.images_count} görsel eklendi\n`;
+        if (data.location_updated)  summary += `📍 Koordinat otomatik güncellendi\n`;
+        if (data.description_extracted) summary += `📝 Açıklama DOCX'tan alındı\n`;
+
+        setMessages(prev => [...prev, { role: 'agent', text: summary.trim() || '✅ Dosya işlendi.' }]);
         onRefresh();
       } catch (e) {
         setMessages(prev => [...prev, { role: 'agent', text: `❌ Dosya yüklenemedi: ${e.response?.data?.detail || e.message}` }]);
@@ -232,8 +240,8 @@ function AgentPanel({ onClose, onRefresh, selectedProject }) {
       );
       let resultSummary = '';
       for (const r of (data.results || [])) {
-        if (r.type === 'create' && r.status === 'ok') resultSummary += `\n✅ Oluşturuldu: ${r.name}`;
-        else if (r.type === 'bulk_create' && r.status === 'ok') resultSummary += `\n✅ ${r.count} proje eklendi:\n${r.names.map(n => '  • ' + n).join('\n')}`;
+        if (r.type === 'create' && r.status === 'ok') resultSummary += `\n✅ Oluşturuldu: ${r.names?.join(', ') || ''}`;
+        else if (r.type === 'bulk_create' && r.status === 'ok') resultSummary += `\n✅ ${r.count} proje eklendi:\n${(r.names || []).map(n => '  • ' + n).join('\n')}`;
         else if (r.type === 'update' && r.status === 'ok') resultSummary += `\n✅ Güncellendi: ${r.name}`;
         else if (r.type === 'delete' && r.status === 'ok') resultSummary += `\n🗑️ Silindi: ${r.name}`;
         else if (r.type === 'query' && r.status === 'ok') {

@@ -1877,32 +1877,29 @@ async def agent_chat(body: AgentMessage, admin: dict = Depends(require_admin)):
 # ---- Agent ZIP Upload ----
 @api_router.post("/admin/agent/upload-zip")
 async def agent_upload_zip(
-    project_id: str = Form(...),
     file: UploadFile = File(...),
+    project_id: str = Form(None),     # Optional – if omitted, a new project is created
+    message: str = Form(""),          # User's description text (used when creating new project)
     admin: dict = Depends(require_admin)
 ):
-    """Accept a ZIP/RAR (or single KML/KMZ/GeoJSON/image) and process all contents:
-    - KML/KMZ/GeoJSON → map layers
-    - JPG/PNG/WEBP    → project gallery (auto-resized to max 1280px)
-    - DOCX            → extract description text
+    """Accept a ZIP/RAR (or single KML/KMZ/GeoJSON/image) and process all contents.
+    If no project_id is provided, a new project is created from message + DOCX content.
     """
-    import zipfile, io as _io
+    import zipfile
+    import io as _io
     import rarfile
     from PIL import Image as PilImage
 
-    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
-    if not project:
-        raise HTTPException(status_code=404, detail="Proje bulunamadı")
-
     raw = await file.read()
-    fname = file.filename or ""
+    fname = file.filename or "upload"
     ext = fname.rsplit(".", 1)[-1].lower() if "." in fname else ""
 
-    GEO_EXTS   = {"kml", "kmz", "geojson", "json"}
-    IMG_EXTS   = {"jpg", "jpeg", "png", "webp"}
-    DOC_EXTS   = {"docx"}
+    GEO_EXTS  = {"kml", "kmz", "geojson", "json"}
+    IMG_EXTS  = {"jpg", "jpeg", "png", "webp"}
+    DOC_EXTS  = {"docx"}
+    MIME_TYPES = {"kml":"application/vnd.google-earth.kml+xml","kmz":"application/vnd.google-earth.kmz","geojson":"application/geo+json","json":"application/json"}
 
-    # --- collect (basename, ext, bytes) from archive or single file ---
+    # --- Collect (basename, ext, bytes) from archive or single file ---
     all_files = []
 
     def _add(name, data):
@@ -1919,9 +1916,11 @@ async def agent_upload_zip(
                 if not name.startswith("__MACOSX") and not name.endswith("/"):
                     _add(name, z.read(name))
     elif ext == "rar":
-        import tempfile, os as _os
+        import tempfile
+        import os as _os
         with tempfile.NamedTemporaryFile(suffix=".rar", delete=False) as tmp:
-            tmp.write(raw); tmp_path = tmp.name
+            tmp.write(raw)
+            tmp_path = tmp.name
         try:
             with rarfile.RarFile(tmp_path) as rf:
                 for info in rf.infolist():
@@ -1937,13 +1936,110 @@ async def agent_upload_zip(
     if not all_files:
         raise HTTPException(status_code=400, detail="Desteklenen dosya bulunamadı (KML/KMZ/GeoJSON/JPG/PNG/DOCX)")
 
-    added_layers = []
-    added_images = []
-    description_text = None
-    project_center = None
+    # --- Extract DOCX text early (needed for new-project creation) ---
+    docx_full_text = ""
+    for (orig_name, fext, data) in all_files:
+        if fext == "docx" and not docx_full_text:
+            try:
+                from docx import Document as DocxDoc
+                doc = DocxDoc(_io.BytesIO(data))
+                lines = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
+                docx_full_text = "\n".join(lines[:40])
+            except Exception:
+                pass
+
+    # --- If no project_id provided → create a new project via LLM ---
+    created_project = None
+    if not project_id:
+        llm_key = os.environ.get("EMERGENT_LLM_KEY")
+        project_info = {}
+
+        combined_input = ""
+        if message.strip():
+            combined_input += f"Kullanıcı açıklaması:\n{message.strip()}\n\n"
+        if docx_full_text:
+            combined_input += f"DOCX dosyasından elde edilen metin:\n{docx_full_text[:2000]}\n\n"
+        if not combined_input:
+            combined_input = f"ZIP dosya adı: {fname}"
+
+        if llm_key:
+            try:
+                extraction_prompt = f"""Aşağıdaki bilgilerden e-Konut projesi verilerini çıkar ve SADECE geçerli JSON döndür:
+
+{combined_input}
+
+Çıkarılacak JSON şeması (bilinmeyenler için boş bırak, sayılar için 0 kullan):
+{{
+  "project_name": "Zorunlu - proje adı",
+  "city": "İl adı",
+  "district": "İlçe adı",
+  "neighborhood": "Mahalle adı",
+  "description": "Proje açıklaması",
+  "project_type": "TOKİ veya Emlak Konut veya Özel Proje",
+  "total_housing": 0,
+  "progress_percentage": 0,
+  "start_date": "YYYY-MM-DD veya boş",
+  "planned_end_date": "YYYY-MM-DD veya boş"
+}}
+
+Önemli: project_name zorunludur. Bulunamazsa dosya adından türet: {fname.rsplit('.', 1)[0].replace('-', ' ').replace('_', ' ').title()}"""
+
+                from emergentintegrations.llm.chat import LlmChat, UserMessage as LlmUserMessage
+                chat = LlmChat(
+                    api_key=llm_key,
+                    session_id=f"zip_extract_{uuid.uuid4()}",
+                    system_message="Sen bir veri çıkarma asistanısın. Sadece geçerli JSON döndür, başka hiçbir şey yazma."
+                ).with_model("anthropic", "claude-sonnet-4-5-20250929")
+                raw_resp = await chat.send_message(LlmUserMessage(text=extraction_prompt))
+                raw_resp = raw_resp.strip()
+                if "```json" in raw_resp:
+                    raw_resp = raw_resp.split("```json")[1].split("```")[0].strip()
+                elif "```" in raw_resp:
+                    raw_resp = raw_resp.split("```")[1].split("```")[0].strip()
+                project_info = json.loads(raw_resp)
+            except Exception:
+                project_info = {}
+
+        # Fallback name from filename
+        if not project_info.get("project_name"):
+            project_info["project_name"] = fname.rsplit(".", 1)[0].replace("-", " ").replace("_", " ").title()
+
+        new_project = {
+            "id": str(uuid.uuid4()),
+            "project_name": project_info.get("project_name", "Yeni Proje"),
+            "city":         project_info.get("city", ""),
+            "district":     project_info.get("district", ""),
+            "neighborhood": project_info.get("neighborhood", ""),
+            "description":  project_info.get("description", docx_full_text[:500] if docx_full_text else ""),
+            "project_type": project_info.get("project_type", "TOKİ"),
+            "total_housing":         int(project_info.get("total_housing", 0) or 0),
+            "commercial_count":      0,
+            "school_count":          0,
+            "mosque_count":          0,
+            "social_facility_count": 0,
+            "progress_percentage":   int(project_info.get("progress_percentage", 0) or 0),
+            "start_date":       project_info.get("start_date", ""),
+            "planned_end_date": project_info.get("planned_end_date", ""),
+            "youtube_videos":   [],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.projects.insert_one(new_project)
+        new_project.pop("_id", None)
+        project_id = new_project["id"]
+        created_project = new_project
+    else:
+        # Verify existing project
+        existing = await db.projects.find_one({"id": project_id}, {"_id": 0})
+        if not existing:
+            raise HTTPException(status_code=404, detail="Proje bulunamadı")
+
+    # --- Process all files ---
+    added_layers  = []
+    added_images  = []
+    description_text = docx_full_text or None
+    project_center   = None
 
     def _compress_image(data: bytes) -> bytes:
-        """Resize image to max 1280px wide and compress."""
         img = PilImage.open(_io.BytesIO(data))
         img.thumbnail((1280, 960), PilImage.LANCZOS)
         if img.mode in ("RGBA", "P"):
@@ -1953,7 +2049,7 @@ async def agent_upload_zip(
         return buf.getvalue()
 
     for (orig_name, fext, data) in all_files:
-        # --- Geo files → map layers ---
+        # Geo files → map layers
         if fext in GEO_EXTS:
             storage_path = f"{APP_NAME}/map-layers/{project_id}/{uuid.uuid4()}.{fext}"
             content_type = MIME_TYPES.get(fext, "application/octet-stream")
@@ -1970,7 +2066,6 @@ async def agent_upload_zip(
             }
             await db.project_map_layers.insert_one(layer)
             added_layers.append(orig_name)
-            # Auto-extract centroid from any geo file
             if project_center is None:
                 try:
                     if fext in ("kml", "kmz"):
@@ -1980,7 +2075,7 @@ async def agent_upload_zip(
                 except Exception:
                     pass
 
-        # --- Images → project media (auto-resized) ---
+        # Images → project media (auto-resized)
         elif fext in IMG_EXTS:
             try:
                 compressed = _compress_image(data)
@@ -2003,34 +2098,38 @@ async def agent_upload_zip(
             await db.project_media.insert_one(media_doc)
             added_images.append(orig_name)
 
-        # --- DOCX → extract description ---
-        elif fext in DOC_EXTS and description_text is None:
-            try:
-                from docx import Document as DocxDoc
-                doc = DocxDoc(_io.BytesIO(data))
-                lines = [p.text.strip() for p in doc.paragraphs if p.text.strip()][:30]
-                description_text = "\n".join(lines[:15])
-            except Exception:
-                pass
-
-    # Save location & description updates
+    # Save location & description to project
     update_fields = {}
     if project_center:
         update_fields["location"] = project_center
-    if description_text and not project.get("description"):
-        update_fields["description"] = description_text
+    if description_text and not created_project:
+        # For new projects description already set; for existing only fill if empty
+        existing_desc = (await db.projects.find_one({"id": project_id}, {"_id": 0, "description": 1}) or {}).get("description", "")
+        if not existing_desc:
+            update_fields["description"] = description_text[:500]
     if update_fields:
         await db.projects.update_one({"id": project_id}, {"$set": update_fields})
 
-    return {
-        "added_layers": added_layers,
-        "added_images": added_images,
-        "layers_count": len(added_layers),
-        "images_count": len(added_images),
-        "project_name": project.get("project_name", ""),
-        "location_updated": project_center is not None,
+    project_doc = await db.projects.find_one({"id": project_id}, {"_id": 0, "project_name": 1})
+    project_name = project_doc.get("project_name", "") if project_doc else (created_project or {}).get("project_name", "")
+
+    response = {
+        "added_layers":          added_layers,
+        "added_images":          added_images,
+        "layers_count":          len(added_layers),
+        "images_count":          len(added_images),
+        "project_name":          project_name,
+        "location_updated":      project_center is not None,
         "description_extracted": description_text is not None,
     }
+    if created_project:
+        response["new_project"] = {
+            "id":   created_project["id"],
+            "name": created_project["project_name"],
+            "city": created_project.get("city", ""),
+            "district": created_project.get("district", ""),
+        }
+    return response
 
 # ============= SHARED FACILITIES =============
 
