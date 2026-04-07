@@ -542,7 +542,7 @@ async def get_projects(city: Optional[str] = None, district: Optional[str] = Non
         query["project_name"] = {"$regex": project_name, "$options": "i"}
     if project_type:
         query["project_type"] = project_type
-    projects = await db.projects.find(query, {"_id": 0}).to_list(1000)
+    projects = await db.projects.find(query, {"_id": 0}).limit(500).to_list(500)
     return projects
 
 @api_router.get("/projects/{project_id}")
@@ -626,7 +626,7 @@ async def create_ada(project_id: str, admin: dict = Depends(require_admin), ada_
 
 @api_router.get("/projects/{project_id}/adas")
 async def get_adas(project_id: str):
-    adas = await db.project_adas.find({"project_id": project_id}, {"_id": 0}).sort("ada_no", 1).to_list(1000)
+    adas = await db.project_adas.find({"project_id": project_id}, {"_id": 0}).sort("ada_no", 1).limit(500).to_list(500)
     return adas
 
 @api_router.put("/admin/adas/{ada_id}")
@@ -668,7 +668,7 @@ async def create_parsel(ada_id: str, admin: dict = Depends(require_admin), parse
 
 @api_router.get("/projects/{project_id}/parsels")
 async def get_parsels(project_id: str):
-    parsels = await db.project_parsels.find({"project_id": project_id}, {"_id": 0}).to_list(10000)
+    parsels = await db.project_parsels.find({"project_id": project_id}, {"_id": 0}).limit(5000).to_list(5000)
     return parsels
 
 @api_router.put("/admin/parsels/{parsel_id}")
@@ -935,7 +935,7 @@ async def get_project_media(project_id: str, category: Optional[str] = None):
     query = {"project_id": project_id}
     if category:
         query["category"] = category
-    media = await db.project_media.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    media = await db.project_media.find(query, {"_id": 0}).sort("created_at", -1).limit(500).to_list(500)
     return media
 
 @api_router.delete("/admin/media/{media_id}")
@@ -978,7 +978,7 @@ async def upload_document(project_id: str, file: UploadFile = File(...), title: 
 
 @api_router.get("/projects/{project_id}/documents")
 async def get_project_documents(project_id: str):
-    docs = await db.project_documents.find({"project_id": project_id}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    docs = await db.project_documents.find({"project_id": project_id}, {"_id": 0}).sort("created_at", -1).limit(500).to_list(500)
     return docs
 
 @api_router.delete("/admin/documents/{doc_id}")
@@ -1094,7 +1094,7 @@ async def get_toki_projects(city: Optional[str] = None, district: Optional[str] 
         query["district"] = {"$regex": district, "$options": "i"}
     if project_name:
         query["project_name"] = {"$regex": project_name, "$options": "i"}
-    return await db.projects.find(query, {"_id": 0}).to_list(1000)
+    return await db.projects.find(query, {"_id": 0}).limit(500).to_list(500)
 
 @api_router.get("/toki/projects/{project_id}")
 async def get_toki_project(project_id: str):
@@ -1141,9 +1141,9 @@ async def create_mega_project(
 
 @api_router.get("/mega-projects")
 async def get_mega_projects():
-    projects = await db.mega_projects.find({}, {"_id": 0}).to_list(1000)
+    projects = await db.mega_projects.find({}, {"_id": 0}).limit(500).to_list(500)
     # Also include all projects from projects collection (auto-map)
-    all_projects = await db.projects.find({}, {"_id": 0, "id": 1, "project_name": 1, "city": 1, "district": 1, "project_type": 1, "location": 1, "progress_percentage": 1}).to_list(1000)
+    all_projects = await db.projects.find({}, {"_id": 0, "id": 1, "project_name": 1, "city": 1, "district": 1, "project_type": 1, "location": 1, "progress_percentage": 1}).limit(500).to_list(500)
     for p in all_projects:
         if p.get("location"):
             projects.append({
@@ -1203,7 +1203,7 @@ async def get_land_parcels(city: Optional[str] = None, district: Optional[str] =
         query["city"] = {"$regex": city, "$options": "i"}
     if district:
         query["district"] = {"$regex": district, "$options": "i"}
-    parcels = await db.land_parcels.find(query, {"_id": 0}).to_list(1000)
+    parcels = await db.land_parcels.find(query, {"_id": 0}).limit(500).to_list(500)
     return parcels
 
 @api_router.put("/admin/land-parcels/{parcel_id}")
@@ -1296,11 +1296,11 @@ class LiveArchiveCreate(BaseModel):
 
 @api_router.get("/education/courses")
 async def list_edu_courses():
-    return await db.courses.find({"status": "active"}, {"_id": 0}).sort("order", 1).to_list(1000)
+    return await db.courses.find({"status": "active"}, {"_id": 0}).sort("order", 1).limit(500).to_list(500)
 
 @api_router.get("/courses")  # backward compat
 async def get_courses():
-    return await db.courses.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return await db.courses.find({}, {"_id": 0}).sort("created_at", -1).limit(500).to_list(500)
 
 @api_router.get("/education/courses/{course_id}")
 async def get_edu_course(course_id: str):
@@ -1310,11 +1310,11 @@ async def get_edu_course(course_id: str):
 
 @api_router.get("/education/seminars")
 async def list_edu_seminars():
-    return await db.seminars.find({"status": "active"}, {"_id": 0}).sort("date", -1).to_list(1000)
+    return await db.seminars.find({"status": "active"}, {"_id": 0}).sort("date", -1).limit(500).to_list(500)
 
 @api_router.get("/seminars")  # backward compat
 async def get_seminars():
-    return await db.seminars.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return await db.seminars.find({}, {"_id": 0}).sort("created_at", -1).limit(500).to_list(500)
 
 @api_router.post("/education/seminars/{seminar_id}/register")
 async def register_for_seminar(seminar_id: str, data: SeminarRegistrationCreate):
@@ -1353,7 +1353,7 @@ async def get_my_seminars(request: Request):
 
 @api_router.get("/admin/education/courses")
 async def admin_list_courses(admin: dict = Depends(require_admin)):
-    return await db.courses.find({}, {"_id": 0}).sort("order", 1).to_list(1000)
+    return await db.courses.find({}, {"_id": 0}).sort("order", 1).limit(500).to_list(500)
 
 @api_router.post("/admin/education/courses")
 async def admin_create_course(data: CourseCreate, admin: dict = Depends(require_admin)):
@@ -1416,7 +1416,7 @@ async def admin_delete_lesson(course_id: str, module_id: str, lesson_id: str, ad
 
 @api_router.get("/admin/education/seminars")
 async def admin_list_seminars(admin: dict = Depends(require_admin)):
-    seminars = await db.seminars.find({}, {"_id": 0}).sort("date", -1).to_list(1000)
+    seminars = await db.seminars.find({}, {"_id": 0}).sort("date", -1).limit(500).to_list(500)
     for s in seminars:
         s["registration_count"] = await db.seminar_registrations.count_documents({"seminar_id": s["id"]})
     return seminars
@@ -1442,7 +1442,7 @@ async def admin_delete_seminar(seminar_id: str, admin: dict = Depends(require_ad
 
 @api_router.get("/admin/education/seminars/{seminar_id}/registrations")
 async def admin_seminar_registrations(seminar_id: str, admin: dict = Depends(require_admin)):
-    return await db.seminar_registrations.find({"seminar_id": seminar_id}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return await db.seminar_registrations.find({"seminar_id": seminar_id}, {"_id": 0}).sort("created_at", -1).limit(500).to_list(500)
 
 # --- Admin Live Training ---
 
@@ -1499,7 +1499,7 @@ async def list_edu_media(folder: str = Query(""), search: str = Query(""), admin
     query = {}
     if folder: query["folder"] = folder
     if search: query["name"] = {"$regex": search, "$options": "i"}
-    return await db.education_media.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return await db.education_media.find(query, {"_id": 0}).sort("created_at", -1).limit(500).to_list(500)
 
 @api_router.delete("/admin/education/media/{media_id}")
 async def delete_edu_media(media_id: str, admin: dict = Depends(require_admin)):
@@ -1556,7 +1556,7 @@ async def create_post(title: str = Form(...), content: str = Form(...), category
 @api_router.get("/community/posts")
 async def get_posts(category: Optional[str] = None):
     query = {} if not category else {"category": category}
-    return await db.community_posts.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return await db.community_posts.find(query, {"_id": 0}).sort("created_at", -1).limit(500).to_list(500)
 
 @api_router.delete("/admin/community/posts/{post_id}")
 async def delete_post(post_id: str, admin: dict = Depends(require_admin)):
@@ -1589,7 +1589,7 @@ async def create_opportunity(
 
 @api_router.get("/opportunities")
 async def get_opportunities():
-    return await db.land_opportunities.find({}, {"_id": 0}).to_list(1000)
+    return await db.land_opportunities.find({}, {"_id": 0}).limit(500).to_list(500)
 
 @api_router.delete("/admin/opportunities/{opp_id}")
 async def delete_opportunity(opp_id: str, admin: dict = Depends(require_admin)):
@@ -1620,7 +1620,7 @@ async def create_market_data(
 @api_router.get("/market-data")
 async def get_market_data(city: Optional[str] = None):
     query = {} if not city else {"city": {"$regex": city, "$options": "i"}}
-    return await db.market_data.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return await db.market_data.find(query, {"_id": 0}).sort("created_at", -1).limit(500).to_list(500)
 
 @api_router.delete("/admin/market-data/{data_id}")
 async def delete_market_data(data_id: str, admin: dict = Depends(require_admin)):
@@ -1673,11 +1673,11 @@ async def join_bekleme_listesi(data: BeklemeListesiCreate):
 
 @api_router.get("/admin/yatirim-fonu/basvurular")
 async def get_yatirim_fonu_basvurulari(admin: dict = Depends(require_admin)):
-    return await db.yatirim_fonu_basvurulari.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return await db.yatirim_fonu_basvurulari.find({}, {"_id": 0}).sort("created_at", -1).limit(500).to_list(500)
 
 @api_router.get("/admin/yatirim-fonu/bekleme-listesi")
 async def get_bekleme_listesi_admin(admin: dict = Depends(require_admin)):
-    return await db.yatirim_fonu_bekleme.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return await db.yatirim_fonu_bekleme.find({}, {"_id": 0}).sort("created_at", -1).limit(500).to_list(500)
 
 # ============= ADMIN STATS =============
 
