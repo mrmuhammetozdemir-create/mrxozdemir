@@ -1996,17 +1996,18 @@ async def startup():
         logger.info("Object Storage initialized successfully")
     except Exception as e:
         logger.error(f"Object Storage init failed: {e}")
-    # Ensure admin user exists
-    admin = await db.users.find_one({"email": "ipatarazi@gmail.com"})
-    if not admin:
-        await db.users.insert_one({
+    # Ensure admin user exists (always update password to stay in sync)
+    await db.users.update_one(
+        {"email": "ipatarazi@gmail.com"},
+        {"$set": {
             "email": "ipatarazi@gmail.com",
             "full_name": "Admin",
             "password": hash_password("As537273"),
             "role": "admin",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        })
-        logger.info("Admin user created")
+        }},
+        upsert=True
+    )
+    logger.info("Admin user ensured")
 
     # ---- Seed initial projects if empty ----
     project_count = await db.projects.count_documents({})
