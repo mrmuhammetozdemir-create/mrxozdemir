@@ -9,6 +9,8 @@ import {
 import api from '@/utils/api';
 import { toast } from 'sonner';
 
+const API_BASE = process.env.REACT_APP_BACKEND_URL;
+
 // ============================================================
 // Category colors
 // ============================================================
@@ -50,6 +52,7 @@ function OLMegaMap({ projects, selectedProject, onSelectProject }) {
       const ol = await import('ol');
       const { Tile: TileLayer, Vector: VectorLayer } = await import('ol/layer');
       const { XYZ, Vector: VectorSource } = await import('ol/source');
+      const { KML, GeoJSON } = await import('ol/format');
       const { fromLonLat } = await import('ol/proj');
       const { Style, Fill, Stroke, Circle: CircleStyle, Text: OlText } = await import('ol/style');
       const { Point } = await import('ol/geom');
@@ -125,10 +128,59 @@ function OLMegaMap({ projects, selectedProject, onSelectProject }) {
         map.getTargetElement().style.cursor = map.hasFeatureAtPixel(evt.pixel) ? 'pointer' : '';
       });
 
-      // Fit view to markers
+      // Fit view to markers FIRST (before async KMZ loading)
       const extent = source.getExtent();
       if (extent && !extent.some(v => !isFinite(v))) {
-        map.getView().fit(extent, { padding: [60, 60, 60, 60], maxZoom: 11, duration: 600 });
+        const [minX, minY, maxX, maxY] = extent;
+        // If all markers at same point, animate directly; else fit to extent
+        if (Math.abs(maxX - minX) < 100 && Math.abs(maxY - minY) < 100) {
+          map.getView().animate({ center: [(minX + maxX) / 2, (minY + maxY) / 2], zoom: 13, duration: 600 });
+        } else {
+          map.getView().fit(extent, { padding: [60, 60, 60, 60], maxZoom: 13, duration: 600 });
+        }
+      }
+
+      // ---- Load KML/GeoJSON map layers from projects collection (async, after fit) ----
+      const kmlStyle = new Style({
+        fill: new Fill({ color: 'rgba(0, 229, 255, 0.22)' }),
+        stroke: new Stroke({ color: '#00b4d8', width: 2.5 }),
+        image: new CircleStyle({
+          radius: 6,
+          fill: new Fill({ color: '#00e5ff' }),
+          stroke: new Stroke({ color: '#0ea5e9', width: 1.5 }),
+        }),
+      });
+
+      const fromProjs = valid.filter(p => p.from_projects);
+      for (const proj of fromProjs) {
+        if (destroyed) break;
+        try {
+          const { data: layerList } = await api.get(`/projects/${proj.id}/map-layers`);
+          for (const layer of layerList) {
+            if (destroyed) break;
+            try {
+              let vectorSource;
+              if (layer.file_type === 'KML' || layer.file_type === 'KMZ') {
+                const resp = await fetch(`${API_BASE}/api/projects/${proj.id}/map-layers/${layer.id}/data`);
+                const kmlText = await resp.text();
+                const feats = new KML({ extractStyles: false }).readFeatures(kmlText, {
+                  dataProjection: 'EPSG:4326', featureProjection: 'EPSG:3857',
+                });
+                vectorSource = new VectorSource({ features: feats });
+              } else if (layer.file_type === 'GEOJSON' || layer.file_type === 'JSON') {
+                const resp = await fetch(`${API_BASE}/api/projects/${proj.id}/map-layers/${layer.id}/data`);
+                const geoData = await resp.json();
+                const feats = new GeoJSON().readFeatures(geoData, {
+                  dataProjection: 'EPSG:4326', featureProjection: 'EPSG:3857',
+                });
+                vectorSource = new VectorSource({ features: feats });
+              }
+              if (vectorSource && !destroyed) {
+                map.addLayer(new VectorLayer({ source: vectorSource, style: kmlStyle, zIndex: 3 }));
+              }
+            } catch (e) { console.warn('Katman yüklenemedi:', layer.original_filename, e); }
+          }
+        } catch (e) { console.warn('Proje katmanları alınamadı:', proj.id); }
       }
     };
 

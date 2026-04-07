@@ -1138,47 +1138,103 @@ function SharedFacilitiesManager() {
 
 // ==================== MEGA PROJECTS MANAGER ====================
 function MegaManager() {
-  const [projects, setProjects] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', category: '', description: '', timeline: '', location_lat: 41.0082, location_lng: 28.9784 });
-  const CATS = ['köprü', 'havalimanı', 'metro', 'otoyol', 'kanal', 'sanayi bölgesi', 'diğer'];
+  const [projects, setProjects]       = useState([]);
+  const [showForm, setShowForm]       = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
+  const EMPTY_FORM = { name: '', category: '', description: '', timeline: '', location_lat: 41.0082, location_lng: 28.9784 };
+  const [form, setForm] = useState(EMPTY_FORM);
+  const CATS = ['Köprü', 'Havalimanı', 'Metro', 'Otoyol', 'Kanal', 'Sanayi Bölgesi', 'TOKİ', 'Diğer'];
 
   const load = useCallback(async () => { const { data } = await api.get('/mega-projects'); setProjects(data); }, []);
   useEffect(() => { load(); }, [load]);
 
+  const resetForm = () => { setShowForm(false); setEditingProject(null); setForm(EMPTY_FORM); };
+
+  const startEdit = (p) => {
+    setEditingProject(p);
+    setForm({ name: p.name || '', category: p.category || '', description: p.description || '', timeline: p.timeline || '', location_lat: p.location?.lat || 41.0082, location_lng: p.location?.lng || 28.9784 });
+    setShowForm(true);
+  };
+
   const submit = async (e) => {
     e.preventDefault();
     const fd = new FormData(); Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-    try { await api.post('/admin/mega-projects', fd, { headers: authHeaders() }); toast.success('Mega proje eklendi'); setShowForm(false); setForm({ name: '', category: '', description: '', timeline: '', location_lat: 41.0082, location_lng: 28.9784 }); load(); }
-    catch (err) { toast.error(err.response?.data?.detail || 'Hata'); }
+    try {
+      if (editingProject) {
+        await api.put(`/admin/mega-projects/${editingProject.id}`, fd, { headers: authHeaders() });
+        toast.success('Mega proje güncellendi');
+      } else {
+        await api.post('/admin/mega-projects', fd, { headers: authHeaders() });
+        toast.success('Mega proje eklendi');
+      }
+      resetForm(); load();
+    } catch (err) { toast.error(err.response?.data?.detail || 'Hata'); }
   };
-  const del = async (id) => { if (!window.confirm('Silinsin mi?')) return; await api.delete(`/admin/mega-projects/${id}`, { headers: authHeaders() }); toast.success('Silindi'); load(); };
+
+  const del = async (id) => {
+    if (!window.confirm('Silinsin mi?')) return;
+    await api.delete(`/admin/mega-projects/${id}`, { headers: authHeaders() });
+    toast.success('Silindi'); load();
+  };
 
   const manualProjects = projects.filter(p => !p.from_projects);
-  const autoProjects = projects.filter(p => p.from_projects);
+  const autoProjects   = projects.filter(p => p.from_projects);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-slate-900">Mega Projeler</h2>
-        <Button onClick={() => setShowForm(!showForm)} className="bg-cyan-600 hover:bg-cyan-700" data-testid="new-mega-btn"><Plus className="w-4 h-4 mr-2" />Yeni Mega Proje</Button>
+        <Button onClick={() => { resetForm(); setShowForm(v => !v); }} className="bg-cyan-600 hover:bg-cyan-700" data-testid="new-mega-btn">
+          <Plus className="w-4 h-4 mr-2" />Yeni Mega Proje
+        </Button>
       </div>
+
       {showForm && (
-        <Card className="p-5 mb-4">
-          <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div><Label className="text-xs">Proje Adı *</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required className="mt-1" /></div>
-            <div><Label className="text-xs">Kategori *</Label>
+        <Card className="p-5 mb-5 border-cyan-200 bg-cyan-50/40">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-slate-800">{editingProject ? '✏️ Mega Proje Düzenle' : '➕ Yeni Mega Proje'}</h3>
+            <button onClick={resetForm} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>
+          </div>
+          <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs font-semibold">Proje Adı *</Label>
+              <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required placeholder="Örn: Kanal İstanbul" className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs font-semibold">Kategori *</Label>
               <Select value={form.category} onValueChange={v => setForm({ ...form, category: v })}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="Seçiniz" /></SelectTrigger>
                 <SelectContent>{CATS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><Label className="text-xs">Zaman Çizelgesi</Label><Input value={form.timeline} onChange={e => setForm({ ...form, timeline: e.target.value })} placeholder="2024-2026" className="mt-1" /></div>
-            <div className="md:col-span-2"><Label className="text-xs">Açıklama</Label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} className="mt-1" /></div>
-            <div className="flex items-end gap-2"><Button type="submit" className="bg-cyan-600"><Check className="w-4 h-4 mr-1" />Kaydet</Button><Button type="button" variant="outline" onClick={() => setShowForm(false)}>İptal</Button></div>
+            <div>
+              <Label className="text-xs font-semibold">Zaman Çizelgesi</Label>
+              <Input value={form.timeline} onChange={e => setForm({ ...form, timeline: e.target.value })} placeholder="2024-2030" className="mt-1" />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label className="text-xs font-semibold">Enlem (Lat)</Label>
+                <Input type="number" step="any" value={form.location_lat} onChange={e => setForm({ ...form, location_lat: parseFloat(e.target.value) || 41.0082 })} className="mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs font-semibold">Boylam (Lng)</Label>
+                <Input type="number" step="any" value={form.location_lng} onChange={e => setForm({ ...form, location_lng: parseFloat(e.target.value) || 28.9784 })} className="mt-1" />
+              </div>
+            </div>
+            <div className="md:col-span-2">
+              <Label className="text-xs font-semibold">Açıklama</Label>
+              <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Proje hakkında detaylı açıklama giriniz..." className="mt-1" />
+            </div>
+            <div className="md:col-span-2 flex gap-2">
+              <Button type="submit" className="bg-cyan-600 hover:bg-cyan-700">
+                <Check className="w-4 h-4 mr-1" />{editingProject ? 'Güncelle' : 'Kaydet'}
+              </Button>
+              <Button type="button" variant="outline" onClick={resetForm}>İptal</Button>
+            </div>
           </form>
         </Card>
       )}
+
       {autoProjects.length > 0 && (
         <div className="mb-4">
           <h3 className="text-sm font-semibold text-slate-500 mb-2">TOKİ Projelerinden Otomatik ({autoProjects.length})</h3>
@@ -1192,13 +1248,43 @@ function MegaManager() {
           </div>
         </div>
       )}
-      {manualProjects.length === 0 ? <Card className="p-8 text-center"><MapPin className="w-10 h-10 text-slate-300 mx-auto mb-2" /><p className="text-slate-500">Manuel mega proje eklenmemiş</p></Card> :
-        <div className="space-y-2">{manualProjects.map(p => (
-          <Card key={p.id} className="p-3 flex items-center justify-between" data-testid={`mega-${p.id}`}>
-            <div><span className="font-bold text-sm">{p.name}</span><Badge className="ml-2 bg-cyan-100 text-cyan-700 text-[10px]">{p.category}</Badge><p className="text-xs text-slate-500 mt-0.5">{p.description}</p></div>
-            <Button variant="ghost" size="sm" className="text-red-500" onClick={() => del(p.id)}><Trash2 className="w-4 h-4" /></Button>
-          </Card>
-        ))}</div>}
+
+      {manualProjects.length === 0 ? (
+        <Card className="p-8 text-center border-dashed">
+          <MapPin className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+          <p className="text-slate-500">Manuel mega proje eklenmemiş</p>
+        </Card>
+      ) : (
+        <div className="space-y-2">
+          {manualProjects.map(p => (
+            <Card key={p.id} className="p-4" data-testid={`mega-${p.id}`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="font-bold text-sm text-slate-900">{p.name}</span>
+                    <Badge className="bg-cyan-100 text-cyan-700 text-[10px]">{p.category}</Badge>
+                    {p.timeline && <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{p.timeline}</span>}
+                  </div>
+                  {p.description && <p className="text-xs text-slate-600 line-clamp-2 mb-1">{p.description}</p>}
+                  {p.location && (
+                    <span className="text-[10px] text-slate-400 flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />{p.location.lat?.toFixed(4)}, {p.location.lng?.toFixed(4)}
+                    </span>
+                  )}
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  <Button variant="ghost" size="sm" className="text-blue-500 hover:bg-blue-50 h-8 w-8 p-0" onClick={() => startEdit(p)} data-testid={`edit-mega-${p.id}`}>
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 h-8 w-8 p-0" onClick={() => del(p.id)} data-testid={`del-mega-${p.id}`}>
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

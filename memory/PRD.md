@@ -142,6 +142,8 @@ Tam fonksiyonel landing page:
 - e-Konut ile aynı geolocation özellikleri: Floating locate butonu + "Konumumu Göster" + "Yol Tarifi Al"
 - Mobil: Harita altında seçili proje detay kartı
 - Desktop: Harita sol 2/3, detay paneli sağ 1/3
+- **KMZ/GeoJSON katmanları**: from_projects projelerinin harita katmanları Mega Projeler haritasında da cyan renkte gösterilir
+- **Admin Edit**: Düzenle butonu, açıklama alanı, koordinat (lat/lng) alanları eklendi; PUT endpoint ile güncelleme
 
 ## Backlog (Prioritized)
 - P1: Yatırımcı Başvuru Formu email confirmation (Resend/SendGrid)
