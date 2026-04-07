@@ -6,9 +6,11 @@ import { ArrowLeft, TrendingUp as TrendIcon } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import { useSEO } from '@/hooks/useSEO';
 
 export default function MarketAnalysisPage() {
   const navigate = useNavigate();
+  useSEO('piyasa', { title: 'Piyasa Analizi | mrxakademi' });
   const [marketData, setMarketData] = useState([]);
   const [loading, setLoading] = useState(true);
 

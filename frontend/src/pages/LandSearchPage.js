@@ -8,9 +8,11 @@ import { ArrowLeft, Search, Map as MapIcon } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 import LoginRequiredModal from '@/components/LoginRequiredModal';
+import { useSEO } from '@/hooks/useSEO';
 
 export default function LandSearchPage() {
   const navigate = useNavigate();
+  useSEO('ipat', { title: 'e-İPAT Arsa Analizi | mrxakademi' });
   const [city, setCity] = useState('');
   const [district, setDistrict] = useState('');
   const [neighborhood, setNeighborhood] = useState('');

@@ -9,6 +9,7 @@ import api from '@/utils/api';
 import SeminarRegistrationModal from '@/components/SeminarRegistrationModal';
 import LoginRequiredModal from '@/components/LoginRequiredModal';
 import { toast } from 'sonner';
+import { useSEO } from '@/hooks/useSEO';
 
 const BACKEND = process.env.REACT_APP_BACKEND_URL;
 const fileUrl = (p) => p ? `${BACKEND}/api/files/${p}` : null;
@@ -43,6 +44,7 @@ const LEVEL_COLORS = { 'başlangıç': 'bg-emerald-900/60 text-emerald-300', 'or
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function EducationPage() {
   const navigate = useNavigate();
+  useSEO('egitim', { title: 'Eğitim Platformu | mrxakademi' });
   const [seminars, setSeminars] = useState(STATIC_SEMINARS);
   const [courses, setCourses] = useState(STATIC_COURSES);
   const [liveData, setLiveData] = useState(null);

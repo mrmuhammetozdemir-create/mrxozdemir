@@ -679,5 +679,99 @@
       "telefon_veya_email": "test@bekleme.com",
       "created_at": "2026-03-15T02:49:20.711134+00:00"
     }
+  ],
+  "seo_settings": [
+    {
+      "page_id": "home",
+      "page_name": "Ana Sayfa",
+      "path": "/",
+      "title": "TOKİ Analizi, Arazi Parsel Sorgulama & Emlak Eğitimi | mrxakademi",
+      "description": "Türkiye'nin lider PropTech platformu. TOKİ konut projeleri, mega altyapı haritaları, e-İPAT arazi analizi ve gayrimenkul yatırım eğitimleriyle kazanın.",
+      "keywords": "toki projesi analizi, arazi parsel sorgulama, e-ipat analiz, gayrimenkul eğitimi, proptech türkiye, mega altyapı projeleri, emlak yatırımı, konut projesi analizi, arazi değerleme, gayrimenkul danışmanlık",
+      "og_title": "TOKİ & Arazi Analizi + Gayrimenkul Eğitimleri | mrxakademi",
+      "og_description": "TOKİ projeleri, e-İPAT arazi analizi, mega altyapı haritaları ve profesyonel emlak eğitimleri. Hemen keşfet!",
+      "og_image": "",
+      "robots": "index,follow",
+      "updated_at": "2026-04-07T17:14:27.523055+00:00"
+    },
+    {
+      "page_id": "e-konut",
+      "page_name": "e-Konut Projeleri",
+      "path": "/toki",
+      "title": "TOKİ Projeleri Harita ve İstatistikleri | mrxakademi",
+      "description": "İstanbul Arnavutköy, Mamak ve tüm illerdeki TOKİ konut projelerini harita üzerinde inceleyin. Proje ilerlemeleri, konut sayıları ve sosyal tesisleri keşfedin.",
+      "keywords": "toki projeleri, toki harita, toki konutları, arnavutköy toki, mamak toki, toki istatistikleri, toki sosyal tesisler, toki proje ilerlemeleri, toki konut sayısı, e-konut, toki başvuru, toki kura",
+      "og_title": "TOKİ Projeleri Harita - Tüm İller ve İstatistikler",
+      "og_description": "TOKİ konut projelerini harita üzerinde inceleyin. Proje ilerlemeleri, konut sayıları ve sosyal tesisler.",
+      "og_image": "",
+      "robots": "index,follow",
+      "updated_at": "2026-04-07T17:14:33.182244+00:00"
+    },
+    {
+      "page_id": "mega-projects",
+      "page_name": "Mega Projeler",
+      "path": "/mega-projects",
+      "title": "Türkiye Mega Projeler Haritası: Altyapı Projeleri | mrxakademi",
+      "description": "Kanal İstanbul, 3. Köprü, Marmaray, havalimanları ve metro hatları interaktif haritada! Türkiye'nin tüm mega altyapı projelerini keşfedin.",
+      "keywords": "mega projeler haritası, türkiye altyapı projeleri, kanal istanbul, 3. köprü, marmaray, istanbul havalimanı, metro hatları, otoyol projeleri, sanayi bölgeleri, mega projeler türkiye, altyapı yatırımları, interaktif proje haritası",
+      "og_title": "Türkiye'nin Tüm Mega Projeleri İnteraktif Haritada",
+      "og_description": "Kanal İstanbul, Marmaray, 3. Köprü ve yüzlerce mega proje tek haritada. Hemen keşfet!",
+      "og_image": "",
+      "robots": "index,follow",
+      "updated_at": "2026-04-07T17:14:40.247451+00:00",
+      "canonical_url": "https://mrxakademi.com/turkiye-mega-projeler-haritasi"
+    },
+    {
+      "page_id": "ipat",
+      "page_name": "e-İPAT Arsa Analizi",
+      "path": "/ipar",
+      "title": "Ada Parsel Sorgulama - e-İPAT Koordinat Analizi | mrxakademi",
+      "description": "Türkiye geneli ada parsel sorgulama, koordinat bazlı imar durumu öğrenme ve mülkiyet analizi. e-İPAT ile parsel alanı, tapu bilgisi ve yatırım değerlendirmesi yapın.",
+      "keywords": "ada parsel sorgulama, e-ipat sorgulama, koordinat parsel sorgulama, imar durumu öğrenme, parsel analizi, tapu sorgulama, parsel alanı hesaplama, mülkiyet analizi, yatırım değerlendirmesi, parsel koordinat, kadastro sorgulama, arsa sorgulama",
+      "og_title": "Ada Parsel Sorgulama ve e-İPAT Koordinat Analiz Aracı",
+      "og_description": "Koordinat bazlı parsel sorgulama, imar durumu, mülkiyet ve yatırım analizi. Hızlı ve kolay kullanım!",
+      "og_image": "",
+      "robots": "index,follow",
+      "updated_at": "2026-04-07T17:14:46.726323+00:00"
+    },
+    {
+      "page_id": "egitim",
+      "page_name": "Eğitim Platformu",
+      "path": "/egitim",
+      "title": "Gayrimenkul Yatırım Eğitimi ve Sertifika | mrxakademi",
+      "description": "Arsa yatırımı, TOKİ projeleri ve portföy yönetimi eğitimleri. Uzman eğitmenlerle online kurslar ve canlı seminerler. Sertifikalı eğitim programlarına hemen başla!",
+      "keywords": "gayrimenkul eğitimi, arsa yatırımı, TOKİ projeleri, online emlak kursu, gayrimenkul sertifikası, portföy yönetimi, emlak yatırım eğitimi, canlı seminer, gayrimenkul uzmanı, arsa alım satım, emlak kursu, yatırım eğitimi",
+      "og_title": "Gayrimenkul ve Arsa Yatırımı Eğitimi | mrxakademi",
+      "og_description": "Uzman eğitmenlerle arsa yatırımı, TOKİ ve portföy yönetimi öğren. Sertifikalı online kurslar seni bekliyor!",
+      "og_image": "",
+      "robots": "index,follow",
+      "updated_at": "2026-04-07T17:14:56.155446+00:00"
+    },
+    {
+      "page_id": "topluluk",
+      "page_name": "Topluluk Forumu",
+      "path": "/topluluk",
+      "title": "Gayrimenkul Yatırım Topluluğu - Proje Yorumları | mrxakademi",
+      "description": "Türkiye'nin en aktif gayrimenkul yatırımcıları topluluğu. Proje yorumları, uzman tavsiyeleri, güncel haberler ve deneyim paylaşımı. Hemen katıl!",
+      "keywords": "gayrimenkul yatırımı, proje yorumları, gayrimenkul topluluğu, yatırım tavsiyeleri, emlak forumu, konut projeleri, gayrimenkul haberleri, mrxakademi, yatırımcı topluluğu, emlak yatırım, inşaat projeleri, gayrimenkul analiz",
+      "og_title": "Gayrimenkul Yatırımcıları Topluluğu - mrxakademi",
+      "og_description": "Proje yorumları, uzman tavsiyeleri ve güncel haberlerle Türkiye'nin en büyük gayrimenkul topluluğu.",
+      "og_image": "",
+      "robots": "index,follow",
+      "updated_at": "2026-04-07T17:15:01.833698+00:00"
+    },
+    {
+      "page_id": "yatirim-fonu",
+      "page_name": "Yatırım Fonu",
+      "path": "/yatirim-fonu",
+      "title": "Gayrimenkul Yatırım Fonu - Yüksek Getiri | mrxakademi",
+      "description": "Kurumsal gayrimenkul yatırım fonu ile güvenli portföy yönetimi. TOKİ ve mega projelerde yüksek kira getirisi. Hemen başvurun, kazancınızı artırın!",
+      "keywords": "gayrimenkul yatırım fonu, gayrimenkul fonu, yatırım fırsatları, kira getirisi, TOKİ yatırımları, portföy yönetimi, mega proje yatırımları, emlak yatırımı, pasif gelir, güvenli yatırım, emlak fonu, gayrimenkul getirisi",
+      "og_title": "Gayrimenkul Yatırım Fonu ile Yüksek Getiri Fırsatları",
+      "og_description": "TOKİ ve mega projelerde güvenli yatırım. Yüksek kira getirisi ile kazancınızı artırın. Hemen başvurun!",
+      "og_image": "",
+      "robots": "index,follow",
+      "updated_at": "2026-04-07T17:15:08.739167+00:00"
+    }
   ]
 }

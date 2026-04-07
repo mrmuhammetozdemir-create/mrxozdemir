@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import { useSEO } from '@/hooks/useSEO';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL;
 
@@ -510,6 +511,7 @@ function MapLegend({ categories }) {
 // ============================================================
 export default function MegaProjectsPage() {
   const navigate = useNavigate();
+  useSEO('mega-projects', { title: 'Mega Projeler Haritası | mrxakademi' });
   const [projects, setProjects]           = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
   const [loading, setLoading]             = useState(true);

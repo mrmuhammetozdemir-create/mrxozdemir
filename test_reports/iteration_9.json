@@ -1,0 +1,63 @@
+{
+  "summary": "SEO Manager bug fix verified - all features working correctly. Backend: 17/17 tests passed. Frontend: SEO Manager loads different data per page, page switching works, save functionality works, AI buttons present. Fixed YatirimFonuPage.js hardcoded title override.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_seo_endpoints.py",
+    "/app/test_reports/pytest/pytest_seo.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "YatirimFonuPage.js had a useEffect that overrode document.title after useSEO hook - FIXED by removing the manual override",
+    "Route /egitim does not exist - the correct route is /education. SEO page_id 'egitim' is correct for database lookup."
+  ],
+  "updated_files": [
+    "/app/frontend/src/pages/YatirimFonuPage.js"
+  ],
+  "success_rate": {
+    "backend": "100% - 17/17 tests passed",
+    "frontend": "100% - All SEO Manager features working"
+  },
+  "test_credentials": {
+    "admin_email": "ipatarazi@gmail.com",
+    "admin_password": "As537273"
+  },
+  "seed_data_creation": "No seed data created - used existing SEO data in database",
+  "features_tested": {
+    "backend_public_seo_endpoint": "PASS - GET /api/seo returns dict keyed by page_id with unique data per page",
+    "backend_admin_seo_endpoint": "PASS - GET /api/admin/seo returns list of all 7 pages with auth",
+    "backend_update_seo_endpoint": "PASS - PUT /api/admin/seo/{page_id} updates specific page only",
+    "backend_ai_generate_endpoint": "PASS - POST /api/admin/seo/generate/{page_id} returns valid SEO JSON",
+    "frontend_seo_manager_load": "PASS - Loads different data per page (home vs e-konut vs mega-projects vs yatirim-fonu)",
+    "frontend_seo_manager_page_switching": "PASS - Switching between page tabs shows different titles/descriptions",
+    "frontend_seo_manager_save": "PASS - Kaydet button saves data per page correctly with toast confirmation",
+    "frontend_seo_manager_ai_buttons": "PASS - AI ile Doldur and Tümünü AI ile Doldur buttons present and enabled",
+    "frontend_useSEO_home": "PASS - Home page title: TOKİ Analizi, Arazi Parsel Sorgulama & Emlak Eğitimi | mrxakademi",
+    "frontend_useSEO_toki": "PASS - TOKI page title: TOKİ Projeleri Harita ve İstatistikleri | mrxakademi",
+    "frontend_useSEO_mega_projects": "PASS - Mega Projects title: Türkiye Mega Projeler Haritası: Altyapı Projeleri | mrxakademi",
+    "frontend_useSEO_yatirim_fonu": "PASS - After fix: Gayrimenkul Yatırım Fonu - Yüksek Getiri | mrxakademi",
+    "frontend_useSEO_education": "PASS - Education page title: Gayrimenkul Yatırım Eğitimi ve Sertifika | mrxakademi"
+  },
+  "bug_fix_verification": {
+    "original_bug": "SEO Manager showing same shared info for all pages instead of separate SEO data per page",
+    "root_cause": "1) Missing authHeaders() in load() function, 2) Form state not resetting when switching pages",
+    "fix_applied": "1) Added { headers: authHeaders() } to api.get('/admin/seo'), 2) Added useEffect to sync form state with activeId/pages changes",
+    "verification_result": "VERIFIED - All pages now show unique SEO data, form resets correctly when switching pages"
+  },
+  "additional_fix_applied": {
+    "file": "/app/frontend/src/pages/YatirimFonuPage.js",
+    "issue": "useEffect at line 115-117 was overriding useSEO hook with hardcoded title 'İPAT Arazi Fonu | e-İPAT'",
+    "fix": "Removed the manual document.title override, letting useSEO hook handle it"
+  },
+  "mocked_apis": [],
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "SEO Manager fully functional. All 7 SEO pages have unique AI-generated content. useSEO hook working on all main frontend pages. YatirimFonuPage.js was fixed to remove hardcoded title override."
+}

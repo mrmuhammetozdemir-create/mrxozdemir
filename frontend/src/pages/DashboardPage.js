@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Building2, Map, Calculator, MapPin, GraduationCap, LogIn, LogOut, Settings, BookOpen, UserCircle } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import { useSEO } from '@/hooks/useSEO';
 
 const topModules = [
   { id: 'toki', title: 'e-Konut', subtitle: 'Toplu konut ve proje analiz sistemi', icon: Building2, color: 'bg-blue-500', path: '/toki', testId: 'module-toki' },
@@ -17,6 +18,8 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const [adminUser, setAdminUser] = useState(null);
   const [appUser, setAppUser] = useState(null);
+
+  useSEO('home', { title: 'mrxakademi | Türkiye PropTech Platformu' });
 
   useEffect(() => {
     // Check admin token

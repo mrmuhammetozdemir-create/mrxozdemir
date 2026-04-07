@@ -9,6 +9,7 @@ import { ArrowLeft, Search, Building2, MapPin, Info, TrendingUp } from 'lucide-r
 import api from '@/utils/api';
 import { toast } from 'sonner';
 import LoginRequiredModal from '@/components/LoginRequiredModal';
+import { useSEO } from '@/hooks/useSEO';
 
 const TURKISH_CITIES = [
   'Adana', 'Adıyaman', 'Afyonkarahisar', 'Ağrı', 'Aksaray', 'Amasya', 'Ankara', 'Antalya',
@@ -27,6 +28,7 @@ const TURKISH_CITIES = [
 
 export default function TOKISearchPage() {
   const navigate = useNavigate();
+  useSEO('e-konut', { title: 'e-Konut Projeleri | mrxakademi' });
   const [city, setCity] = useState('');
   const [district, setDistrict] = useState('');
   const [projectName, setProjectName] = useState('');

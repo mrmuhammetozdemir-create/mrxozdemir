@@ -9,9 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, Users as UsersIcon, MessageSquare, Plus } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import { useSEO } from '@/hooks/useSEO';
 
 export default function CommunityPage() {
   const navigate = useNavigate();
+  useSEO('topluluk', { title: 'Topluluk Forumu | mrxakademi' });
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);

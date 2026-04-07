@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { useSEO } from '@/hooks/useSEO';
 import {
   MapPin, TrendingUp, ShieldCheck, Users, ChevronDown, ChevronRight,
   Download, Eye, ArrowRight, CheckCircle, Clock, FileText,
@@ -98,6 +99,7 @@ const EMPTY_FORM = {
 
 export default function YatirimFonuPage() {
   const navigate = useNavigate();
+  useSEO('yatirim-fonu', { title: 'Yatırım Fonu | mrxakademi' });
   const formRef = useRef(null);
   const beklemeRef = useRef(null);
   const sunumRef = useRef(null);
@@ -110,10 +112,7 @@ export default function YatirimFonuPage() {
   const [beklemeLoading, setBeklemeLoading] = useState(false);
   const [beklemeSuccess, setBeklemeSuccess] = useState(false);
 
-  useEffect(() => {
-    document.title = 'İPAT Arazi Fonu | e-İPAT';
-    return () => { document.title = 'mrxakademi'; };
-  }, []);
+  // useSEO hook handles document.title - removed manual override
 
   const scrollTo = (ref) => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
