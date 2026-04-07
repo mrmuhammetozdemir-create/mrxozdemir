@@ -422,7 +422,7 @@ function ProjectDescriptionView({ project }) {
                     green:  'bg-emerald-50/40',
                   };
                   return (
-                    <tr key={i} className={`border-b border-slate-100 last:border-0 ${rowColors[b.renk] || ''}`}>
+                    <tr key={b.grup} className={`border-b border-slate-100 last:border-0 ${rowColors[b.renk] || ''}`}>
                       <td className="px-4 py-3 font-bold text-slate-700">{b.grup}</td>
                       <td className="px-4 py-3 text-slate-600 text-xs leading-relaxed">{b.bloklar}</td>
                       <td className="px-4 py-3 text-center">
@@ -457,8 +457,8 @@ function ProjectDescriptionView({ project }) {
             'Peyzaj, yol ve otopark imalatları',
             'Enerji kimlik belgesi ve iskan ruhsatı',
             'Kat mülkiyeti tapuları',
-          ].map((item, i) => (
-            <div key={i} className="flex items-start gap-2 text-sm text-slate-600">
+          ].map((item) => (
+            <div key={item} className="flex items-start gap-2 text-sm text-slate-600">
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
               {item}
             </div>
@@ -528,7 +528,7 @@ function VideosView({ videos }) {
         const vid = getYoutubeId(v);
         if (!vid) return null;
         return (
-          <div key={i} className="rounded-xl overflow-hidden border shadow-sm" data-testid={`video-player-${i}`}>
+          <div key={vid} className="rounded-xl overflow-hidden border shadow-sm" data-testid={`video-player-${vid}`}>
             <iframe src={`https://www.youtube.com/embed/${vid}`} className="w-full aspect-video" allowFullScreen title={`Video ${i + 1}`} />
           </div>
         );
@@ -676,8 +676,8 @@ function ProjectInfoBar({ project }) {
     <div className="bg-white border-b border-slate-100 shadow-sm" data-testid="project-info-bar">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-stretch justify-center gap-0 overflow-x-auto" style={{scrollbarWidth:'none'}}>
-          {items.map((item, i) => (
-            <div key={i} className={`flex flex-col items-center justify-center px-5 py-3 min-w-[100px] ${i < items.length - 1 ? 'border-r border-slate-100' : ''}`}>
+          {items.map((item) => (
+            <div key={item.label} className={`flex flex-col items-center justify-center px-5 py-3 min-w-[100px] ${items.indexOf(item) < items.length - 1 ? 'border-r border-slate-100' : ''}`}>
               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap mb-1">{item.label}</span>
               <span className="text-sm font-bold text-slate-900 whitespace-nowrap">{item.value}</span>
             </div>
@@ -770,7 +770,7 @@ export default function ProjectDetailPage() {
         {/* Stats Grid - horizontal scroll on mobile */}
         {stats.some(s => s.value > 0) && (
           <div className="flex gap-3 overflow-x-auto pb-1" style={{scrollbarWidth:'none'}} data-testid="stats-grid">
-            {stats.map((s, i) => <StatCard key={i} {...s} />)}
+            {stats.map((s) => <StatCard key={s.label} {...s} />)}
           </div>
         )}
 
@@ -868,7 +868,7 @@ export default function ProjectDetailPage() {
               </div>
             </div>
             <div className={`grid gap-4 ${videos.length === 1 ? 'grid-cols-1 max-w-2xl mx-auto' : 'grid-cols-1 md:grid-cols-2'}`}>
-              {videos.map((url, i) => <VideoCard key={i} url={url} index={i} />)}
+              {videos.map((url) => <VideoCard key={url} url={url} index={videos.indexOf(url)} />)}
             </div>
           </div>
         )}

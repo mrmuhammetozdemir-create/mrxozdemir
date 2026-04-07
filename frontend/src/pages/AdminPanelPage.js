@@ -840,7 +840,7 @@ function MapLayerManager({ projectId }) {
             L.geoJSON(data, {
               style: { color: '#3b82f6', weight: 2, fillOpacity: 0.15, fillColor: '#3b82f6' }
             }).addTo(mapRef.current);
-          } catch {}
+          } catch (err) { console.error('Map layer load error:', err); }
         }
       }
     };
@@ -1313,7 +1313,7 @@ export default function AdminPanelPage() {
   }, []);
 
   const loadStats = useCallback(async () => {
-    try { const { data } = await api.get('/admin/stats', { headers: authHeaders() }); setStats(data); } catch {}
+    try { const { data } = await api.get('/admin/stats', { headers: authHeaders() }); setStats(data); } catch (err) { console.error('Stats load error:', err); }
   }, []);
   useEffect(() => { if (user) loadStats(); }, [user, loadStats]);
 

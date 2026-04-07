@@ -1739,6 +1739,9 @@ async def agent_chat(body: AgentMessage, admin: dict = Depends(require_admin)):
     except Exception as e:
         return {"message": f"Yanıt işlenemedi: {str(e)}", "actions": [], "results": []}
 
+    if not agent_response:
+        return {"message": "İşlem tamamlandı.", "results": []}
+
     results = []
     for action in agent_response.get("actions", []):
         atype = action.get("type")
