@@ -1386,25 +1386,34 @@ function SeoManager() {
   const [generatingAll, setGeneratingAll] = useState(false);
   const [progress, setProgress]     = useState('');
 
+  const emptyForm = (pid) => ({
+    page_id: pid, title: '', description: '', keywords: '',
+    og_title: '', og_description: '', og_image: '', robots: 'index,follow'
+  });
+
   const load = useCallback(async () => {
-    const { data } = await api.get('/admin/seo');
-    const map = {};
-    data.forEach(p => { map[p.page_id] = p; });
-    setPages(map);
-    setForm(map['home'] || {});
+    try {
+      const { data } = await api.get('/admin/seo', { headers: authHeaders() });
+      const map = {};
+      data.forEach(p => { map[p.page_id] = p; });
+      setPages(map);
+    } catch { /* ignore */ }
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
+  // Always sync form when activeId or pages change
   useEffect(() => {
-    if (pages[activeId]) setForm({ ...pages[activeId] });
+    const pageData = pages[activeId];
+    setForm(pageData ? { ...pageData } : emptyForm(activeId));
   }, [activeId, pages]);
 
   const save = async () => {
     setSaving(true);
     try {
-      await api.put(`/admin/seo/${activeId}`, form, { headers: authHeaders() });
-      setPages(prev => ({ ...prev, [activeId]: form }));
+      const payload = { ...form, page_id: activeId };
+      await api.put(`/admin/seo/${activeId}`, payload, { headers: authHeaders() });
+      setPages(prev => ({ ...prev, [activeId]: payload }));
       toast.success('Kaydedildi');
     } catch { toast.error('Kayıt hatası'); }
     setSaving(false);
@@ -1414,11 +1423,10 @@ function SeoManager() {
     setGenerating(true);
     try {
       const { data } = await api.post(`/admin/seo/generate/${pageId}`, {}, { headers: authHeaders() });
-      const merged = { ...(pages[pageId] || {}), ...data };
-      // Save to DB immediately
+      const merged = { ...(pages[pageId] || emptyForm(pageId)), ...data, page_id: pageId };
       await api.put(`/admin/seo/${pageId}`, merged, { headers: authHeaders() });
       setPages(prev => ({ ...prev, [pageId]: merged }));
-      if (pageId === activeId) setForm(merged);
+      if (pageId === activeId) setForm({ ...merged });
       toast.success(`${SEO_PAGES_META.find(p => p.id === pageId)?.label} SEO'su oluşturuldu!`);
     } catch (e) { toast.error(e.response?.data?.detail || 'AI hatası'); }
     setGenerating(false);
@@ -1426,14 +1434,16 @@ function SeoManager() {
 
   const generateAll = async () => {
     setGeneratingAll(true);
+    const updated = { ...pages };
     for (const page of SEO_PAGES_META) {
       setProgress(`${page.label} işleniyor...`);
       try {
         const { data } = await api.post(`/admin/seo/generate/${page.id}`, {}, { headers: authHeaders() });
-        const merged = { ...(pages[page.id] || {}), ...data };
+        const merged = { ...(updated[page.id] || emptyForm(page.id)), ...data, page_id: page.id };
         await api.put(`/admin/seo/${page.id}`, merged, { headers: authHeaders() });
-        setPages(prev => ({ ...prev, [page.id]: merged }));
-        if (page.id === activeId) setForm(merged);
+        updated[page.id] = merged;
+        setPages({ ...updated });
+        if (page.id === activeId) setForm({ ...merged });
       } catch {}
     }
     setProgress('');
