@@ -1320,6 +1320,108 @@ async def delete_land_parcel(parcel_id: str, admin: dict = Depends(require_admin
         raise HTTPException(status_code=404, detail="Not found")
     return {"message": "Deleted"}
 
+
+# ============= SEO SETTINGS =============
+
+SEO_PAGES = [
+    {"id": "home",           "page_name": "Ana Sayfa",          "path": "/"},
+    {"id": "e-konut",        "page_name": "e-Konut Projeleri",  "path": "/toki"},
+    {"id": "mega-projects",  "page_name": "Mega Projeler",      "path": "/mega-projects"},
+    {"id": "ipat",           "page_name": "e-İPAT Arsa Analizi","path": "/ipar"},
+    {"id": "egitim",         "page_name": "Eğitim Platformu",   "path": "/egitim"},
+    {"id": "topluluk",       "page_name": "Topluluk Forumu",    "path": "/topluluk"},
+    {"id": "yatirim-fonu",   "page_name": "Yatırım Fonu",       "path": "/yatirim-fonu"},
+]
+
+SEO_PAGE_CONTEXTS = {
+    "home":          "mrxakademi - Türkiye'nin lider PropTech platformu. TOKİ konut projeleri analizi, mega altyapı projeleri haritası, arazi parsel analizi (e-İPAT), gayrimenkul eğitimleri ve yatırımcı topluluğu.",
+    "e-konut":       "e-Konut / TOKİ projeleri sayfası. İstanbul Arnavutköy, Mamak gibi illerdeki TOKİ konut projelerini harita üzerinde inceleyin. Proje ilerlemeleri, konut istatistikleri, sosyal tesisler.",
+    "mega-projects": "Türkiye'nin mega altyapı projeleri interaktif haritası. Kanal İstanbul, 3. Köprü, Marmaray, havalimanları, metro hatları, otoyollar, sanayi bölgeleri.",
+    "ipat":          "e-İPAT ada parsel sorgulama ve analiz aracı. Türkiye genelinde koordinat bazlı parsel sorgulama, imar durumu, parsel alanı, mülkiyet analizi, yatırım değerlendirmesi.",
+    "egitim":        "Gayrimenkul ve yatırım eğitim platformu. Online kurslar, canlı seminerler, sertifika programları. Arsa yatırımı, TOKİ projeler, portföy yönetimi, uzman eğitmenler.",
+    "topluluk":      "mrxakademi gayrimenkul yatırımcıları topluluğu. Proje yorumları, yatırım tavsiyeleri, soru-cevap, deneyim paylaşımı, güncel haberler.",
+    "yatirim-fonu":  "Kurumsal ve bireysel gayrimenkul yatırım fonu fırsatları. Güvenli portföy yönetimi, yüksek kira getirisi, TOKİ ve mega proje yatırımları, başvuru formu.",
+}
+
+@api_router.get("/seo")
+async def get_all_seo_public():
+    """Public endpoint — returns all SEO settings as {page_id: settings}."""
+    docs = await db.seo_settings.find({}, {"_id": 0}).to_list(50)
+    return {d["page_id"]: d for d in docs}
+
+@api_router.get("/admin/seo")
+async def get_all_seo_admin(admin: dict = Depends(require_admin)):
+    docs = await db.seo_settings.find({}, {"_id": 0}).to_list(50)
+    existing = {d["page_id"] for d in docs}
+    for page in SEO_PAGES:
+        if page["id"] not in existing:
+            default = {
+                "page_id": page["id"], "page_name": page["page_name"], "path": page["path"],
+                "title": f"{page['page_name']} | mrxakademi", "description": "",
+                "keywords": "", "og_title": f"{page['page_name']} | mrxakademi",
+                "og_description": "", "og_image": "", "robots": "index,follow",
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }
+            await db.seo_settings.insert_one(default)
+            default.pop("_id", None)
+            docs.append(default)
+    for d in docs:
+        d.pop("_id", None)
+    return docs
+
+@api_router.put("/admin/seo/{page_id}")
+async def update_seo(page_id: str, body: dict, admin: dict = Depends(require_admin)):
+    body.pop("_id", None)
+    body["page_id"]    = page_id
+    body["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.seo_settings.update_one({"page_id": page_id}, {"$set": body}, upsert=True)
+    body.pop("_id", None)
+    return body
+
+@api_router.post("/admin/seo/generate/{page_id}")
+async def generate_seo_ai(page_id: str, admin: dict = Depends(require_admin)):
+    """Use Claude Sonnet to generate optimised Turkish SEO for one page."""
+    llm_key = os.environ.get("EMERGENT_LLM_KEY")
+    if not llm_key:
+        raise HTTPException(status_code=500, detail="LLM key bulunamadı")
+    context = SEO_PAGE_CONTEXTS.get(page_id, f"mrxakademi {page_id} sayfası")
+    prompt = f"""Aşağıdaki sayfa için Türkçe, Google'da üst sıralara çıkacak SEO metaları üret.
+Sayfa bağlamı: {context}
+Site alan adı: mrxozdemir.com / mrxakademi.com
+
+Kurallar:
+- title: 55-60 karakter, en güçlü anahtar kelimeler öne, "| mrxakademi" ile bitsin
+- description: 150-160 karakter, net fayda + eylem çağrısı içersin, anahtar kelimeler geçsin
+- keywords: 10-12 Türkçe anahtar kelime, virgülle ayrılmış
+- og_title: 60 karakter max, sosyal medya paylaşım başlığı, çekici
+- og_description: 90-110 karakter, sosyal medya için özet
+
+SADECE geçerli JSON döndür (başka hiçbir şey yazma):
+{{
+  "title": "",
+  "description": "",
+  "keywords": "",
+  "og_title": "",
+  "og_description": ""
+}}"""
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage as LlmUM
+        chat = LlmChat(
+            api_key=llm_key,
+            session_id=f"seo_{page_id}_{uuid.uuid4()}",
+            system_message="Sen bir SEO uzmanısın. Sadece geçerli JSON döndür."
+        ).with_model("anthropic", "claude-sonnet-4-5-20250929")
+        raw = await chat.send_message(LlmUM(text=prompt))
+        raw = raw.strip()
+        if "```json" in raw:
+            raw = raw.split("```json")[1].split("```")[0].strip()
+        elif "```" in raw:
+            raw = raw.split("```")[1].split("```")[0].strip()
+        return json.loads(raw)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI SEO üretim hatası: {str(e)}")
+
+
 # ============= EDUCATION SYSTEM =============
 
 class SeminarCreate(BaseModel):

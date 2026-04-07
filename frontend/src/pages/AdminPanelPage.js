@@ -14,7 +14,7 @@ import {
   Image as ImageIcon, Video, Map, Layers, Building2, X, Check,
   Home, MapPin, GraduationCap, Users, Target, TrendingUp, BarChart3,
   Menu, LogOut, ChevronRight, UserCog, Bot, Send, Sparkles, CheckCircle2,
-  AlertCircle, Search, ListFilter, Pencil
+  AlertCircle, Search, ListFilter, Pencil, Globe, RefreshCw, Copy
 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
@@ -89,6 +89,7 @@ const SIDEBAR_ITEMS = [
   { id: 'opportunities', label: 'Arsa Fırsatları', icon: Target, color: 'text-red-600' },
   { id: 'market', label: 'Piyasa Analizi', icon: BarChart3, color: 'text-teal-600' },
   { id: 'users', label: 'Kullanıcılar', icon: UserCog, color: 'text-indigo-600' },
+  { id: 'seo',   label: 'SEO Yönetimi', icon: Globe,   color: 'text-emerald-600' },
 ];
 
 function Sidebar({ active, onSelect, collapsed, onToggle }) {
@@ -1353,6 +1354,306 @@ function OpportunitiesManager() {
   );
 }
 
+
+// ==================== SEO MANAGER ====================
+const SEO_PAGES_META = [
+  { id: 'home',          label: 'Ana Sayfa',          icon: '🏠', path: '/' },
+  { id: 'e-konut',       label: 'e-Konut Projeleri',  icon: '🏗️', path: '/toki' },
+  { id: 'mega-projects', label: 'Mega Projeler',      icon: '🗺️', path: '/mega-projects' },
+  { id: 'ipat',          label: 'e-İPAT Arsa',        icon: '📐', path: '/ipar' },
+  { id: 'egitim',        label: 'Eğitim Platformu',   icon: '🎓', path: '/egitim' },
+  { id: 'topluluk',      label: 'Topluluk Forumu',    icon: '👥', path: '/topluluk' },
+  { id: 'yatirim-fonu',  label: 'Yatırım Fonu',       icon: '💼', path: '/yatirim-fonu' },
+];
+
+function CharCount({ value = '', min, max }) {
+  const len = value.length;
+  const ok  = len >= min && len <= max;
+  const over = len > max;
+  return (
+    <span className={`text-xs font-mono ml-2 ${ok ? 'text-emerald-600' : over ? 'text-red-500' : 'text-amber-500'}`}>
+      {len}/{max}
+    </span>
+  );
+}
+
+function SeoManager() {
+  const [pages, setPages]           = useState({});
+  const [activeId, setActiveId]     = useState('home');
+  const [form, setForm]             = useState({});
+  const [generating, setGenerating] = useState(false);
+  const [saving, setSaving]         = useState(false);
+  const [generatingAll, setGeneratingAll] = useState(false);
+  const [progress, setProgress]     = useState('');
+
+  const load = useCallback(async () => {
+    const { data } = await api.get('/admin/seo');
+    const map = {};
+    data.forEach(p => { map[p.page_id] = p; });
+    setPages(map);
+    setForm(map['home'] || {});
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (pages[activeId]) setForm({ ...pages[activeId] });
+  }, [activeId, pages]);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await api.put(`/admin/seo/${activeId}`, form, { headers: authHeaders() });
+      setPages(prev => ({ ...prev, [activeId]: form }));
+      toast.success('Kaydedildi');
+    } catch { toast.error('Kayıt hatası'); }
+    setSaving(false);
+  };
+
+  const generateOne = async (pageId) => {
+    setGenerating(true);
+    try {
+      const { data } = await api.post(`/admin/seo/generate/${pageId}`, {}, { headers: authHeaders() });
+      const merged = { ...(pages[pageId] || {}), ...data };
+      // Save to DB immediately
+      await api.put(`/admin/seo/${pageId}`, merged, { headers: authHeaders() });
+      setPages(prev => ({ ...prev, [pageId]: merged }));
+      if (pageId === activeId) setForm(merged);
+      toast.success(`${SEO_PAGES_META.find(p => p.id === pageId)?.label} SEO'su oluşturuldu!`);
+    } catch (e) { toast.error(e.response?.data?.detail || 'AI hatası'); }
+    setGenerating(false);
+  };
+
+  const generateAll = async () => {
+    setGeneratingAll(true);
+    for (const page of SEO_PAGES_META) {
+      setProgress(`${page.label} işleniyor...`);
+      try {
+        const { data } = await api.post(`/admin/seo/generate/${page.id}`, {}, { headers: authHeaders() });
+        const merged = { ...(pages[page.id] || {}), ...data };
+        await api.put(`/admin/seo/${page.id}`, merged, { headers: authHeaders() });
+        setPages(prev => ({ ...prev, [page.id]: merged }));
+        if (page.id === activeId) setForm(merged);
+      } catch {}
+    }
+    setProgress('');
+    setGeneratingAll(false);
+    toast.success('Tüm sayfalar için SEO oluşturuldu!');
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => toast.success('Kopyalandı'));
+  };
+
+  const activePage = SEO_PAGES_META.find(p => p.id === activeId);
+  const isComplete = (p) => pages[p.id]?.description?.length > 50 && pages[p.id]?.keywords?.length > 10;
+
+  return (
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <Globe className="w-5 h-5 text-emerald-600" /> SEO Yönetimi
+          </h2>
+          <p className="text-sm text-slate-500 mt-0.5">mrxozdemir.com Google sıralamasını güçlendirin</p>
+        </div>
+        <Button
+          onClick={generateAll}
+          disabled={generatingAll}
+          className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white gap-2"
+          data-testid="generate-all-seo-btn"
+        >
+          {generatingAll
+            ? <><RefreshCw className="w-4 h-4 animate-spin" /> {progress || 'Oluşturuluyor...'}</>
+            : <><Sparkles className="w-4 h-4" /> Tümünü AI ile Doldur</>
+          }
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        {/* Page list sidebar */}
+        <div className="lg:col-span-1 space-y-1">
+          {SEO_PAGES_META.map(page => (
+            <button
+              key={page.id}
+              onClick={() => setActiveId(page.id)}
+              data-testid={`seo-page-${page.id}`}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                activeId === page.id
+                  ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+                  : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <span>{page.icon}</span>
+                <span>{page.label}</span>
+              </span>
+              {isComplete(page)
+                ? <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                : <AlertCircle  className="w-4 h-4 text-amber-400 shrink-0" />
+              }
+            </button>
+          ))}
+        </div>
+
+        {/* Editor */}
+        <Card className="lg:col-span-3 p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-slate-900 text-base">
+              {activePage?.icon} {activePage?.label}
+              <span className="ml-2 text-xs text-slate-400 font-normal">{activePage?.path}</span>
+            </h3>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => generateOne(activeId)}
+              disabled={generating}
+              className="gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+              data-testid="generate-one-seo-btn"
+            >
+              {generating
+                ? <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                : <Sparkles className="w-3.5 h-3.5" />
+              }
+              AI ile Doldur
+            </Button>
+          </div>
+
+          {/* Title */}
+          <div>
+            <div className="flex items-center mb-1">
+              <Label className="text-xs font-semibold text-slate-700">Sayfa Başlığı (Title)</Label>
+              <CharCount value={form.title} min={50} max={60} />
+            </div>
+            <div className="relative">
+              <Input
+                value={form.title || ''}
+                onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                placeholder="Ana Sayfa | mrxakademi — Türkiye PropTech Platformu"
+                className="pr-9"
+                data-testid="seo-title-input"
+              />
+              <button onClick={() => copyToClipboard(form.title || '')} className="absolute right-2 top-2.5 text-slate-400 hover:text-slate-600">
+                <Copy className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-1">Google arama sonuçlarında gösterilen başlık. 50-60 karakter idealdir.</p>
+          </div>
+
+          {/* Description */}
+          <div>
+            <div className="flex items-center mb-1">
+              <Label className="text-xs font-semibold text-slate-700">Meta Açıklama (Description)</Label>
+              <CharCount value={form.description} min={150} max={160} />
+            </div>
+            <Textarea
+              value={form.description || ''}
+              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+              rows={3}
+              placeholder="Google arama sonucunda gösterilen açıklama..."
+              data-testid="seo-description-input"
+            />
+            <p className="text-[10px] text-slate-400 mt-1">150-160 karakter ideal. Anahtar kelimeler + eylem çağrısı içermeli.</p>
+          </div>
+
+          {/* Keywords */}
+          <div>
+            <Label className="text-xs font-semibold text-slate-700 block mb-1">Anahtar Kelimeler (Keywords)</Label>
+            <Textarea
+              value={form.keywords || ''}
+              onChange={e => setForm(f => ({ ...f, keywords: e.target.value }))}
+              rows={2}
+              placeholder="TOKİ projeleri, konut yatırımı, İstanbul gayrimenkul, arsa analizi..."
+              data-testid="seo-keywords-input"
+            />
+            <p className="text-[10px] text-slate-400 mt-1">Virgülle ayrılmış 10-12 anahtar kelime.</p>
+          </div>
+
+          {/* OG section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+            <div>
+              <div className="flex items-center mb-1">
+                <Label className="text-xs font-semibold text-slate-700">OG Başlığı (Sosyal Medya)</Label>
+                <CharCount value={form.og_title} min={40} max={60} />
+              </div>
+              <Input
+                value={form.og_title || ''}
+                onChange={e => setForm(f => ({ ...f, og_title: e.target.value }))}
+                placeholder="Facebook/Twitter paylaşım başlığı"
+                data-testid="seo-og-title-input"
+              />
+            </div>
+            <div>
+              <Label className="text-xs font-semibold text-slate-700 block mb-1">OG Görsel URL</Label>
+              <Input
+                value={form.og_image || ''}
+                onChange={e => setForm(f => ({ ...f, og_image: e.target.value }))}
+                placeholder="https://mrxozdemir.com/og-image.jpg"
+                data-testid="seo-og-image-input"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <div className="flex items-center mb-1">
+                <Label className="text-xs font-semibold text-slate-700">OG Açıklaması</Label>
+                <CharCount value={form.og_description} min={90} max={110} />
+              </div>
+              <Input
+                value={form.og_description || ''}
+                onChange={e => setForm(f => ({ ...f, og_description: e.target.value }))}
+                placeholder="Sosyal medya paylaşım açıklaması..."
+                data-testid="seo-og-desc-input"
+              />
+            </div>
+          </div>
+
+          {/* Robots + Save */}
+          <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+            <div className="flex items-center gap-3">
+              <Label className="text-xs font-semibold text-slate-700">Robots</Label>
+              <select
+                value={form.robots || 'index,follow'}
+                onChange={e => setForm(f => ({ ...f, robots: e.target.value }))}
+                className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-700 focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
+                data-testid="seo-robots-select"
+              >
+                <option value="index,follow">index, follow (Önerilen)</option>
+                <option value="noindex,follow">noindex, follow</option>
+                <option value="index,nofollow">index, nofollow</option>
+                <option value="noindex,nofollow">noindex, nofollow</option>
+              </select>
+            </div>
+            <Button
+              onClick={save}
+              disabled={saving}
+              className="bg-emerald-600 hover:bg-emerald-700 gap-2"
+              data-testid="save-seo-btn"
+            >
+              {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              Kaydet
+            </Button>
+          </div>
+
+          {/* Preview card */}
+          {(form.title || form.description) && (
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mt-2">
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2 font-semibold">Google Önizleme</p>
+              <p className="text-blue-700 text-sm font-medium leading-tight hover:underline cursor-pointer">
+                {form.title || 'Başlık girilmedi'}
+              </p>
+              <p className="text-emerald-700 text-xs mt-0.5">mrxozdemir.com{activePage?.path}</p>
+              <p className="text-slate-600 text-xs mt-1 leading-relaxed">
+                {form.description || 'Açıklama girilmedi'}
+              </p>
+            </div>
+          )}
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+
 // ==================== MARKET DATA MANAGER ====================
 function MarketManager() {
   const [data, setData] = useState([]);
@@ -1424,6 +1725,7 @@ export default function AdminPanelPage() {
       case 'opportunities': return <OpportunitiesManager />;
       case 'market': return <MarketManager />;
       case 'users': return <UsersManager />;
+      case 'seo': return <SeoManager />;
       default: return <DashboardContent stats={stats} onNavigate={setActivePage} />;
     }
   };
