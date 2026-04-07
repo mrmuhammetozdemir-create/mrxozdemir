@@ -9,7 +9,8 @@ import {
   ArrowLeft, MapPin, FileText, Image as ImageIcon,
   Layers, Home, ChevronDown, ChevronRight,
   ExternalLink, Play, ChevronLeft, X,
-  Store, GraduationCap, Landmark, Users, Building2
+  Store, GraduationCap, Landmark, Users, Building2,
+  Navigation, LocateFixed, Loader2
 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
@@ -189,8 +190,11 @@ function AdaParselView({ projectId }) {
 function MapView({ project, projectId }) {
   const [layers, setLayers] = useState([]);
   const [sharedFacilities, setSharedFacilities] = useState([]);
+  const [isLocating, setIsLocating] = useState(false);
+  const [userCoords, setUserCoords] = useState(null);
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const locationOverlayRef = useRef(null);
 
   useEffect(() => {
     api.get(`/projects/${projectId}/map-layers`).then(({ data }) => setLayers(data)).catch(() => {});
@@ -331,11 +335,129 @@ function MapView({ project, projectId }) {
     };
   }, [project, projectId, layers, sharedFacilities]);
 
+  // --- Show user location as Google Maps-style blue pulsing dot ---
+  const handleShowLocation = async () => {
+    if (!navigator.geolocation) {
+      toast.error('Tarayıcınız konum özelliğini desteklemiyor.');
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude: lat, longitude: lng } = position.coords;
+        setUserCoords({ lat, lng });
+        setIsLocating(false);
+
+        if (!mapInstanceRef.current) return;
+
+        const { fromLonLat } = await import('ol/proj');
+        const { default: Overlay } = await import('ol/Overlay');
+
+        const coord = fromLonLat([lng, lat]);
+
+        // Remove existing location overlay
+        if (locationOverlayRef.current) {
+          mapInstanceRef.current.removeOverlay(locationOverlayRef.current);
+        }
+
+        // Inject pulse keyframe animation once
+        if (!document.getElementById('ol-location-pulse-style')) {
+          const styleEl = document.createElement('style');
+          styleEl.id = 'ol-location-pulse-style';
+          styleEl.textContent = `
+            @keyframes ol-loc-pulse {
+              0%   { transform: translate(-50%,-50%) scale(0.4); opacity: 0.9; }
+              100% { transform: translate(-50%,-50%) scale(3);   opacity: 0; }
+            }
+          `;
+          document.head.appendChild(styleEl);
+        }
+
+        // Build the pulsing dot HTML element (mimics Google Maps blue dot)
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'position:relative; width:22px; height:22px; pointer-events:none;';
+
+        const pulse = document.createElement('div');
+        pulse.style.cssText = [
+          'position:absolute',
+          'top:50%', 'left:50%',
+          'width:44px', 'height:44px',
+          'border-radius:50%',
+          'background:rgba(66,133,244,0.25)',
+          'animation:ol-loc-pulse 1.8s ease-out infinite',
+        ].join(';');
+
+        const dot = document.createElement('div');
+        dot.style.cssText = [
+          'width:22px', 'height:22px',
+          'border-radius:50%',
+          'background:#4285F4',
+          'border:3px solid #ffffff',
+          'box-shadow:0 2px 12px rgba(0,0,0,0.30)',
+        ].join(';');
+
+        wrapper.appendChild(pulse);
+        wrapper.appendChild(dot);
+
+        const overlay = new Overlay({
+          position: coord,
+          positioning: 'center-center',
+          element: wrapper,
+          stopEvent: false,
+        });
+
+        locationOverlayRef.current = overlay;
+        mapInstanceRef.current.addOverlay(overlay);
+
+        // Smoothly pan & zoom to user location
+        mapInstanceRef.current.getView().animate({ center: coord, zoom: 16, duration: 800 });
+        toast.success('Konumunuz haritada gösterildi!');
+      },
+      (error) => {
+        setIsLocating(false);
+        if (error.code === 1)      toast.error('Konum izni reddedildi. Lütfen tarayıcı ayarlarından konuma izin verin.');
+        else if (error.code === 2) toast.error('Konum alınamadı. GPS sinyali zayıf olabilir.');
+        else                       toast.error('Konum zaman aşımına uğradı. Tekrar deneyin.');
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
+    );
+  };
+
+  // --- Open Google Maps directions ---
+  const handleDirections = () => {
+    if (!project?.location) { toast.error('Proje konumu bulunamadı.'); return; }
+    const { lat, lng } = project.location;
+    const url = userCoords
+      ? `https://www.google.com/maps/dir/${userCoords.lat},${userCoords.lng}/${lat},${lng}`
+      : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+    window.open(url, '_blank');
+  };
+
   return (
-    <div className="space-y-2">
-      <div ref={mapContainerRef} className="h-[520px] w-full rounded-xl overflow-hidden shadow-md" data-testid="project-map" />
+    <div className="space-y-3">
+      {/* Map with floating locate button (top-right, Google Maps style) */}
+      <div className="relative">
+        <div ref={mapContainerRef} className="h-[520px] w-full rounded-xl overflow-hidden shadow-md" data-testid="project-map" />
+
+        {/* Floating locate button — top right corner */}
+        <button
+          onClick={handleShowLocation}
+          disabled={isLocating}
+          data-testid="locate-me-floating-btn"
+          title="Konumumu Göster"
+          className="absolute top-3 right-3 z-10 w-11 h-11 rounded-xl bg-white/95 backdrop-blur-sm shadow-lg flex items-center justify-center hover:bg-white transition-all border border-white/60 disabled:opacity-70"
+          style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.20)' }}
+        >
+          {isLocating
+            ? <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+            : <LocateFixed className="w-5 h-5 text-blue-600" />
+          }
+        </button>
+      </div>
+
+      {/* KML layer badges */}
       {layers.length > 0 && (
-        <div className="flex flex-wrap gap-2 pt-1">
+        <div className="flex flex-wrap gap-2">
           {layers.map(l => (
             <Badge key={l.id} variant="outline" className="text-xs gap-1">
               <Layers className="w-3 h-3" /> {l.original_filename} <span className="text-slate-400">({l.file_type})</span>
@@ -343,6 +465,35 @@ function MapView({ project, projectId }) {
           ))}
         </div>
       )}
+
+      {/* Bottom action row */}
+      <div className="flex gap-2.5">
+        {/* Konumumu Göster */}
+        <button
+          onClick={handleShowLocation}
+          disabled={isLocating}
+          data-testid="show-location-btn"
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-700 font-semibold text-sm transition-colors border border-blue-200 disabled:opacity-60"
+        >
+          {isLocating
+            ? <Loader2 className="w-4 h-4 animate-spin" />
+            : <LocateFixed className="w-4 h-4" />
+          }
+          {isLocating ? 'Konum Alınıyor...' : 'Konumumu Göster'}
+        </button>
+
+        {/* Yol Tarifi Al */}
+        {project?.location && (
+          <button
+            onClick={handleDirections}
+            data-testid="directions-btn"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-700 font-semibold text-sm transition-colors border border-emerald-200"
+          >
+            <Navigation className="w-4 h-4" />
+            Yol Tarifi Al
+          </button>
+        )}
+      </div>
     </div>
   );
 }

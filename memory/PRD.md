@@ -131,6 +131,7 @@ Tam fonksiyonel landing page:
 - Claude Sonnet AI Agent in AdminPanel for project CRUD via chat
 - AdaParselView syntax error fixed (function declaration was missing)
 - İl-İlçe dependent dropdown: districts now derived dynamically from project data
+- **Geolocation added to map (Apr 2026)**: Google Maps-style pulsing blue dot for user location; floating locate button (top-right on map); "Konumumu Göster" + "Yol Tarifi Al" buttons below map
 
 ## Backlog (Prioritized)
 - P1: e-İPAT module from GitHub
