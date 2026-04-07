@@ -147,8 +147,35 @@ Tam fonksiyonel landing page:
 
 ## Backlog (Prioritized)
 - P1: Yatırımcı Başvuru Formu email confirmation (Resend/SendGrid)
+- P1: Backend modularization (split server.py into FastAPI routers - 2300+ lines)
 - P2: User Dashboard (my courses, my seminars, certificates)
 - P2: Add real seminar/course content via admin panel
 - P2: User-facing pages for each module (detailed TOKI, Land analysis, etc.)
-- P3: Backend modularization (split server.py into FastAPI routers)
-- P3: AdminPanelPage.js component split (1300+ lines)
+- P3: AdminPanelPage.js component split (1750+ lines)
+
+## SEO Management Module (Complete) - Apr 2026
+
+### Admin Panel (`/admin` → SEO Yönetimi)
+- **7 sayfa**: Ana Sayfa, e-Konut, Mega Projeler, e-İPAT, Eğitim, Topluluk, Yatırım Fonu
+- Sol panel: sayfa listesi + tamamlanma durumu (yeşil ✓ / sarı ⚠)
+- Sağ panel: Title, Description, Keywords, OG Tags, Robots meta düzenleme
+- **AI ile Doldur** butonu: Claude Sonnet ile tek sayfa SEO üretimi
+- **Tümünü AI ile Doldur** butonu: Tüm 7 sayfa için otomatik SEO üretimi
+- Google önizleme kartı (title + URL + description)
+- Karakter sayacı (min/max aralık göstergeli)
+
+### Frontend SEO Hook
+- `useSEO(pageId, fallback)` custom hook tüm ana sayfalara uygulandı
+- Dinamik `document.title`, `meta[description]`, `meta[keywords]`, Open Graph tag'leri
+- Cache mekanizması ile tekrar API çağrısını önler
+
+### Backend Endpoints
+- GET /api/seo — Public: Tüm SEO ayarları {page_id: settings}
+- GET /api/admin/seo — Admin: 7 sayfa listesi (yoksa default oluşturur)
+- PUT /api/admin/seo/{page_id} — Tek sayfa güncelleme
+- POST /api/admin/seo/generate/{page_id} — AI ile SEO üretimi
+
+## Deploy Data Persistence - Apr 2026
+- Tüm MongoDB verileri `seed_data.json` dosyasına export edildi (54 kayıt)
+- Startup seed: 16 koleksiyon (projeler, medya, kullanıcılar, SEO, kurslar vb.)
+- Deploy ortamında boş koleksiyonlar otomatik doldurulur
