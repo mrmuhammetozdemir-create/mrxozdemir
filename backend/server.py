@@ -94,6 +94,80 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
+def extract_centroid_from_kml(fext: str, data: bytes) -> dict | None:
+    """Extract lat/lng centroid from KML or KMZ bytes."""
+    import re
+    import xml.etree.ElementTree as ET
+    import zipfile as _zf
+    import io as _io2
+    try:
+        kml_bytes = data
+        if fext == "kmz":
+            with _zf.ZipFile(_io2.BytesIO(data)) as z2:
+                kfiles = [n for n in z2.namelist() if n.lower().endswith('.kml')]
+                if not kfiles:
+                    return None
+                kml_bytes = z2.read(kfiles[0])
+        kml_text = kml_bytes.decode('utf-8', errors='ignore')
+        coords_raw = ' '.join(
+            el.text or '' for el in ET.fromstring(kml_text).iter()
+            if el.tag.endswith('coordinates')
+        )
+        pairs = re.findall(r'([-\d.]+),([-\d.]+)', coords_raw)
+        if pairs:
+            lons = [float(p[0]) for p in pairs]
+            lats = [float(p[1]) for p in pairs]
+            return {"lat": round(sum(lats)/len(lats), 6), "lng": round(sum(lons)/len(lons), 6)}
+    except Exception:
+        pass
+    return None
+
+def extract_centroid_from_geojson(data: bytes) -> dict | None:
+    """Extract lat/lng centroid from GeoJSON bytes."""
+    import json as _json
+    all_lons: list[float] = []
+    all_lats: list[float] = []
+
+    def collect(coords):
+        if not coords:
+            return
+        if isinstance(coords[0], (int, float)):
+            if len(coords) >= 2:
+                all_lons.append(float(coords[0]))
+                all_lats.append(float(coords[1]))
+        else:
+            for item in coords:
+                collect(item)
+
+    def process_geom(geom):
+        if not geom:
+            return
+        gtype = geom.get('type', '')
+        if gtype == 'GeometryCollection':
+            for g in geom.get('geometries', []):
+                process_geom(g)
+        else:
+            collect(geom.get('coordinates', []))
+
+    try:
+        geojson = _json.loads(data.decode('utf-8'))
+        t = geojson.get('type', '')
+        if t == 'FeatureCollection':
+            for f in geojson.get('features', []):
+                process_geom(f.get('geometry'))
+        elif t == 'Feature':
+            process_geom(geojson.get('geometry'))
+        else:
+            process_geom(geojson)
+        if all_lats:
+            return {
+                "lat": round(sum(all_lats) / len(all_lats), 6),
+                "lng": round(sum(all_lons) / len(all_lons), 6),
+            }
+    except Exception:
+        pass
+    return None
+
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -1034,6 +1108,20 @@ async def upload_map_layer(project_id: str, file: UploadFile = File(...), admin:
     }
     await db.project_map_layers.insert_one(layer)
     layer.pop("_id", None)
+
+    # Auto-extract centroid and update project location
+    centroid = None
+    try:
+        if ext in ("kml", "kmz"):
+            centroid = extract_centroid_from_kml(ext, data)
+        elif ext in ("geojson", "json"):
+            centroid = extract_centroid_from_geojson(data)
+    except Exception:
+        pass
+    if centroid:
+        await db.projects.update_one({"id": project_id}, {"$set": {"location": centroid}})
+        layer["location_updated"] = centroid
+
     return layer
 
 @api_router.get("/projects/{project_id}/map-layers")
@@ -1864,24 +1952,6 @@ async def agent_upload_zip(
         img.save(buf, "JPEG", quality=82, optimize=True)
         return buf.getvalue()
 
-    def _extract_kml_center(fext, data):
-        import re, xml.etree.ElementTree as ET
-        kml_bytes = data
-        if fext == "kmz":
-            import zipfile as _zf, io as _io2
-            with _zf.ZipFile(_io2.BytesIO(data)) as z2:
-                kfiles = [n for n in z2.namelist() if n.endswith('.kml')]
-                if kfiles:
-                    kml_bytes = z2.read(kfiles[0])
-        kml_text = kml_bytes.decode('utf-8', errors='ignore')
-        coords_raw = ' '.join(el.text or '' for el in ET.fromstring(kml_text).iter() if el.tag.endswith('coordinates'))
-        pairs = re.findall(r'([-\d.]+),([-\d.]+)', coords_raw)
-        if pairs:
-            lons = [float(p[0]) for p in pairs]
-            lats = [float(p[1]) for p in pairs]
-            return {"lat": sum(lats)/len(lats), "lng": sum(lons)/len(lons)}
-        return None
-
     for (orig_name, fext, data) in all_files:
         # --- Geo files → map layers ---
         if fext in GEO_EXTS:
@@ -1900,9 +1970,13 @@ async def agent_upload_zip(
             }
             await db.project_map_layers.insert_one(layer)
             added_layers.append(orig_name)
-            if project_center is None and fext in ("kml", "kmz"):
+            # Auto-extract centroid from any geo file
+            if project_center is None:
                 try:
-                    project_center = _extract_kml_center(fext, data)
+                    if fext in ("kml", "kmz"):
+                        project_center = extract_centroid_from_kml(fext, data)
+                    elif fext in ("geojson", "json"):
+                        project_center = extract_centroid_from_geojson(data)
                 except Exception:
                     pass
 
