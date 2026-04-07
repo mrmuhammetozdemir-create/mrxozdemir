@@ -1955,7 +1955,44 @@ async def agent_upload_zip(
         "description_extracted": description_text is not None,
     }
 
-# ============= STARTUP =============
+# ============= SHARED FACILITIES =============
+
+@api_router.get("/shared-facilities")
+async def get_shared_facilities():
+    docs = await db.shared_facilities.find({}, {"_id": 0}).to_list(500)
+    return docs
+
+@api_router.post("/admin/shared-facilities")
+async def create_shared_facility(body: dict, admin: dict = Depends(require_admin)):
+    facility = {
+        "id": str(uuid.uuid4()),
+        "name": body.get("name", ""),
+        "type": body.get("type", "diger"),
+        "lat": float(body.get("lat", 0)),
+        "lng": float(body.get("lng", 0)),
+        "description": body.get("description", ""),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.shared_facilities.insert_one(facility)
+    facility.pop("_id", None)
+    return facility
+
+@api_router.delete("/admin/shared-facilities/{facility_id}")
+async def delete_shared_facility(facility_id: str, admin: dict = Depends(require_admin)):
+    result = await db.shared_facilities.delete_one({"id": facility_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Tesis bulunamadı")
+    return {"message": "Silindi"}
+
+@api_router.put("/admin/shared-facilities/{facility_id}")
+async def update_shared_facility(facility_id: str, body: dict, admin: dict = Depends(require_admin)):
+    update = {k: v for k, v in body.items() if k in ("name", "type", "lat", "lng", "description")}
+    if "lat" in update: update["lat"] = float(update["lat"])
+    if "lng" in update: update["lng"] = float(update["lng"])
+    await db.shared_facilities.update_one({"id": facility_id}, {"$set": update})
+    return {"message": "Güncellendi"}
+
+
 
 @app.on_event("startup")
 async def startup():

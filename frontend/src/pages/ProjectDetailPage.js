@@ -188,11 +188,13 @@ function AdaParselView({ projectId }) {
 
 function MapView({ project, projectId }) {
   const [layers, setLayers] = useState([]);
+  const [sharedFacilities, setSharedFacilities] = useState([]);
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
 
   useEffect(() => {
     api.get(`/projects/${projectId}/map-layers`).then(({ data }) => setLayers(data)).catch(() => {});
+    api.get('/shared-facilities').then(({ data }) => setSharedFacilities(data)).catch(() => {});
   }, [projectId]);
 
   useEffect(() => {
@@ -200,25 +202,24 @@ function MapView({ project, projectId }) {
     let destroyed = false;
 
     const loadMap = async () => {
-      // Dynamic imports for OpenLayers
       const ol = await import('ol');
       const { Tile: TileLayer, Vector: VectorLayer } = await import('ol/layer');
       const { XYZ, Vector: VectorSource } = await import('ol/source');
       const { KML, GeoJSON } = await import('ol/format');
-      const { fromLonLat, transformExtent } = await import('ol/proj');
-      const { Style, Fill, Stroke, Circle: CircleStyle } = await import('ol/style');
+      const { fromLonLat } = await import('ol/proj');
+      const { Style, Fill, Stroke, Circle: CircleStyle, Text: OlText } = await import('ol/style');
+      const { Point } = await import('ol/geom');
+      const { Feature } = await import('ol');
       await import('ol/ol.css');
 
       if (destroyed || !mapContainerRef.current) return;
 
-      // Cleanup previous
       if (mapInstanceRef.current) { mapInstanceRef.current.setTarget(undefined); mapInstanceRef.current = null; }
 
       const center = project?.location
         ? fromLonLat([project.location.lng, project.location.lat])
-        : fromLonLat([28.9784, 41.0082]); // Istanbul default
+        : fromLonLat([28.9784, 41.0082]);
 
-      // Google Maps Hybrid (Satellite + Labels) — most up-to-date imagery
       const satelliteLayer = new TileLayer({
         source: new XYZ({
           tileUrlFunction: (tileCoord) => {
@@ -238,7 +239,6 @@ function MapView({ project, projectId }) {
       });
       mapInstanceRef.current = map;
 
-      // Google Earth style
       const kmlStyle = new Style({
         fill: new Fill({ color: 'rgba(0, 229, 255, 0.30)' }),
         stroke: new Stroke({ color: '#ff00ff', width: 3 }),
@@ -251,46 +251,70 @@ function MapView({ project, projectId }) {
 
       const allExtents = [];
 
+      // --- KML/GeoJSON layers ---
       for (const layer of layers) {
         if (destroyed) break;
         try {
           let vectorSource;
-
           if (layer.file_type === 'KML' || layer.file_type === 'KMZ') {
-            // OpenLayers KML format — read raw KML text
             const resp = await fetch(`${API_BASE}/api/projects/${projectId}/map-layers/${layer.id}/data`);
             const kmlText = await resp.text();
-            const kmlFormat = new KML({ extractStyles: false });
-            const features = kmlFormat.readFeatures(kmlText, {
-              dataProjection: 'EPSG:4326',
-              featureProjection: 'EPSG:3857'
+            const features = new KML({ extractStyles: false }).readFeatures(kmlText, {
+              dataProjection: 'EPSG:4326', featureProjection: 'EPSG:3857'
             });
             vectorSource = new VectorSource({ features });
-
           } else if (layer.file_type === 'GEOJSON' || layer.file_type === 'JSON') {
             const { data } = await api.get(`/projects/${projectId}/map-layers/${layer.id}/data`);
-            const geojsonFormat = new GeoJSON();
-            const features = geojsonFormat.readFeatures(data, {
-              dataProjection: 'EPSG:4326',
-              featureProjection: 'EPSG:3857'
+            const features = new GeoJSON().readFeatures(data, {
+              dataProjection: 'EPSG:4326', featureProjection: 'EPSG:3857'
             });
             vectorSource = new VectorSource({ features });
           }
-
           if (vectorSource && !destroyed) {
-            const vectorLayer = new VectorLayer({ source: vectorSource, style: kmlStyle });
-            map.addLayer(vectorLayer);
+            map.addLayer(new VectorLayer({ source: vectorSource, style: kmlStyle }));
             const extent = vectorSource.getExtent();
-            if (extent && !extent.some(v => !isFinite(v))) {
-              allExtents.push(extent);
-            }
+            if (extent && !extent.some(v => !isFinite(v))) allExtents.push(extent);
           }
         } catch (e) { console.warn('Layer load error:', layer.original_filename, e); }
       }
 
+      // --- Shared facilities markers ---
+      if (sharedFacilities.length > 0 && !destroyed) {
+        const FACILITY_COLORS = {
+          okul:          { fill: '#0ea5e9', stroke: '#fff', text: '#fff', label: '🏫' },
+          cami:          { fill: '#22c55e', stroke: '#fff', text: '#fff', label: '🕌' },
+          sosyal_tesis:  { fill: '#8b5cf6', stroke: '#fff', text: '#fff', label: '🏛' },
+          park:          { fill: '#10b981', stroke: '#fff', text: '#fff', label: '🌳' },
+          hastane:       { fill: '#ef4444', stroke: '#fff', text: '#fff', label: '🏥' },
+          diger:         { fill: '#f59e0b', stroke: '#fff', text: '#fff', label: '📍' },
+        };
+
+        const facilityFeatures = sharedFacilities.map(f => {
+          const c = FACILITY_COLORS[f.type] || FACILITY_COLORS.diger;
+          const feature = new Feature({ geometry: new Point(fromLonLat([f.lng, f.lat])), name: f.name, type: f.type });
+          feature.setStyle(new Style({
+            image: new CircleStyle({
+              radius: 10,
+              fill: new Fill({ color: c.fill }),
+              stroke: new Stroke({ color: '#fff', width: 2 }),
+            }),
+            text: new OlText({
+              text: f.name,
+              offsetY: -18,
+              font: 'bold 11px sans-serif',
+              fill: new Fill({ color: '#fff' }),
+              stroke: new Stroke({ color: '#000', width: 3 }),
+            }),
+          }));
+          return feature;
+        });
+
+        const facilitySource = new VectorSource({ features: facilityFeatures });
+        map.addLayer(new VectorLayer({ source: facilitySource, zIndex: 10 }));
+      }
+
       if (destroyed) return;
 
-      // Auto-zoom to all features
       if (allExtents.length > 0) {
         const combined = allExtents.reduce((acc, ext) => [
           Math.min(acc[0], ext[0]), Math.min(acc[1], ext[1]),
@@ -305,7 +329,7 @@ function MapView({ project, projectId }) {
       destroyed = true;
       if (mapInstanceRef.current) { mapInstanceRef.current.setTarget(undefined); mapInstanceRef.current = null; }
     };
-  }, [project, projectId, layers]);
+  }, [project, projectId, layers, sharedFacilities]);
 
   return (
     <div className="space-y-2">

@@ -14,7 +14,7 @@ import {
   Image as ImageIcon, Video, Map, Layers, Building2, X, Check,
   Home, MapPin, GraduationCap, Users, Target, TrendingUp, BarChart3,
   Menu, LogOut, ChevronRight, UserCog, Bot, Send, Sparkles, CheckCircle2,
-  AlertCircle, Search, ListFilter
+  AlertCircle, Search, ListFilter, Pencil
 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
@@ -84,6 +84,7 @@ const SIDEBAR_ITEMS = [
   { id: 'toki', label: 'e-Konut Yönetimi', icon: Building2, color: 'text-blue-600' },
   { id: 'ipat', label: 'e-İPAT Yönetimi', icon: Map, color: 'text-green-600' },
   { id: 'mega', label: 'Mega Projeler', icon: MapPin, color: 'text-cyan-600' },
+  { id: 'shared', label: 'Ortak Tesisler', icon: Layers, color: 'text-emerald-600' },
   { id: 'education', label: 'Eğitim Yönetimi', icon: GraduationCap, color: 'text-amber-600' },
   { id: 'community', label: 'Topluluk Yönetimi', icon: Users, color: 'text-purple-600' },
   { id: 'opportunities', label: 'Arsa Fırsatları', icon: Target, color: 'text-red-600' },
@@ -984,6 +985,137 @@ function IpatManager() {
   );
 }
 
+// ==================== SHARED FACILITIES MANAGER ====================
+const FACILITY_TYPES = [
+  { value: 'okul',         label: 'Okul',          color: 'bg-sky-100 text-sky-800 border-sky-200' },
+  { value: 'cami',         label: 'Cami',          color: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+  { value: 'sosyal_tesis', label: 'Sosyal Tesis',  color: 'bg-purple-100 text-purple-800 border-purple-200' },
+  { value: 'park',         label: 'Park / Yeşil Alan', color: 'bg-green-100 text-green-800 border-green-200' },
+  { value: 'hastane',      label: 'Hastane / Sağlık', color: 'bg-red-100 text-red-800 border-red-200' },
+  { value: 'diger',        label: 'Diğer',         color: 'bg-amber-100 text-amber-800 border-amber-200' },
+];
+
+function SharedFacilitiesManager() {
+  const [facilities, setFacilities] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ name: '', type: 'okul', lat: '', lng: '', description: '' });
+  const [editId, setEditId] = useState(null);
+
+  const load = useCallback(async () => {
+    const { data } = await api.get('/shared-facilities');
+    setFacilities(data);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const save = async () => {
+    if (!form.name || !form.lat || !form.lng) { toast.error('Ad, enlem ve boylam zorunludur'); return; }
+    try {
+      const payload = { ...form, lat: parseFloat(form.lat), lng: parseFloat(form.lng) };
+      if (editId) {
+        await api.put(`/admin/shared-facilities/${editId}`, payload, { headers: authHeaders() });
+        toast.success('Tesis güncellendi');
+      } else {
+        await api.post('/admin/shared-facilities', payload, { headers: authHeaders() });
+        toast.success('Tesis eklendi');
+      }
+      setShowForm(false); setEditId(null);
+      setForm({ name: '', type: 'okul', lat: '', lng: '', description: '' });
+      load();
+    } catch { toast.error('İşlem başarısız'); }
+  };
+
+  const del = async (id) => {
+    if (!window.confirm('Bu tesis silinsin mi?')) return;
+    await api.delete(`/admin/shared-facilities/${id}`, { headers: authHeaders() });
+    toast.success('Silindi'); load();
+  };
+
+  const startEdit = (f) => {
+    setForm({ name: f.name, type: f.type, lat: f.lat, lng: f.lng, description: f.description || '' });
+    setEditId(f.id); setShowForm(true);
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900">Ortak Tesisler</h2>
+          <p className="text-sm text-slate-500 mt-0.5">Tüm proje haritalarında sabit görünecek ortak sosyal alanlar</p>
+        </div>
+        <Button onClick={() => { setShowForm(!showForm); setEditId(null); setForm({ name: '', type: 'okul', lat: '', lng: '', description: '' }); }}
+          className="bg-emerald-600 hover:bg-emerald-700" data-testid="new-facility-btn">
+          <Plus className="w-4 h-4 mr-2" />{showForm && !editId ? 'İptal' : 'Yeni Tesis'}
+        </Button>
+      </div>
+
+      {showForm && (
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+          <h3 className="font-bold text-slate-800 mb-4">{editId ? 'Tesis Düzenle' : 'Yeni Tesis Ekle'}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <Label className="text-sm font-medium text-slate-700">Tesis Adı *</Label>
+              <Input value={form.name} onChange={e => setForm(p => ({...p, name: e.target.value}))} placeholder="Örn: Sazlıbosna Ortaokulu" className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-sm font-medium text-slate-700">Tür *</Label>
+              <select value={form.type} onChange={e => setForm(p => ({...p, type: e.target.value}))}
+                className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                {FACILITY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <Label className="text-sm font-medium text-slate-700">Açıklama</Label>
+              <Input value={form.description} onChange={e => setForm(p => ({...p, description: e.target.value}))} placeholder="Kısa açıklama" className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-sm font-medium text-slate-700">Enlem (Lat) *</Label>
+              <Input type="number" step="any" value={form.lat} onChange={e => setForm(p => ({...p, lat: e.target.value}))} placeholder="41.152286" className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-sm font-medium text-slate-700">Boylam (Lng) *</Label>
+              <Input type="number" step="any" value={form.lng} onChange={e => setForm(p => ({...p, lng: e.target.value}))} placeholder="28.689402" className="mt-1" />
+            </div>
+          </div>
+          <p className="text-xs text-slate-400 mt-2">💡 Google Maps'te sağ tıklayıp koordinatı kopyalayabilirsiniz</p>
+          <div className="flex gap-2 mt-4">
+            <Button onClick={save} className="bg-emerald-600 hover:bg-emerald-700">{editId ? 'Güncelle' : 'Ekle'}</Button>
+            <Button variant="outline" onClick={() => { setShowForm(false); setEditId(null); }}>İptal</Button>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {facilities.length === 0 && (
+          <div className="col-span-3 text-center py-12 text-slate-400">
+            <Layers className="w-10 h-10 mx-auto mb-3 opacity-30" />
+            <p>Henüz ortak tesis eklenmedi</p>
+          </div>
+        )}
+        {facilities.map(f => {
+          const typeInfo = FACILITY_TYPES.find(t => t.value === f.type) || FACILITY_TYPES[5];
+          return (
+            <div key={f.id} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <span className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full border ${typeInfo.color} mb-1.5`}>{typeInfo.label}</span>
+                  <p className="font-bold text-slate-800 text-sm">{f.name}</p>
+                  {f.description && <p className="text-xs text-slate-500 mt-0.5">{f.description}</p>}
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => startEdit(f)}><Pencil className="w-3.5 h-3.5" /></Button>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-red-500 hover:text-red-700" onClick={() => del(f.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
+                </div>
+              </div>
+              <p className="text-[10px] text-slate-400 font-mono">{f.lat?.toFixed(5)}, {f.lng?.toFixed(5)}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ==================== MEGA PROJECTS MANAGER ====================
 function MegaManager() {
   const [projects, setProjects] = useState([]);
@@ -1173,6 +1305,7 @@ export default function AdminPanelPage() {
       case 'toki': return <TokiManager />;
       case 'ipat': return <IpatManager />;
       case 'mega': return <MegaManager />;
+      case 'shared': return <SharedFacilitiesManager />;
       case 'education': return <EducationManagerPage />;
       case 'community': return <CommunityManager />;
       case 'opportunities': return <OpportunitiesManager />;
