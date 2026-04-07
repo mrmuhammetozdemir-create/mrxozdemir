@@ -46,7 +46,7 @@ function AdminLogin({ onLogin }) {
       if (data.user.role !== 'admin') { toast.error('Admin yetkisi yok'); return; }
       localStorage.setItem('admin_token', data.access_token);
       onLogin(data.user);
-    } catch { toast.error('Giriş başarısız'); }
+    } catch (e) { toast.error('Giriş başarısız'); }
     finally { setLoading(false); }
   };
 
@@ -708,7 +708,7 @@ function MediaManager({ projectId }) {
   useEffect(() => { load(); }, [load]);
   const upload = async (e) => {
     const files = Array.from(e.target.files); if (!files.length) return; setUploading(true);
-    for (const f of files) { const fd = new FormData(); fd.append('file', f); fd.append('category', category); try { await api.post(`/admin/projects/${projectId}/media`, fd, { headers: authHeaders() }); } catch { toast.error(`${f.name} yüklenemedi`); } }
+    for (const f of files) { const fd = new FormData(); fd.append('file', f); fd.append('category', category); try { await api.post(`/admin/projects/${projectId}/media`, fd, { headers: authHeaders() }); } catch (e) { toast.error(`${f.name} yüklenemedi`); } }
     toast.success('Yüklendi'); load(); setUploading(false); e.target.value = '';
   };
   const del = async (id) => { await api.delete(`/admin/media/${id}`, { headers: authHeaders() }); load(); };
@@ -741,7 +741,7 @@ function DocumentManager({ projectId }) {
   const upload = async (e) => {
     const file = e.target.files[0]; if (!file || !title.trim()) { toast.error('Başlık zorunlu'); return; }
     const fd = new FormData(); fd.append('file', file); fd.append('title', title); fd.append('doc_type', docType);
-    try { await api.post(`/admin/projects/${projectId}/documents`, fd, { headers: authHeaders() }); toast.success('Yüklendi'); setTitle(''); load(); } catch { toast.error('Yükleme başarısız'); }
+    try { await api.post(`/admin/projects/${projectId}/documents`, fd, { headers: authHeaders() }); toast.success('Yüklendi'); setTitle(''); load(); } catch (e) { toast.error('Yükleme başarısız'); }
     e.target.value = '';
   };
   return (
@@ -870,7 +870,7 @@ function MapLayerManager({ projectId }) {
           const parsed = JSON.parse(ev.target.result);
           setPreviewData(parsed);
           toast.success('GeoJSON haritada gösteriliyor - ön izleme');
-        } catch {
+        } catch (e) {
           toast.error('GeoJSON dosyası okunamadı');
           setPreviewData(null);
         }
@@ -1051,7 +1051,7 @@ function SharedFacilitiesManager() {
       setShowForm(false); setEditId(null);
       setForm({ name: '', type: 'okul', lat: '', lng: '', description: '' });
       load();
-    } catch { toast.error('İşlem başarısız'); }
+    } catch (e) { toast.error('İşlem başarısız'); }
   };
 
   const del = async (id) => {
@@ -1397,7 +1397,7 @@ function SeoManager() {
       const map = {};
       data.forEach(p => { map[p.page_id] = p; });
       setPages(map);
-    } catch { /* ignore */ }
+    } catch (e) { /* SEO load failed silently */ }
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -1415,7 +1415,7 @@ function SeoManager() {
       await api.put(`/admin/seo/${activeId}`, payload, { headers: authHeaders() });
       setPages(prev => ({ ...prev, [activeId]: payload }));
       toast.success('Kaydedildi');
-    } catch { toast.error('Kayıt hatası'); }
+    } catch (e) { toast.error('Kayıt hatası'); }
     setSaving(false);
   };
 
@@ -1444,7 +1444,7 @@ function SeoManager() {
         updated[page.id] = merged;
         setPages({ ...updated });
         if (page.id === activeId) setForm({ ...merged });
-      } catch {}
+      } catch (e) { /* skip failed page */ }
     }
     setProgress('');
     setGeneratingAll(false);
