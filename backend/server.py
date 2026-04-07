@@ -1094,16 +1094,11 @@ async def get_toki_projects(city: Optional[str] = None, district: Optional[str] 
         query["district"] = {"$regex": district, "$options": "i"}
     if project_name:
         query["project_name"] = {"$regex": project_name, "$options": "i"}
-    # Search in both old and new collections
-    projects_old = await db.toki_projects.find(query, {"_id": 0}).to_list(1000)
-    projects_new = await db.projects.find(query, {"_id": 0}).to_list(1000)
-    return projects_old + projects_new
+    return await db.projects.find(query, {"_id": 0}).to_list(1000)
 
 @api_router.get("/toki/projects/{project_id}")
 async def get_toki_project(project_id: str):
-    project = await db.toki_projects.find_one({"id": project_id}, {"_id": 0})
-    if not project:
-        project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     return project
