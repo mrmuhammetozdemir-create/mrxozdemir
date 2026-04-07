@@ -94,17 +94,22 @@ function OLMegaMap({ projects, selectedProject, onSelectProject }) {
           projectId: p.id,
         });
         f.setStyle(new Style({
+          // Pin marker — teardrop style (large circle + small bottom dot)
           image: new CircleStyle({
-            radius: 11,
+            radius: 13,
             fill: new Fill({ color }),
-            stroke: new Stroke({ color: 'rgba(255,255,255,0.9)', width: 2 }),
+            stroke: new Stroke({ color: '#ffffff', width: 3 }),
           }),
+          // Label — white card with colored left border
           text: new OlText({
-            text: p.name.length > 22 ? p.name.substring(0, 19) + '…' : p.name,
-            offsetY: -20,
-            font: '11px sans-serif',
-            fill: new Fill({ color: '#fff' }),
-            stroke: new Stroke({ color: '#0f172a', width: 3 }),
+            text: p.name.length > 24 ? p.name.substring(0, 21) + '…' : p.name,
+            offsetY: -36,
+            font: 'bold 12px -apple-system, "Segoe UI", sans-serif',
+            fill: new Fill({ color: '#0f172a' }),
+            backgroundFill: new Fill({ color: 'rgba(255,255,255,0.97)' }),
+            backgroundStroke: new Stroke({ color, width: 2.5 }),
+            padding: [4, 8, 4, 8],
+            textAlign: 'center',
           }),
         }));
         return f;
