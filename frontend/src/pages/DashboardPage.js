@@ -50,7 +50,23 @@ export default function DashboardPage() {
     toast.success('Çıkış yapıldı');
   };
 
-  const go = (path, external) => external ? window.open(path, '_blank') : navigate(path);
+  const go = async (path, external) => {
+    if (!external) return navigate(path);
+    // Giriş yapmış kullanıcı varsa çapraz site token'ı oluştur
+    const sessionToken = localStorage.getItem('app_session_token');
+    if (appUser && sessionToken) {
+      try {
+        const { data } = await api.post('/auth/cross-site-token', {}, {
+          headers: { Authorization: `Bearer ${sessionToken}` }
+        });
+        if (data.token) {
+          window.open(`${path}?cst=${data.token}`, '_blank');
+          return;
+        }
+      } catch (e) { /* token alınamazsa tokensiz yönlendir */ }
+    }
+    window.open(path, '_blank');
+  };
 
   return (
     <div className="min-h-screen h-screen bg-[#F5E6D3] flex flex-col overflow-hidden">

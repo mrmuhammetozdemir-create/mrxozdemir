@@ -445,6 +445,52 @@ async def logout_user(request: Request):
     response.delete_cookie("session_token", path="/")
     return response
 
+# ============= CROSS-SITE AUTH (e-ipat.com entegrasyonu) =============
+
+@api_router.post("/auth/cross-site-token")
+async def create_cross_site_token(request: Request):
+    """Giriş yapmış kullanıcı için 5 dakikalık tek kullanımlık çapraz site token'ı oluşturur."""
+    user = await get_session_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Giriş yapmanız gerekiyor")
+    token = str(uuid.uuid4())
+    await db.cross_site_tokens.insert_one({
+        "token": token,
+        "user_id": user["user_id"],
+        "email": user.get("email", ""),
+        "full_name": user.get("full_name", ""),
+        "phone": user.get("phone", ""),
+        "plan": user.get("plan", "free"),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat(),
+        "used": False,
+    })
+    return {"token": token}
+
+@api_router.get("/auth/verify-cross-site-token")
+async def verify_cross_site_token(token: str = Query(...)):
+    """e-ipat.com bu endpoint'i çağırarak token'ı doğrular ve kullanıcı bilgilerini alır."""
+    doc = await db.cross_site_tokens.find_one({"token": token}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=401, detail="Geçersiz token")
+    if doc.get("used"):
+        raise HTTPException(status_code=401, detail="Token zaten kullanıldı")
+    expires_at = datetime.fromisoformat(doc["expires_at"])
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=401, detail="Token süresi dolmuş")
+    # Token'ı kullanıldı olarak işaretle (tek kullanımlık)
+    await db.cross_site_tokens.update_one({"token": token}, {"$set": {"used": True}})
+    return {
+        "valid": True,
+        "user_id": doc["user_id"],
+        "email": doc["email"],
+        "full_name": doc["full_name"],
+        "phone": doc.get("phone", ""),
+        "plan": doc.get("plan", "free"),
+    }
+
 # ============= USER MANAGEMENT (ADMIN) =============
 
 @api_router.get("/admin/app-users")
