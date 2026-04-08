@@ -29,8 +29,9 @@ export function AuthCallback() {
         localStorage.setItem('app_session_token', data.session_token);
         navigate('/', { state: { user: data.user } });
       })
-      .catch(() => {
-        toast.error('Google ile giriş başarısız');
+      .catch((err) => {
+        const msg = err?.response?.data?.detail || 'Google ile giriş başarısız. Lütfen tekrar deneyin.';
+        toast.error(msg);
         navigate('/auth');
       });
   }, [navigate]);

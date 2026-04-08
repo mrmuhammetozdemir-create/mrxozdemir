@@ -396,9 +396,16 @@ async def google_session(request: Request):
     if not session_id:
         raise HTTPException(status_code=400, detail="session_id required")
     # Exchange session_id with Emergent Auth
-    resp = requests.get(EMERGENT_AUTH_URL, headers={"X-Session-ID": session_id}, timeout=10)
-    if resp.status_code != 200:
-        raise HTTPException(status_code=401, detail="Google auth failed")
+    logger.info(f"Google session exchange attempt, session_id length: {len(session_id)}")
+    try:
+        resp = requests.get(EMERGENT_AUTH_URL, headers={"X-Session-ID": session_id}, timeout=10)
+        logger.info(f"Emergent Auth response status: {resp.status_code}")
+        if resp.status_code != 200:
+            logger.error(f"Emergent Auth failed: {resp.status_code} - {resp.text}")
+            raise HTTPException(status_code=401, detail=f"Google auth failed: {resp.json().get('detail', {}).get('error_description', 'Unknown error')}")
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Emergent Auth request error: {e}")
+        raise HTTPException(status_code=503, detail="Auth service unavailable")
     google_data = resp.json()
     email = google_data.get("email")
     name = google_data.get("name", "")
