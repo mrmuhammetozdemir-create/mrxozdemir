@@ -8,7 +8,7 @@ import { useSEO } from '@/hooks/useSEO';
 
 const topModules = [
   { id: 'toki', title: 'e-Konut', subtitle: 'Toplu konut ve proje analiz sistemi', icon: Building2, color: 'bg-blue-500', path: '/toki', testId: 'module-toki' },
-  { id: 'land', title: 'e-İPAT', subtitle: 'Arazi Parsel Veri Erişimi', icon: Map, color: 'bg-green-600', path: '/land', testId: 'module-land' },
+  { id: 'land', title: 'e-İPAT', subtitle: 'Arazi Parsel Veri Erişimi', icon: Map, color: 'bg-green-600', path: 'https://e-ipat.com', external: true, testId: 'module-land' },
   { id: 'investment', title: 'Yatırım Simülatörü', subtitle: 'Proje ROI Tahmini', icon: Calculator, color: 'bg-amber-500', path: '/investment', testId: 'module-investment' },
   { id: 'mega', title: 'Mega Projeler Haritası', subtitle: 'Altyapı Öngörüleri', icon: MapPin, color: 'bg-cyan-500', path: '/mega-projects', testId: 'module-mega' },
   { id: 'education', title: 'Eğitim Merkezi', subtitle: 'PropTech Kursları', icon: GraduationCap, color: 'bg-teal-600', path: '/education', testId: 'module-education' },
@@ -50,7 +50,7 @@ export default function DashboardPage() {
     toast.success('Çıkış yapıldı');
   };
 
-  const go = (path) => navigate(path);
+  const go = (path, external) => external ? window.open(path, '_blank') : navigate(path);
 
   return (
     <div className="min-h-screen h-screen bg-[#F5E6D3] flex flex-col overflow-hidden">
@@ -99,7 +99,7 @@ export default function DashboardPage() {
           {topModules.map((m) => {
             const Icon = m.icon;
             return (
-              <div key={m.id} onClick={() => go(m.path)} className="flex-1 cursor-pointer group text-center" data-testid={m.testId}>
+              <div key={m.id} onClick={() => go(m.path, m.external)} className="flex-1 cursor-pointer group text-center" data-testid={m.testId}>
                 <div className={`w-14 h-14 ${m.color} rounded-xl mx-auto flex items-center justify-center group-hover:scale-105 transition-transform shadow-md`}>
                   <Icon className="w-7 h-7 text-white" strokeWidth={1.5} />
                 </div>
@@ -144,7 +144,7 @@ export default function DashboardPage() {
             </div>
 
             {/* e-IPAT */}
-            <div onClick={() => go('/land')} className="relative rounded-xl overflow-hidden shadow-md cursor-pointer hover:shadow-lg transition-all" data-testid="feature-land">
+            <div onClick={() => go('https://e-ipat.com', true)} className="relative rounded-xl overflow-hidden shadow-md cursor-pointer hover:shadow-lg transition-all" data-testid="feature-land">
               <div className="absolute inset-0 bg-gradient-to-br from-teal-700 to-teal-800" />
               <div className="relative p-2 h-full flex flex-col">
                 <div className="flex items-start justify-between">
