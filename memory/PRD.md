@@ -164,7 +164,19 @@ Tam fonksiyonel landing page:
 - **KMZ/GeoJSON katmanları**: from_projects projelerinin harita katmanları Mega Projeler haritasında da cyan renkte gösterilir
 - **Admin Edit**: Düzenle butonu, açıklama alanı, koordinat (lat/lng) alanları eklendi; PUT endpoint ile güncelleme
 
-## Backlog (Prioritized)
+## MrxAkademi Yönetim Sayfası (Konsolide Admin) - Feb 2026 - TAMAMLANDI
+
+Tüm eğitim ve gayrimenkul araçlarını tek sayfada toplayan `MrxAkademiManager.js` bileşeni:
+- **Accordion bölümleri (9 adet):** Eğitimler & Kurslar, Canlı Yayınlar, Süpervizyon, Sınavlar (AI PDF desteği), Öğrenci Takibi, Ödemeler, Sözleşmeler, Dosyalar, Gayrimenkul Araçları
+- **Academy Stats Bar:** 8 metrik kart (Öğrenci, Kurs, Canlı Yayın, Süpervizyon, Sınav, Sınav Girişi, Ödeme, Sözleşme) — CRUD sonrası otomatik güncellenir
+- **Öğrenci Takibi:** Tablo listesi + detay görünümü (Kurs İlerlemesi, Sınavlar, Dosyalar, Ödemeler tabları)
+- **Ödemeler/Sözleşmeler/Dosyalar CRUD:** Admin tüm kayıtları ekleyebilir, düzenleyebilir, silebilir
+- **Gayrimenkul linkleri:** 6 hızlı link (e-Konut, e-İPAT, Mega Projeler, Arsa Fırsatları, Piyasa Analizi, Topluluk)
+- **Bug fix:** `AdminPanelPage.js` switch'e `case 'mrxakademi'` eklendi
+- **Backend:** /admin/academy-stats, /admin/students[/{id}], /admin/payments CRUD, /admin/contracts CRUD, /admin/all-files, /admin/files/{user_id}
+- **Test:** Backend 37/37, Frontend 100%
+
+
 - P1: Yatırımcı Başvuru Formu email confirmation (Resend/SendGrid)
 - P1: Backend modularization (split server.py into FastAPI routers - 2300+ lines)
 - P2: User Dashboard (my courses, my seminars, certificates)

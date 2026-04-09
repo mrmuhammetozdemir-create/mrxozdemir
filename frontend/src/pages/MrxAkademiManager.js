@@ -49,14 +49,15 @@ function Section({ id, title, icon: Icon, iconBg, badge, children, defaultOpen =
 }
 
 // ─── Stats Bar ────────────────────────────────────────────────────────────────
-function AcademyStats() {
+function AcademyStats({ refreshKey = 0 }) {
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     api.get('/admin/academy-stats', { headers: authHeaders() })
       .then(r => setStats(r.data)).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+  }, [refreshKey]);
 
   const cards = [
     { label: 'Öğrenci', value: stats.students, icon: Users, bg: 'bg-indigo-600' },
@@ -291,7 +292,7 @@ function StudentsSection() {
 }
 
 // ─── Ödemeler Yönetimi ────────────────────────────────────────────────────────
-function PaymentsAdminSection({ students }) {
+function PaymentsAdminSection({ students, onCrudSuccess }) {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(null);
@@ -310,14 +311,14 @@ function PaymentsAdminSection({ students }) {
     try {
       if (editId) { await api.put(`/admin/payments/${editId}`, form, { headers: authHeaders() }); toast.success('Güncellendi'); }
       else { await api.post('/admin/payments', form, { headers: authHeaders() }); toast.success('Eklendi'); }
-      setForm(null); setEditId(null); load();
+      setForm(null); setEditId(null); load(); onCrudSuccess?.();
     } catch { toast.error('Kayıt başarısız'); } finally { setSaving(false); }
   };
 
   const del = async (id) => {
     if (!window.confirm('Silinsin mi?')) return;
     await api.delete(`/admin/payments/${id}`, { headers: authHeaders() });
-    toast.success('Silindi'); load();
+    toast.success('Silindi'); load(); onCrudSuccess?.();
   };
 
   return (
@@ -417,7 +418,7 @@ function PaymentsAdminSection({ students }) {
 }
 
 // ─── Sözleşmeler Yönetimi ─────────────────────────────────────────────────────
-function ContractsAdminSection({ students }) {
+function ContractsAdminSection({ students, onCrudSuccess }) {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(null);
@@ -436,14 +437,14 @@ function ContractsAdminSection({ students }) {
     try {
       if (editId) { await api.put(`/admin/contracts/${editId}`, form, { headers: authHeaders() }); toast.success('Güncellendi'); }
       else { await api.post('/admin/contracts', form, { headers: authHeaders() }); toast.success('Eklendi'); }
-      setForm(null); setEditId(null); load();
+      setForm(null); setEditId(null); load(); onCrudSuccess?.();
     } catch { toast.error('Kayıt başarısız'); } finally { setSaving(false); }
   };
 
   const del = async (id) => {
     if (!window.confirm('Silinsin mi?')) return;
     await api.delete(`/admin/contracts/${id}`, { headers: authHeaders() });
-    toast.success('Silindi'); load();
+    toast.success('Silindi'); load(); onCrudSuccess?.();
   };
 
   return (
@@ -537,7 +538,7 @@ function ContractsAdminSection({ students }) {
 }
 
 // ─── Dosyalar Yönetimi ────────────────────────────────────────────────────────
-function FilesAdminSection({ students }) {
+function FilesAdminSection({ students, onCrudSuccess }) {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(null);
@@ -555,14 +556,14 @@ function FilesAdminSection({ students }) {
     setSaving(true);
     try {
       await api.post(`/admin/files/${selUser}`, { file_name: form.file_name, file_url: form.file_url, file_type: 'document' }, { headers: authHeaders() });
-      toast.success('Dosya eklendi'); setForm(null); setSelUser(''); load();
+      toast.success('Dosya eklendi'); setForm(null); setSelUser(''); load(); onCrudSuccess?.();
     } catch { toast.error('Eklenemedi'); } finally { setSaving(false); }
   };
 
   const del = async (id) => {
     if (!window.confirm('Silinsin mi?')) return;
     await api.delete(`/admin/files/${id}`, { headers: authHeaders() });
-    toast.success('Silindi'); load();
+    toast.success('Silindi'); load(); onCrudSuccess?.();
   };
 
   return (
@@ -667,6 +668,8 @@ function GayrimenkulLinks({ onNavigate }) {
 // ─── Main MrxAkademi Manager ──────────────────────────────────────────────────
 export default function MrxAkademiManager({ onNavigate }) {
   const [students, setStudents] = useState([]);
+  const [statsKey, setStatsKey] = useState(0);
+  const refreshStats = () => setStatsKey(k => k + 1);
 
   useEffect(() => {
     api.get('/admin/students', { headers: authHeaders() })
@@ -691,7 +694,7 @@ export default function MrxAkademiManager({ onNavigate }) {
       </div>
 
       {/* Academy Stats */}
-      <AcademyStats />
+      <AcademyStats refreshKey={statsKey} />
 
       {/* Accordion Sections */}
       <div className="space-y-3">
@@ -720,15 +723,15 @@ export default function MrxAkademiManager({ onNavigate }) {
         </Section>
 
         <Section id="payments" title="Ödemeler" icon={CreditCard} iconBg="bg-emerald-600" defaultOpen={false}>
-          <PaymentsAdminSection students={students} />
+          <PaymentsAdminSection students={students} onCrudSuccess={refreshStats} />
         </Section>
 
         <Section id="contracts" title="Sözleşmeler" icon={FileText} iconBg="bg-teal-600" defaultOpen={false}>
-          <ContractsAdminSection students={students} />
+          <ContractsAdminSection students={students} onCrudSuccess={refreshStats} />
         </Section>
 
         <Section id="files" title="Dosya Yönetimi" icon={FolderOpen} iconBg="bg-slate-600" defaultOpen={false}>
-          <FilesAdminSection students={students} />
+          <FilesAdminSection students={students} onCrudSuccess={refreshStats} />
         </Section>
 
         <Section id="gayrimenkul" title="Gayrimenkul Araçları" icon={Building2} iconBg="bg-cyan-600" defaultOpen={false}>
