@@ -71,19 +71,31 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen h-screen bg-[#F5E6D3] flex flex-col overflow-hidden">
       {/* Top Bar */}
-      <div className="bg-white border-b border-slate-200 px-4 py-3 flex-shrink-0">
+      <div className="bg-white border-b border-slate-100 px-4 py-2.5 flex-shrink-0">
         <div className="max-w-lg mx-auto flex items-center justify-between">
-          {/* New mrxozdemir Logo */}
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center shadow-sm relative overflow-hidden">
-              <span className="text-white font-black text-xs tracking-tighter leading-none select-none" style={{ fontFamily: "'Outfit', system-ui, sans-serif" }}>MRX</span>
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500" />
+          {/* mrxozdemir — Premium Logo */}
+          <div className="flex items-center gap-2.5">
+            {/* Logo Mark */}
+            <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0" style={{ background: 'linear-gradient(135deg, #0f172a 60%, #1e293b)' }}>
+              {/* Emerald glow accent */}
+              <div className="absolute inset-0 opacity-20" style={{ background: 'radial-gradient(circle at 80% 20%, #10b981, transparent 60%)' }} />
+              {/* MRX text */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-0">
+                <span className="text-white font-black text-[11px] tracking-widest leading-none select-none" style={{ fontFamily: "'Outfit', sans-serif" }}>MRX</span>
+              </div>
+              {/* Bottom accent bar */}
+              <div className="absolute bottom-0 left-0 right-0 h-[3px]" style={{ background: 'linear-gradient(90deg, #10b981, #0ea5e9)' }} />
             </div>
+            {/* Wordmark */}
             <div className="leading-none">
-              <span className="text-base font-black tracking-tight text-slate-900 leading-none" style={{ fontFamily: "'Outfit', system-ui, sans-serif" }}>
-                mrx<span className="text-slate-500 font-semibold">ozdemir</span>
-              </span>
-              <p className="text-[9px] text-slate-400 font-medium leading-none mt-0.5">Gayrimenkul Teknolojileri</p>
+              <div className="leading-none" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                <span className="text-[17px] font-black tracking-tight text-slate-900">mrx</span>
+                <span className="text-[17px] font-light tracking-tight" style={{ color: '#10b981' }}>özdemir</span>
+              </div>
+              <div className="flex items-center gap-1 mt-0.5">
+                <div className="h-px flex-1 bg-gradient-to-r from-slate-300 to-transparent" style={{ width: '28px' }} />
+                <p className="text-[8px] font-semibold tracking-[0.15em] text-slate-400 uppercase">Gayrimenkul</p>
+              </div>
             </div>
           </div>
           {/* Auth */}
@@ -220,11 +232,11 @@ export default function DashboardPage() {
             <div className="relative px-3 py-1.5 flex items-center justify-between h-full">
               <div className="flex-1">
                 {/* mrxakademi micro-logo inside card */}
-                <div className="flex items-center gap-1 mb-1">
-                  <div className="w-4 h-4 rounded bg-white/90 flex items-center justify-center shadow-sm shrink-0">
-                    <BookOpen className="w-2.5 h-2.5 text-teal-700" />
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <div className="w-6 h-6 rounded-md bg-white/90 flex items-center justify-center shadow-sm shrink-0">
+                    <BookOpen className="w-3.5 h-3.5 text-teal-700" />
                   </div>
-                  <span className="text-[9px] font-black text-slate-900 leading-none" style={{ fontFamily: "'Outfit', system-ui, sans-serif" }}>
+                  <span className="text-[12px] font-black text-slate-900 leading-none" style={{ fontFamily: "'Outfit', sans-serif" }}>
                     mrx<span className="text-teal-700">akademi</span>
                   </span>
                 </div>
