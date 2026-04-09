@@ -2410,6 +2410,154 @@ async def update_shared_facility(facility_id: str, body: dict, admin: dict = Dep
 
 
 
+# ============= MRXAKADEMİ KAPSAMLI YÖNETİM =============
+
+@api_router.get("/admin/academy-stats")
+async def admin_academy_stats(admin: dict = Depends(require_admin)):
+    courses = await db.courses.count_documents({"status": "active"})
+    seminars = await db.seminars.count_documents({})
+    students = await db.app_users.count_documents({"role": "user"})
+    streams = await db.live_streams.count_documents({})
+    supervision = await db.supervision_events.count_documents({})
+    exams = await db.course_exams.count_documents({})
+    payments = await db.user_payments.count_documents({})
+    contracts = await db.user_contracts.count_documents({})
+    files = await db.user_files.count_documents({})
+    exam_attempts = await db.user_exam_attempts.count_documents({})
+    passed = await db.user_exam_attempts.count_documents({"passed": True})
+    return {
+        "courses": courses, "seminars": seminars, "students": students,
+        "streams": streams, "supervision": supervision, "exams": exams,
+        "payments": payments, "contracts": contracts, "files": files,
+        "exam_attempts": exam_attempts, "passed_exams": passed,
+    }
+
+@api_router.get("/admin/students")
+async def admin_get_students(admin: dict = Depends(require_admin)):
+    users = await db.app_users.find({"role": "user"}, {"_id": 0, "password": 0, "hashed_password": 0}).to_list(1000)
+    result = []
+    for user in users:
+        uid = user.get("user_id")
+        prog_records = await db.user_progress.find({"user_id": uid}, {"_id": 0}).to_list(100)
+        attempts = await db.user_exam_attempts.find({"user_id": uid}, {"_id": 0}).to_list(100)
+        completed_lessons = sum(len(p.get("completed_lessons", [])) for p in prog_records)
+        last_activity = max([p.get("updated_at", "") for p in prog_records], default=None)
+        best_score = max([a.get("score", 0) for a in attempts], default=0)
+        result.append({
+            **{k: v for k, v in user.items() if k not in ("_id",)},
+            "completed_lessons": completed_lessons,
+            "exam_attempts": len(attempts),
+            "best_score": best_score,
+            "courses_enrolled": len(prog_records),
+            "last_activity": last_activity,
+        })
+    return result
+
+@api_router.get("/admin/students/{user_id}")
+async def admin_get_student_detail(user_id: str, admin: dict = Depends(require_admin)):
+    user = await db.app_users.find_one({"user_id": user_id}, {"_id": 0, "password": 0, "hashed_password": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
+    courses = await db.courses.find({"status": "active"}, {"_id": 0, "modules": 1, "title": 1, "id": 1, "cover_image": 1}).to_list(100)
+    progress_list = []
+    for course in courses:
+        prog = await db.user_progress.find_one({"user_id": user_id, "course_id": course.get("id")}, {"_id": 0})
+        total = sum(len(m.get("lessons", [])) for m in course.get("modules", []))
+        completed = len(prog.get("completed_lessons", [])) if prog else 0
+        pct = round(completed / total * 100) if total > 0 else 0
+        progress_list.append({
+            "course_id": course.get("id"), "title": course.get("title"),
+            "cover_image": course.get("cover_image", ""), "progress_pct": pct,
+            "completed": completed, "total": total,
+            "last_lesson": prog.get("last_lesson_id") if prog else None
+        })
+    attempts = await db.user_exam_attempts.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+    # Enrich attempts with exam titles
+    for a in attempts:
+        exam = await db.course_exams.find_one({"id": a.get("exam_id")}, {"_id": 0, "title": 1})
+        a["exam_title"] = exam.get("title", "Sınav") if exam else "Sınav"
+    files = await db.user_files.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+    payments = await db.user_payments.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+    contracts = await db.user_contracts.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+    return {"user": user, "progress": progress_list, "exam_attempts": attempts, "files": files, "payments": payments, "contracts": contracts}
+
+@api_router.get("/admin/payments")
+async def admin_get_all_payments(admin: dict = Depends(require_admin)):
+    payments = await db.user_payments.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return payments
+
+@api_router.post("/admin/payments")
+async def admin_create_payment(body: dict, admin: dict = Depends(require_admin)):
+    payment = {
+        "id": str(uuid.uuid4()), "user_id": body.get("user_id", ""), "course_name": body.get("course_name", ""),
+        "amount": body.get("amount", ""), "status": body.get("status", "pending"),
+        "notes": body.get("notes", ""), "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.user_payments.insert_one(payment)
+    payment.pop("_id", None)
+    return payment
+
+@api_router.put("/admin/payments/{payment_id}")
+async def admin_update_payment(payment_id: str, body: dict, admin: dict = Depends(require_admin)):
+    update = {k: v for k, v in body.items() if k in ("course_name", "amount", "status", "notes")}
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.user_payments.update_one({"id": payment_id}, {"$set": update})
+    return {"message": "Güncellendi"}
+
+@api_router.delete("/admin/payments/{payment_id}")
+async def admin_delete_payment(payment_id: str, admin: dict = Depends(require_admin)):
+    await db.user_payments.delete_one({"id": payment_id})
+    return {"message": "Silindi"}
+
+@api_router.get("/admin/contracts")
+async def admin_get_all_contracts(admin: dict = Depends(require_admin)):
+    contracts = await db.user_contracts.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return contracts
+
+@api_router.post("/admin/contracts")
+async def admin_create_contract(body: dict, admin: dict = Depends(require_admin)):
+    contract = {
+        "id": str(uuid.uuid4()), "user_id": body.get("user_id", ""), "contract_name": body.get("contract_name", ""),
+        "status": body.get("status", "pending"), "notes": body.get("notes", ""),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.user_contracts.insert_one(contract)
+    contract.pop("_id", None)
+    return contract
+
+@api_router.put("/admin/contracts/{contract_id}")
+async def admin_update_contract(contract_id: str, body: dict, admin: dict = Depends(require_admin)):
+    update = {k: v for k, v in body.items() if k in ("contract_name", "status", "notes")}
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.user_contracts.update_one({"id": contract_id}, {"$set": update})
+    return {"message": "Güncellendi"}
+
+@api_router.delete("/admin/contracts/{contract_id}")
+async def admin_delete_contract(contract_id: str, admin: dict = Depends(require_admin)):
+    await db.user_contracts.delete_one({"id": contract_id})
+    return {"message": "Silindi"}
+
+@api_router.get("/admin/all-files")
+async def admin_get_all_files(admin: dict = Depends(require_admin)):
+    files = await db.user_files.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return files
+
+@api_router.post("/admin/files/{user_id}")
+async def admin_add_file(user_id: str, body: dict, admin: dict = Depends(require_admin)):
+    f = {
+        "id": str(uuid.uuid4()), "user_id": user_id, "file_name": body.get("file_name", ""),
+        "file_url": body.get("file_url", ""), "file_type": body.get("file_type", "document"),
+        "status": "active", "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.user_files.insert_one(f)
+    f.pop("_id", None)
+    return f
+
+@api_router.delete("/admin/files/{file_id}")
+async def admin_delete_file_admin(file_id: str, admin: dict = Depends(require_admin)):
+    await db.user_files.delete_one({"id": file_id})
+    return {"message": "Silindi"}
+
 # ============= AI SINAV ÇIKARICI (PDF → Sorular) =============
 
 @api_router.post("/admin/exams/extract-from-pdf")

@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import UsersManager from '@/pages/UsersManager';
 import EducationManagerPage from '@/pages/EducationManager';
 import PanelManager from '@/pages/PanelManager';
+import MrxAkademiManager from '@/pages/MrxAkademiManager';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL;
 
@@ -82,6 +83,7 @@ function AdminLogin({ onLogin }) {
 // ==================== SIDEBAR ====================
 const SIDEBAR_ITEMS = [
   { id: 'dashboard', label: 'Ana Sayfa', icon: Home, color: 'text-slate-600' },
+  { id: 'mrxakademi', label: 'Mrxakademi', icon: GraduationCap, color: 'text-emerald-600' },
   { id: 'toki', label: 'e-Konut Yönetimi', icon: Building2, color: 'text-blue-600' },
   { id: 'ipat', label: 'e-İPAT Yönetimi', icon: Map, color: 'text-green-600' },
   { id: 'mega', label: 'Mega Projeler', icon: MapPin, color: 'text-cyan-600' },

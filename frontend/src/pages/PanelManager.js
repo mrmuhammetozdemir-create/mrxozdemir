@@ -734,6 +734,7 @@ function ExamsTab({ onUpdate }) {
 }
 
 // ========== MAIN PANEL MANAGER ==========
+export { LiveStreamsTab, SupervisionTab, ExamsTab, AiExamAssistant };
 export default function PanelManager() {
   const [stats, setStats] = useState({ streams: 0, supervision: 0, exams: 0, active_users: 0 });
 
