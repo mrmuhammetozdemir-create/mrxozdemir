@@ -87,12 +87,10 @@ const SIDEBAR_ITEMS = [
   { id: 'toki', label: 'e-Konut Yönetimi', icon: Building2, color: 'text-blue-600' },
   { id: 'ipat', label: 'e-İPAT Yönetimi', icon: Map, color: 'text-green-600' },
   { id: 'mega', label: 'Mega Projeler', icon: MapPin, color: 'text-cyan-600' },
-  { id: 'education', label: 'Eğitim Yönetimi', icon: GraduationCap, color: 'text-amber-600' },
   { id: 'community', label: 'Topluluk Yönetimi', icon: Users, color: 'text-purple-600' },
   { id: 'opportunities', label: 'Arsa Fırsatları', icon: Target, color: 'text-red-600' },
   { id: 'market', label: 'Piyasa Analizi', icon: BarChart3, color: 'text-teal-600' },
   { id: 'users', label: 'Kullanıcılar', icon: UserCog, color: 'text-indigo-600' },
-  { id: 'panel', label: 'Panel Yönetimi', icon: Radio, color: 'text-red-500' },
   { id: 'seo',   label: 'SEO Yönetimi', icon: Globe,   color: 'text-emerald-600' },
 ];
 

@@ -7,10 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import {
   BookOpen, Radio, Users, ClipboardList, CreditCard, FileText,
-  FolderOpen, Building2, GraduationCap, BarChart3, ChevronDown, ChevronUp,
-  User, CheckCircle, Clock, XCircle, Loader2, Plus, Trash2, Edit,
-  Save, X, Eye, TrendingUp, Award, MapPin, Target, ArrowLeft,
-  Home, Layers
+  FolderOpen, GraduationCap, ChevronDown, ChevronUp,
+  User, CheckCircle, XCircle, Loader2, Plus, Trash2, Edit,
+  Save, X, Eye, MapPin, Target, ArrowLeft, LayoutDashboard
 } from 'lucide-react';
 import api from '@/utils/api';
 import EducationManagerPage from '@/pages/EducationManager';
@@ -130,7 +129,6 @@ function StudentsSection() {
           <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>
         ) : detail ? (
           <div className="space-y-5">
-            {/* User Header */}
             <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
               <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center shrink-0">
                 <User className="w-6 h-6 text-white" />
@@ -633,34 +631,40 @@ function FilesAdminSection({ students, onCrudSuccess }) {
   );
 }
 
-// ─── Gayrimenkul Araçları (Quick Links) ───────────────────────────────────────
-function GayrimenkulLinks({ onNavigate }) {
-  const links = [
-    { id: 'toki', label: 'e-Konut Yönetimi', icon: Building2, color: 'bg-blue-600', desc: 'Projeler, galeriler, haritalar' },
-    { id: 'eipat', label: 'e-İPAT Yönetimi', icon: Layers, color: 'bg-teal-600', desc: 'Arsa parsel analizi' },
-    { id: 'mega', label: 'Mega Projeler', icon: MapPin, color: 'bg-cyan-600', desc: 'Altyapı ve büyük projeler' },
-    { id: 'opportunities', label: 'Arsa Fırsatları', icon: Target, color: 'bg-orange-500', desc: 'Yatırım fırsatları' },
-    { id: 'market', label: 'Piyasa Analizi', icon: BarChart3, color: 'bg-violet-600', desc: 'Piyasa verileri' },
-    { id: 'community', label: 'Topluluk', icon: Users, color: 'bg-purple-600', desc: 'Forum gönderileri' },
-  ];
+// ─── Kullanıcı Panel Yönetimi (tüm kullanıcı paneli bölümleri) ────────────────
+function UserPanelManager({ students, onCrudSuccess }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-      {links.map(l => {
-        const Icon = l.icon;
-        return (
-          <button key={l.id} onClick={() => onNavigate(l.id)}
-            data-testid={`gayrimenkul-link-${l.id}`}
-            className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all text-left">
-            <div className={`w-8 h-8 rounded-lg ${l.color} flex items-center justify-center shrink-0`}>
-              <Icon className="w-4 h-4 text-white" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-bold text-slate-900 truncate">{l.label}</p>
-              <p className="text-[10px] text-slate-400 truncate">{l.desc}</p>
-            </div>
-          </button>
-        );
-      })}
+    <div className="space-y-3" data-testid="user-panel-manager">
+      <Section id="live-streams" title="Canlı Yayınlar" icon={Radio} iconBg="bg-red-500" defaultOpen={false}>
+        <LiveStreamsTab />
+      </Section>
+
+      <Section id="supervision" title="Süpervizyon Etkinlikleri" icon={MapPin} iconBg="bg-blue-600" defaultOpen={false}>
+        <SupervisionTab />
+      </Section>
+
+      <Section id="exams" title="Eğitim Sınavları" icon={ClipboardList} iconBg="bg-purple-600" defaultOpen={false}>
+        <div className="space-y-4">
+          <AiExamAssistant onExtracted={() => {}} />
+          <ExamsTab />
+        </div>
+      </Section>
+
+      <Section id="students" title="Öğrenci Takibi" icon={Users} iconBg="bg-indigo-600" badge={students.length} defaultOpen={false}>
+        <StudentsSection />
+      </Section>
+
+      <Section id="payments" title="Ödemeler" icon={CreditCard} iconBg="bg-emerald-600" defaultOpen={false}>
+        <PaymentsAdminSection students={students} onCrudSuccess={onCrudSuccess} />
+      </Section>
+
+      <Section id="contracts" title="Sözleşmeler" icon={FileText} iconBg="bg-teal-600" defaultOpen={false}>
+        <ContractsAdminSection students={students} onCrudSuccess={onCrudSuccess} />
+      </Section>
+
+      <Section id="files" title="Dosya Yönetimi" icon={FolderOpen} iconBg="bg-slate-600" defaultOpen={false}>
+        <FilesAdminSection students={students} onCrudSuccess={onCrudSuccess} />
+      </Section>
     </div>
   );
 }
@@ -688,7 +692,7 @@ export default function MrxAkademiManager({ onNavigate }) {
             <h2 className="text-xl font-black text-slate-900" style={{ fontFamily: "'Outfit', sans-serif" }}>
               mrx<span className="text-emerald-600">akademi</span>
             </h2>
-            <p className="text-xs text-slate-500">Tüm eğitim ve gayrimenkul araçlarını tek panelden yönet</p>
+            <p className="text-xs text-slate-500">Eğitim sitesi ve kullanıcı panelini tek yerden yönet</p>
           </div>
         </div>
       </div>
@@ -696,49 +700,57 @@ export default function MrxAkademiManager({ onNavigate }) {
       {/* Academy Stats */}
       <AcademyStats refreshKey={statsKey} />
 
-      {/* Accordion Sections */}
-      <div className="space-y-3">
+      {/* İki Ana Bölüm: Tabs */}
+      <Tabs defaultValue="site" className="w-full" data-testid="mrxakademi-tabs">
+        <TabsList className="w-full mb-5 bg-slate-100 p-1 h-auto rounded-xl">
+          <TabsTrigger
+            value="site"
+            data-testid="tab-site-yonetimi"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
+          >
+            <BookOpen className="w-4 h-4" />
+            Site Yönetimi
+          </TabsTrigger>
+          <TabsTrigger
+            value="panel"
+            data-testid="tab-kullanici-panel"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
+          >
+            <LayoutDashboard className="w-4 h-4" />
+            Kullanıcı Panel Yönetimi
+          </TabsTrigger>
+        </TabsList>
 
-        <Section id="education" title="Eğitimler & Kurs İçerikleri" icon={BookOpen} iconBg="bg-amber-500" defaultOpen={false}>
-          <EducationManagerPage />
-        </Section>
-
-        <Section id="live-streams" title="Canlı Yayınlar" icon={Radio} iconBg="bg-red-500" defaultOpen={false}>
-          <LiveStreamsTab />
-        </Section>
-
-        <Section id="supervision" title="Süpervizyon Etkinlikleri" icon={MapPin} iconBg="bg-blue-600" defaultOpen={false}>
-          <SupervisionTab />
-        </Section>
-
-        <Section id="exams" title="Eğitim Sınavları" icon={ClipboardList} iconBg="bg-purple-600" defaultOpen={false}>
-          <div className="space-y-4">
-            <AiExamAssistant onExtracted={() => {}} />
-            <ExamsTab />
+        {/* Tab 1: Site Yönetimi (EducationManager) */}
+        <TabsContent value="site" data-testid="content-site-yonetimi">
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-[0_1px_6px_rgba(0,0,0,0.04)]">
+            <div className="flex items-center gap-2 mb-5 pb-4 border-b border-slate-100">
+              <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
+                <BookOpen className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Site İçerik Yönetimi</h3>
+                <p className="text-[11px] text-slate-400">Kurslar, seminerler, medya ve sayfa ayarları</p>
+              </div>
+            </div>
+            <EducationManagerPage />
           </div>
-        </Section>
+        </TabsContent>
 
-        <Section id="students" title="Öğrenci Takibi" icon={Users} iconBg="bg-indigo-600" badge={students.length} defaultOpen={false}>
-          <StudentsSection />
-        </Section>
-
-        <Section id="payments" title="Ödemeler" icon={CreditCard} iconBg="bg-emerald-600" defaultOpen={false}>
-          <PaymentsAdminSection students={students} onCrudSuccess={refreshStats} />
-        </Section>
-
-        <Section id="contracts" title="Sözleşmeler" icon={FileText} iconBg="bg-teal-600" defaultOpen={false}>
-          <ContractsAdminSection students={students} onCrudSuccess={refreshStats} />
-        </Section>
-
-        <Section id="files" title="Dosya Yönetimi" icon={FolderOpen} iconBg="bg-slate-600" defaultOpen={false}>
-          <FilesAdminSection students={students} onCrudSuccess={refreshStats} />
-        </Section>
-
-        <Section id="gayrimenkul" title="Gayrimenkul Araçları" icon={Building2} iconBg="bg-cyan-600" defaultOpen={false}>
-          <GayrimenkulLinks onNavigate={onNavigate} />
-        </Section>
-
-      </div>
+        {/* Tab 2: Kullanıcı Panel Yönetimi */}
+        <TabsContent value="panel" data-testid="content-kullanici-panel">
+          <div className="mb-3 flex items-center gap-2 px-1">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+              <LayoutDashboard className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">Kullanıcı Panel Yönetimi</h3>
+              <p className="text-[11px] text-slate-400">Canlı yayınlar, sınavlar, öğrenci takibi, ödemeler, sözleşmeler ve dosyalar</p>
+            </div>
+          </div>
+          <UserPanelManager students={students} onCrudSuccess={refreshStats} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
