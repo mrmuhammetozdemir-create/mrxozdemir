@@ -1742,6 +1742,7 @@ export default function AdminPanelPage() {
       case 'users': return <UsersManager />;
       case 'panel': return <PanelManager />;
       case 'seo': return <SeoManager />;
+      case 'mrxakademi': return <MrxAkademiManager onNavigate={setActivePage} />;
       default: return <DashboardContent stats={stats} onNavigate={setActivePage} />;
     }
   };
