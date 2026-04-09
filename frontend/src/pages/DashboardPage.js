@@ -73,14 +73,18 @@ export default function DashboardPage() {
       {/* Top Bar */}
       <div className="bg-white border-b border-slate-200 px-4 py-3 flex-shrink-0">
         <div className="max-w-lg mx-auto flex items-center justify-between">
-          {/* Logo */}
+          {/* New mrxozdemir Logo */}
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-sm">
-              <BookOpen className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center shadow-sm relative overflow-hidden">
+              <span className="text-white font-black text-xs tracking-tighter leading-none select-none" style={{ fontFamily: "'Outfit', system-ui, sans-serif" }}>MRX</span>
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500" />
             </div>
-            <span className="text-base font-extrabold tracking-tight text-slate-900" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-              mrx<span className="text-emerald-600">akademi</span>
-            </span>
+            <div className="leading-none">
+              <span className="text-base font-black tracking-tight text-slate-900 leading-none" style={{ fontFamily: "'Outfit', system-ui, sans-serif" }}>
+                mrx<span className="text-slate-500 font-semibold">ozdemir</span>
+              </span>
+              <p className="text-[9px] text-slate-400 font-medium leading-none mt-0.5">Gayrimenkul Teknolojileri</p>
+            </div>
           </div>
           {/* Auth */}
           <div className="flex items-center gap-2">
@@ -215,6 +219,15 @@ export default function DashboardPage() {
             <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-yellow-500 to-teal-500" />
             <div className="relative px-3 py-1.5 flex items-center justify-between h-full">
               <div className="flex-1">
+                {/* mrxakademi micro-logo inside card */}
+                <div className="flex items-center gap-1 mb-1">
+                  <div className="w-4 h-4 rounded bg-white/90 flex items-center justify-center shadow-sm shrink-0">
+                    <BookOpen className="w-2.5 h-2.5 text-teal-700" />
+                  </div>
+                  <span className="text-[9px] font-black text-slate-900 leading-none" style={{ fontFamily: "'Outfit', system-ui, sans-serif" }}>
+                    mrx<span className="text-teal-700">akademi</span>
+                  </span>
+                </div>
                 <h3 className="text-sm font-bold text-slate-900 leading-tight">Gayrimenkul Eğitim Merkezi</h3>
                 <p className="text-[8px] text-slate-800 mb-1">Sertifikalı PropTech Kursları</p>
                 <Button className="bg-teal-600 hover:bg-teal-700 text-white rounded-full px-3 h-5 text-[9px] shadow-md"
