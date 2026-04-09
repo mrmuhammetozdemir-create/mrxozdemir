@@ -1,168 +1,136 @@
 {
-  "project_name": "PropTech Turkey",
-  "design_philosophy": {
-    "theme": "light",
-    "style": "Modern Super-App (Getir Inspired)",
-    "core_principles": [
-      "Mobile-First Card Layout",
-      "Clean White Backgrounds",
-      "Color-Coded Modules",
-      "Data Density with Breathing Room",
-      "No Cartoon Illustrations - Use Flat Icons or Real Photos"
-    ]
+  "project_name": "MRX AKADEMİ KULLANICI PANELİ",
+  "theme": "light_with_dark_sidebar",
+  "archetype": "Archetype 1 (Organic & Earthy) mixed with Archetype 4 (Swiss/Soft Utility) for an Apple-style corporate tone.",
+  "design_philosophy": "A trustworthy, corporate, yet highly modern and simple Apple-style UI. Generous spacing, soft borders, crisp typography, and an organic warmth created by the emerald and warm beige palette. The fixed dark sidebar provides a structural anchor, while the white content area feels breathable and clear.",
+  "colors": {
+    "background": {
+      "main": "#F5E6D3",
+      "card": "#FFFFFF",
+      "sidebar": "#0F172A",
+      "sidebar_hover": "#1E293B",
+      "promo_banner": "#FACC15"
+    },
+    "primary": {
+      "DEFAULT": "#059669",
+      "hover": "#047857",
+      "light": "#D1FAE5"
+    },
+    "text": {
+      "main": "#0F172A",
+      "muted": "#64748B",
+      "sidebar": "#F8FAFC",
+      "sidebar_muted": "#94A3B8",
+      "promo": "#422006"
+    },
+    "border": {
+      "subtle": "rgba(0, 0, 0, 0.06)",
+      "sidebar": "#1E293B"
+    }
   },
   "typography": {
-    "font_family": {
-      "heading": "Manrope, sans-serif",
-      "body": "Inter, sans-serif",
-      "mono": "JetBrains Mono, monospace"
+    "font_families": {
+      "heading": "'Outfit', sans-serif",
+      "body": "'Manrope', sans-serif"
     },
-    "scale": {
-      "h1": "text-4xl md:text-5xl font-bold tracking-tight",
-      "h2": "text-3xl font-semibold tracking-tight",
-      "h3": "text-2xl font-semibold",
-      "h4": "text-xl font-medium",
-      "body_lg": "text-lg leading-relaxed",
-      "body_base": "text-base leading-relaxed text-slate-600",
-      "body_sm": "text-sm text-slate-500",
-      "caption": "text-xs text-slate-400 uppercase tracking-wider"
-    }
-  },
-  "colors": {
-    "palette": {
-      "brand": {
-        "primary": "#4F46E5",
-        "secondary": "#10B981",
-        "accent": "#F59E0B"
-      },
-      "modules": {
-        "toki": "#3B82F6",
-        "land": "#10B981",
-        "investment": "#8B5CF6",
-        "mega_projects": "#EF4444",
-        "education": "#F59E0B",
-        "community": "#06B6D4",
-        "market": "#6366F1",
-        "opportunities": "#059669"
-      },
-      "neutral": {
-        "bg_app": "#F3F4F6",
-        "bg_card": "#FFFFFF",
-        "text_main": "#111827",
-        "text_secondary": "#4B5563",
-        "border": "#E5E7EB"
-      }
+    "rules": {
+      "h1": "text-4xl sm:text-5xl font-bold tracking-tight text-slate-900",
+      "h2": "text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900",
+      "h3": "text-xl font-semibold tracking-tight text-slate-900",
+      "h4": "text-lg font-medium text-slate-900",
+      "body": "text-base font-medium text-slate-600 leading-relaxed",
+      "small": "text-sm font-medium text-slate-500",
+      "overline": "text-xs font-bold uppercase tracking-[0.15em] text-emerald-600"
     },
-    "usage": {
-      "background": "bg-slate-50",
-      "card": "bg-white shadow-sm hover:shadow-md transition-shadow duration-200 border border-slate-100",
-      "primary_button": "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm",
-      "secondary_button": "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50",
-      "module_card": "flex flex-col items-center justify-center p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer bg-white group"
-    }
+    "instructions": "Import 'Outfit' and 'Manrope' from Google Fonts. Do NOT use Inter, Roboto, or standard sans."
   },
-  "layout_strategies": {
-    "dashboard": "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 p-4 md:p-8 max-w-7xl mx-auto",
-    "detail_page": "max-w-7xl mx-auto p-4 md:p-8 space-y-6",
-    "sidebar_layout": "flex min-h-screen bg-slate-50",
-    "mobile_nav": "fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-2 flex justify-around items-center z-50 md:hidden"
+  "spacing_and_layout": {
+    "philosophy": "Generous Spacing Philosophy. Use p-6, p-8 for cards to prevent content collision.",
+    "border_radius": {
+      "card": "rounded-2xl",
+      "button": "rounded-xl",
+      "input": "rounded-lg"
+    },
+    "shadows": {
+      "card": "shadow-[0_2px_10px_rgba(0,0,0,0.04)]",
+      "card_hover": "shadow-[0_10px_30px_rgba(0,0,0,0.08)]",
+      "dropdown": "shadow-[0_8px_32px_rgba(0,0,0,0.12)]"
+    },
+    "grid_system": "Use the 'Control Room' grid for the dashboard. gap-6 between cards. Mobile-first (grid-cols-1) scaling up to md:grid-cols-2 or lg:grid-cols-3/4 based on content."
   },
   "components": {
+    "sidebar": {
+      "layout": "Fixed left, w-72, h-screen. Dark slate background (#0F172A).",
+      "items": "12 items. Use lucide-react icons. Active state should have a subtle emerald-600 indicator (like a left border or pill background) or bg-slate-800.",
+      "text": "font-medium text-slate-300 hover:text-white"
+    },
+    "promo_banner": {
+      "layout": "Sticky or fixed top, z-50, w-full, h-10 to h-12. Background #FACC15.",
+      "text": "text-sm font-bold text-yellow-900 flex items-center justify-center gap-2",
+      "animation": "Optional subtle marquee or simple bold centered text."
+    },
+    "content_area": {
+      "layout": "ml-0 lg:ml-72 mt-10 (below banner). bg-[#F5E6D3] min-h-screen p-4 sm:p-8."
+    },
     "cards": {
-      "style": "rounded-2xl border-none shadow-sm",
-      "interaction": "hover:-translate-y-1 transition-transform duration-300"
+      "style": "bg-white rounded-2xl p-6 or p-8 border border-black/5. Neumorphic 'Clay & Crisp' approach - flat background with subtle border and ultra-soft shadow.",
+      "hover": "transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(0,0,0,0.08)]"
     },
     "buttons": {
-      "default": "rounded-lg font-medium px-4 py-2 transition-colors",
-      "large": "h-12 text-lg px-8 rounded-xl"
+      "primary": "bg-emerald-600 text-white rounded-xl px-6 py-2.5 font-semibold hover:bg-emerald-700 transition-colors",
+      "secondary": "bg-white text-slate-700 border border-slate-200 rounded-xl px-6 py-2.5 font-semibold hover:bg-slate-50 transition-colors"
     },
-    "inputs": {
-      "style": "h-11 rounded-lg border-slate-200 bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+    "tables": {
+      "style": "Clean, Apple-style. No vertical borders. Light horizontal dividers (border-slate-100). text-sm. Header text-xs uppercase tracking-wider text-slate-500 bg-slate-50/50 rounded-t-xl."
+    },
+    "progress_bar": {
+      "style": "h-2 rounded-full bg-slate-100 overflow-hidden",
+      "fill": "h-full bg-emerald-600 rounded-full transition-all duration-500"
     }
   },
-  "visual_enhancers": {
-    "shadows": "shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]",
-    "gradients": "bg-gradient-to-br from-white to-slate-50",
-    "borders": "border border-slate-100",
-    "icons": "Lucide React (Stroke width: 1.5px or 2px)"
-  },
-  "image_assets": {
-    "toki_projects": [
-      {
-        "url": "https://images.unsplash.com/photo-1654083411130-8514b189a597?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDV8MHwxfHNlYXJjaHwzfHxtb2Rlcm4lMjBhcGFydG1lbnQlMjBidWlsZGluZyUyMGV4dGVyaW9yJTIwdHVya2V5fGVufDB8fHx8MTc3MjQwMTk1Nnww&ixlib=rb-4.1.0&q=85",
-        "alt": "Modern TOKI Housing Project"
-      },
-      {
-        "url": "https://images.unsplash.com/photo-1767793357529-db424dfa04a1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDV8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBhcGFydG1lbnQlMjBidWlsZGluZyUyMGV4dGVyaW9yJTIwdHVya2V5fGVufDB8fHx8MTc3MjQwMTk1Nnww&ixlib=rb-4.1.0&q=85",
-        "alt": "Cityscape at Sunset"
-      }
-    ],
-    "land_parcels": [
-      {
-        "url": "https://images.unsplash.com/photo-1723367195026-4b3400e26395?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHwyfHxjb25zdHJ1Y3Rpb24lMjBzaXRlJTIwYWVyaWFsJTIwdmlld3xlbnwwfHx8fDE3NzI0MDE5NTZ8MA&ixlib=rb-4.1.0&q=85",
-        "alt": "Land Parcel Aerial View"
-      },
-      {
-        "url": "https://images.unsplash.com/photo-1723367194881-fe2e53534170?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHwxfHxjb25zdHJ1Y3Rpb24lMjBzaXRlJTIwYWVyaWFsJTIwdmlld3xlbnwwfHx8fDE3NzI0MDE5NTZ8MA&ixlib=rb-4.1.0&q=85",
-        "alt": "Construction Site"
-      }
-    ],
-    "mega_projects": [
-      {
-        "url": "https://images.unsplash.com/photo-1653549882026-4c92d25bee4f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHw0fHxpc3RhbmJ1bCUyMGJvc3Bob3J1cyUyMGJyaWRnZXxlbnwwfHx8fDE3NzI0MDE5NTd8MA&ixlib=rb-4.1.0&q=85",
-        "alt": "Istanbul Bridge Project"
-      },
-      {
-        "url": "https://images.unsplash.com/photo-1661935635412-fa36cf42ae35?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwxfHxpc3RhbmJ1bCUyMGJvc3Bob3J1cyUyMGJyaWRnZXxlbnwwfHx8fDE3NzI0MDE5NTd8MA&ixlib=rb-4.1.0&q=85",
-        "alt": "Bridge Infrastructure"
-      }
-    ],
-    "education": [
-      {
-        "url": "https://images.unsplash.com/photo-1477569914486-b9955238cae0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzl8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBvZmZpY2UlMjBtZWV0aW5nJTIwc2VtaW5hcnxlbnwwfHx8fDE3NzI0MDE5NTh8MA&ixlib=rb-4.1.0&q=85",
-        "alt": "Seminar Room"
-      },
-      {
-        "url": "https://images.unsplash.com/photo-1697059361461-b81d0e98c3af?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzl8MHwxfHNlYXJjaHw0fHxtb2Rlcm4lMjBvZmZpY2UlMjBtZWV0aW5nJTIwc2VtaW5hcnxlbnwwfHx8fDE3NzI0MDE5NTh8MA&ixlib=rb-4.1.0&q=85",
-        "alt": "Webinar Screen"
-      }
-    ],
-    "community": [
-      {
-        "url": "https://images.unsplash.com/photo-1758518731468-98e90ffd7430?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzZ8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjB0ZWFtJTIwZGl2ZXJzZXxlbnwwfHx8fDE3NzI0MDE5NTl8MA&ixlib=rb-4.1.0&q=85",
-        "alt": "Community Team"
-      }
-    ]
-  },
-  "libraries": {
-    "maps": "Leaflet (react-leaflet) with OpenStreetMap tile layer",
+  "assets": {
     "icons": "lucide-react",
-    "charts": "recharts (via shadcn/ui charts)",
-    "ui_primitives": "shadcn/ui"
+    "images": {
+      "user_avatar": {
+        "url": "https://images.unsplash.com/photo-1769636929388-99eff95d3bf1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDV8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMHBvcnRyYWl0fGVufDB8fHx8MTc3NTczNjM2Mnww&ixlib=rb-4.1.0&q=85",
+        "alt": "User Profile Avatar",
+        "usage": "Top right profile icon or sidebar profile section."
+      },
+      "course_thumbnail_1": {
+        "url": "https://static.prod-images.emergentagent.com/jobs/40cb78a3-0995-452a-bd7f-4b6b9aca923e/images/b80408b1b6bee4cfd784c820efa68cd92cd676f85ef6d5bc2cc3cbce764341ec.png",
+        "alt": "Abstract Emerald architectural course cover",
+        "usage": "Featured course or Last watched video thumbnail."
+      },
+      "course_thumbnail_2": {
+        "url": "https://static.prod-images.emergentagent.com/jobs/40cb78a3-0995-452a-bd7f-4b6b9aca923e/images/2ab78b22b1c06ccc00e32ca5daf14f407de3b10761216cd12c82aca1114c3413.png",
+        "alt": "Minimalist corporate course cover",
+        "usage": "Recommended courses thumbnails."
+      },
+      "generic_thumbnail_1": {
+        "url": "https://images.unsplash.com/photo-1623679072629-3aaa0192a391?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA0MTJ8MHwxfHNlYXJjaHwyfHxtb2Rlcm4lMjBvZmZpY2UlMjBkZXNrfGVufDB8fHx8MTc3NTc0MjI5Mnww&ixlib=rb-4.1.0&q=85",
+        "alt": "Modern office desk setup",
+        "usage": "Supervision Education cards or secondary course covers."
+      },
+      "generic_thumbnail_2": {
+        "url": "https://images.pexels.com/photos/356056/pexels-photo-356056.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "alt": "Contemporary office desk tech",
+        "usage": "Live streams background or alternative card graphics."
+      }
+    }
+  },
+  "testing": {
+    "rules": "All interactive and key informational elements MUST include a data-testid attribute formatted in kebab-case."
   },
   "instructions_to_main_agent": [
-    "Strictly follow the 'Getir-style' card layout: Rounded corners, white background, colorful icon containers.",
-    "Use the specific HEX codes provided for each module to create visual distinction.",
-    "Ensure the map component is responsive and works without an API key (using OSM).",
-    "Do NOT use any cartoon illustrations. If an image is needed and not in the list, use a solid color block with an icon.",
-    "Implement the 'Mega Projects' map with custom markers using the provided bridge images.",
-    "For the 'Investment Analysis' ROI calculator, use a clean two-column layout: Inputs on left, Real-time results card on right.",
-    "Adhere to the 'Manrope' for headings and 'Inter' for body font rule.",
-    "Use 'sonner' for all notifications.",
-    "Ensure all interactive elements have 'data-testid' attributes."
-  ],
-  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
-    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients",
-    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
-    "Create depth through layered design elements with z-index hierarchy",
-    "Use glass-morphism effects with backdrop filters (12-24px blur) only for floating overlays (e.g., mobile nav, sticky header).",
-    "You MUST NOT apply universal transition. Eg: 'transition: all'. This results in breaking transforms.",
-    "You MUST NOT center align the app container, ie do not add '.App { text-align: center; }' in the css file.",
-    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style",
-    "NEVER: use AI assistant Emoji characters for icons.",
-    "Every interaction needs micro-animations - hover states, transitions.",
-    "Prioritize using pre-existing components from src/components/ui when applicable",
-    "Components MUST use named exports",
-    "Pages MUST use default exports"
+    "Build the dashboard using React, Tailwind CSS, and shadcn/ui.",
+    "Implement the Layout with a fixed sidebar (left) and main content area (right). Make it responsive: sidebar should be a drawer/hamburger on mobile.",
+    "Include a global sticky Yellow Promo Banner at the absolute top.",
+    "Apply background color #F5E6D3 to the main content area wrapper, and pure white (#FFFFFF) to the data cards.",
+    "Inject 'Outfit' and 'Manrope' fonts into index.html from Google Fonts and set them up in tailwind.config.js.",
+    "Use standard semantic HTML augmented with Tailwind for complex card layouts instead of restricting to generic Shadcn Card if you need bespoke Apple-style overlapping or layouts.",
+    "Implement the 12 required sidebar items exactly as listed in the problem statement.",
+    "Create the required dashboard sections: Education progress, My Files, Payments, Contracts, Exams, Certificates, Transcript, Live Streams/Calendar, Supervision/Calendar.",
+    "Utilize the provided image URLs strictly. DO NOT use generic placeholders like via.placeholder.com.",
+    "Add 'data-testid' to all buttons, links, and form inputs for testing."
   ]
 }
