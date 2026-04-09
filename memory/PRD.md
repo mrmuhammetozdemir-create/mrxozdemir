@@ -11,6 +11,16 @@ Modern PropTech web platform for real estate and land investment analysis in Tur
 - **Maps:** Leaflet.js + OpenStreetMap
 - **Auth:** JWT (admin) + Session tokens (users) + Emergent Google OAuth
 
+## Kullanıcı Paneli (FULL SYSTEM) - 2026-04-09 - TAMAMLANDI
+12 bölümlü tam kullanıcı paneli `/panel` route'unda. Dark sidebar + sarı promo banner + beyaz içerik.
+- **Bölümler:** Anasayfa, Eğitimlerim (video/doküman), Dosyalarım, Ödemelerim, Sözleşmelerim, Eğitim Sınavlarım, Eğitim Sertifikalarım, Transkript, Canlı Yayınlar, Canlı Yayın Takvimi, Süpervizyon Eğitimler, Süpervizyon Takvimi
+- **Sınav sistemi:** Çoktan seçmeli, 4 şık, puanlama (%70 geçme)
+- **Sertifika:** %90 tamamlama kuralı
+- **Takvim:** Aylık görünüm + şehir filtresi
+- **Backend:** /api/user/*, /api/live-streams, /api/supervision/events
+- **Test:** 100% (20/20)
+
+
 ## Admin Panel (Complete) - Feb 2026
 Sidebar-based admin panel at `/admin` with 9 module pages:
 
