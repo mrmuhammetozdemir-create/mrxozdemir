@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, UploadFile, File, Form, Query, Response, Request, Body
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from emergentintegrations.llm.chat import LlmChat, UserMessage as LlmUserMessage
-from seed_data import SEED_DATA
+import tempfile
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
@@ -2409,6 +2409,90 @@ async def update_shared_facility(facility_id: str, body: dict, admin: dict = Dep
 
 
 
+
+# ============= AI SINAV ÇIKARICI (PDF → Sorular) =============
+
+@api_router.post("/admin/exams/extract-from-pdf")
+async def extract_exam_from_pdf(file: UploadFile = File(...), admin: dict = Depends(require_admin)):
+    llm_key = os.environ.get("EMERGENT_LLM_KEY", "")
+    if not llm_key:
+        raise HTTPException(status_code=500, detail="LLM key bulunamadı")
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Sadece PDF dosyası yükleyin")
+
+    # Save to temp file
+    contents = await file.read()
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        tmp.write(contents)
+        tmp_path = tmp.name
+
+    try:
+        from emergentintegrations.llm.chat import FileContentWithMimeType
+        chat = LlmChat(
+            api_key=llm_key,
+            session_id=f"exam_extract_{uuid.uuid4()}",
+            system_message="""Sen bir eğitim içeriği asistanısın. 
+PDF dosyasındaki sınav sorularını çıkarıp JSON formatında döndürüyorsun.
+SADECE geçerli JSON döndür, başka hiçbir şey yazma. Türkçe içeriği koru."""
+        ).with_model("gemini", "gemini-2.5-flash")
+
+        pdf_file = FileContentWithMimeType(file_path=tmp_path, mime_type="application/pdf")
+
+        prompt = """Bu PDF dosyasındaki sınav içeriğini analiz et ve aşağıdaki JSON formatında döndür:
+
+{
+  "title": "Sınav başlığı (yoksa PDF adından türet)",
+  "pass_score": 70,
+  "duration_minutes": 30,
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Soru metni",
+      "options": ["Şık A", "Şık B", "Şık C", "Şık D"],
+      "correct_answer": "Doğru şıkkın tam metni"
+    }
+  ]
+}
+
+Önemli kurallar:
+- Tüm sorular için tam 4 şık çıkar
+- correct_answer, options listesindeki tam metinle eşleşmeli
+- Şıklar A/B/C/D veya 1/2/3/4 şeklindeyse saf metinleri al (harf/rakam prefix olmadan)
+- En az 1 soru çıkar, maksimum tüm soruları çıkar
+- Sadece JSON döndür, açıklama veya markdown ekleme"""
+
+        user_message = LlmUserMessage(text=prompt, file_contents=[pdf_file])
+        response = await chat.send_message(user_message)
+
+        # Parse JSON — remove any markdown wrapper if present
+        raw = response.strip()
+        if raw.startswith("```"):
+            raw = raw.split("```")[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+            raw = raw.strip()
+
+        data = json.loads(raw)
+
+        # Ensure IDs are set
+        for i, q in enumerate(data.get("questions", []), 1):
+            q["id"] = f"q{i}"
+            # Ensure exactly 4 options
+            if len(q.get("options", [])) < 4:
+                q["options"] = q["options"] + [""] * (4 - len(q["options"]))
+
+        return data
+
+    except json.JSONDecodeError as e:
+        logger.error(f"PDF JSON parse error: {e} | raw: {response[:200]}")
+        raise HTTPException(status_code=422, detail="AI yanıtı JSON olarak ayrıştırılamadı")
+    except Exception as e:
+        logger.error(f"PDF extraction error: {e}")
+        raise HTTPException(status_code=500, detail=f"PDF işlenirken hata oluştu: {str(e)[:100]}")
+    finally:
+        import os as _os
+        try: _os.unlink(tmp_path)
+        except: pass
 
 # ============= ADMIN PANEL YÖNETİMİ (Canlı Yayın, Süpervizyon, Sınavlar) =============
 

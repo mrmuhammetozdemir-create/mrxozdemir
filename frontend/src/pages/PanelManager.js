@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import {
   Plus, Trash2, Edit, Save, X, Radio, Users, ClipboardList,
   CalendarDays, MapPin, CheckCircle, Clock, AlertCircle, Loader2,
-  ChevronDown, ChevronUp, BookOpen
+  ChevronDown, ChevronUp, BookOpen, Sparkles, FileUp, Bot, UploadCloud
 } from 'lucide-react';
 import api from '@/utils/api';
 
@@ -357,6 +357,133 @@ function SupervisionTab({ onUpdate }) {
   );
 }
 
+// ========== AI SINAV ASISTANI ==========
+function AiExamAssistant({ onExtracted }) {
+  const [dragging, setDragging] = useState(false);
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(true);
+  const fileRef = useRef();
+
+  const handleFile = (f) => {
+    if (!f) return;
+    if (!f.name.toLowerCase().endsWith('.pdf')) {
+      toast.error('Sadece PDF dosyası yükleyin');
+      return;
+    }
+    setFile(f);
+  };
+
+  const extract = async () => {
+    if (!file) { toast.error('Önce bir PDF dosyası seçin'); return; }
+    setLoading(true);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const { data } = await api.post('/admin/exams/extract-from-pdf', form, {
+        headers: { ...authHeaders(), 'Content-Type': 'multipart/form-data' },
+      });
+      if (!data.questions?.length) { toast.error('PDF\'de soru bulunamadı'); return; }
+      toast.success(`${data.questions.length} soru çıkarıldı!`);
+      onExtracted(data);
+      setFile(null);
+      setOpen(false);
+    } catch (err) {
+      const msg = err?.response?.data?.detail || 'PDF işlenirken hata oluştu';
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="rounded-xl overflow-hidden border border-purple-200 bg-gradient-to-br from-purple-50 to-indigo-50">
+      {/* Header */}
+      <button
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-purple-50/70 transition-colors"
+        onClick={() => setOpen(o => !o)}
+        data-testid="ai-assistant-toggle"
+      >
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center">
+            <Sparkles className="w-3.5 h-3.5 text-white" />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-bold text-purple-900">AI Sınav Asistanı</p>
+            <p className="text-[10px] text-purple-500 font-medium">PDF yükle → Sorular otomatik oluşsun</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] font-bold bg-purple-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wide">Gemini AI</span>
+          {open ? <ChevronUp className="w-4 h-4 text-purple-400" /> : <ChevronDown className="w-4 h-4 text-purple-400" />}
+        </div>
+      </button>
+
+      {open && (
+        <div className="px-4 pb-4 space-y-3">
+          {/* Drop Zone */}
+          <div
+            onDragOver={e => { e.preventDefault(); setDragging(true); }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={e => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); }}
+            onClick={() => fileRef.current?.click()}
+            data-testid="pdf-drop-zone"
+            className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all duration-200 select-none
+              ${dragging ? 'border-purple-500 bg-purple-100/60 scale-[1.01]' : file ? 'border-emerald-400 bg-emerald-50' : 'border-purple-300 hover:border-purple-400 hover:bg-purple-50/50'}`}
+          >
+            <input ref={fileRef} type="file" accept=".pdf" className="hidden"
+              onChange={e => handleFile(e.target.files?.[0])} data-testid="pdf-file-input" />
+
+            {file ? (
+              <div className="flex items-center justify-center gap-2">
+                <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
+                <div className="text-left">
+                  <p className="text-sm font-bold text-emerald-800 truncate max-w-[200px]">{file.name}</p>
+                  <p className="text-xs text-emerald-600">{(file.size / 1024).toFixed(1)} KB — PDF hazır</p>
+                </div>
+                <button className="ml-2 text-slate-400 hover:text-red-500 transition-colors"
+                  onClick={e => { e.stopPropagation(); setFile(null); }}>
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div>
+                <UploadCloud className="w-8 h-8 text-purple-300 mx-auto mb-1.5" />
+                <p className="text-sm font-semibold text-purple-700">PDF dosyasını buraya sürükle</p>
+                <p className="text-xs text-purple-400 mt-0.5">veya tıkla ve seç</p>
+              </div>
+            )}
+          </div>
+
+          {/* Extract button */}
+          <Button
+            onClick={extract}
+            disabled={!file || loading}
+            data-testid="extract-pdf-btn"
+            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold h-10 shadow-md"
+          >
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                AI Analiz Ediyor...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <Bot className="w-4 h-4" />
+                Soruları Otomatik Çıkar
+              </span>
+            )}
+          </Button>
+
+          <p className="text-[10px] text-purple-400 text-center">
+            Çoktan seçmeli sorular otomatik tespit edilir ve forma aktarılır
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ========== EXAMS TAB ==========
 function ExamsTab({ onUpdate }) {
   const [exams, setExams] = useState([]);
@@ -444,6 +571,16 @@ function ExamsTab({ onUpdate }) {
           <Plus className="w-3.5 h-3.5 mr-1" /> Sınav Ekle
         </Button>
       </div>
+
+      {/* AI Assistant */}
+      {!form && (
+        <AiExamAssistant onExtracted={(data) => {
+          setForm({ ...BLANK_EXAM, ...data });
+          setEditId(null);
+          setExpandedQ(null);
+          toast.success('Form otomatik dolduruldu! İnceleyip kaydedin.');
+        }} />
+      )}
 
       {form && (
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-4">
