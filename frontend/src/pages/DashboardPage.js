@@ -73,29 +73,30 @@ export default function DashboardPage() {
       {/* Top Bar */}
       <div className="bg-white border-b border-slate-100 px-4 py-2.5 flex-shrink-0">
         <div className="max-w-lg mx-auto flex items-center justify-between">
-          {/* mrxozdemir — Premium Logo */}
+          {/* mrxozdemir — City Skyline Logo */}
           <div className="flex items-center gap-2.5">
-            {/* Logo Mark */}
-            <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0" style={{ background: 'linear-gradient(135deg, #0f172a 60%, #1e293b)' }}>
-              {/* Emerald glow accent */}
-              <div className="absolute inset-0 opacity-20" style={{ background: 'radial-gradient(circle at 80% 20%, #10b981, transparent 60%)' }} />
-              {/* MRX text */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-0">
-                <span className="text-white font-black text-[11px] tracking-widest leading-none select-none" style={{ fontFamily: "'Outfit', sans-serif" }}>MRX</span>
+            {/* Logo Mark — Şehir silüeti */}
+            <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0" style={{ background: 'linear-gradient(145deg, #0f172a, #162032)' }}>
+              {/* Subtle top glow */}
+              <div className="absolute top-0 left-0 right-0 h-5" style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.18), transparent 70%)' }} />
+              {/* City skyline buildings */}
+              <div className="absolute bottom-0 left-0 right-0 flex items-end justify-center gap-[2px] pb-[3px] px-[5px]">
+                <div style={{ width: '6px', height: '11px', background: '#334155', borderRadius: '2px 2px 0 0' }} />
+                <div style={{ width: '6px', height: '19px', background: '#f8fafc', borderRadius: '2px 2px 0 0' }} />
+                <div style={{ width: '8px', height: '24px', background: '#10b981', borderRadius: '2px 2px 0 0' }} />
+                <div style={{ width: '6px', height: '16px', background: '#f8fafc', borderRadius: '2px 2px 0 0' }} />
+                <div style={{ width: '5px', height: '9px', background: '#334155', borderRadius: '2px 2px 0 0' }} />
               </div>
-              {/* Bottom accent bar */}
-              <div className="absolute bottom-0 left-0 right-0 h-[3px]" style={{ background: 'linear-gradient(90deg, #10b981, #0ea5e9)' }} />
+              {/* Ground line */}
+              <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-emerald-500" />
             </div>
             {/* Wordmark */}
             <div className="leading-none">
               <div className="leading-none" style={{ fontFamily: "'Outfit', sans-serif" }}>
                 <span className="text-[17px] font-black tracking-tight text-slate-900">mrx</span>
-                <span className="text-[17px] font-light tracking-tight" style={{ color: '#10b981' }}>özdemir</span>
+                <span className="text-[17px] font-extralight tracking-wide text-slate-600">ozdemir</span>
               </div>
-              <div className="flex items-center gap-1 mt-0.5">
-                <div className="h-px flex-1 bg-gradient-to-r from-slate-300 to-transparent" style={{ width: '28px' }} />
-                <p className="text-[8px] font-semibold tracking-[0.15em] text-slate-400 uppercase">Gayrimenkul</p>
-              </div>
+              <p className="text-[8px] font-bold tracking-[0.2em] text-emerald-600 uppercase leading-none mt-0.5">Gayrimenkul</p>
             </div>
           </div>
           {/* Auth */}
