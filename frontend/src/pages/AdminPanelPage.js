@@ -14,12 +14,13 @@ import {
   Image as ImageIcon, Video, Map, Layers, Building2, X, Check,
   Home, MapPin, GraduationCap, Users, Target, TrendingUp, BarChart3,
   Menu, LogOut, ChevronRight, UserCog, Bot, Send, Sparkles, CheckCircle2,
-  AlertCircle, Search, ListFilter, Pencil, Globe, RefreshCw, Copy
+  AlertCircle, Search, ListFilter, Pencil, Globe, RefreshCw, Copy, Radio
 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 import UsersManager from '@/pages/UsersManager';
 import EducationManagerPage from '@/pages/EducationManager';
+import PanelManager from '@/pages/PanelManager';
 
 const API_BASE = process.env.REACT_APP_BACKEND_URL;
 
@@ -89,6 +90,7 @@ const SIDEBAR_ITEMS = [
   { id: 'opportunities', label: 'Arsa Fırsatları', icon: Target, color: 'text-red-600' },
   { id: 'market', label: 'Piyasa Analizi', icon: BarChart3, color: 'text-teal-600' },
   { id: 'users', label: 'Kullanıcılar', icon: UserCog, color: 'text-indigo-600' },
+  { id: 'panel', label: 'Panel Yönetimi', icon: Radio, color: 'text-red-500' },
   { id: 'seo',   label: 'SEO Yönetimi', icon: Globe,   color: 'text-emerald-600' },
 ];
 
@@ -136,6 +138,7 @@ function DashboardContent({ stats, onNavigate }) {
     { id: 'opportunities', label: 'Arsa Fırsatları', count: stats.opportunities, icon: Target, color: 'bg-red-600', desc: 'Yatırım fırsatları' },
     { id: 'market', label: 'Piyasa Analizi', count: stats.market_data, icon: BarChart3, color: 'bg-teal-600', desc: 'Piyasa verileri' },
     { id: 'users', label: 'Kullanıcılar', count: stats.app_users || 0, icon: UserCog, color: 'bg-indigo-600', desc: 'Kayıtlı kullanıcılar' },
+    { id: 'panel', label: 'Panel Yönetimi', count: (stats.live_streams || 0) + (stats.supervision || 0), icon: Radio, color: 'bg-red-500', desc: 'Canlı yayın & süpervizyon' },
   ];
   return (
     <div>
@@ -1735,6 +1738,7 @@ export default function AdminPanelPage() {
       case 'opportunities': return <OpportunitiesManager />;
       case 'market': return <MarketManager />;
       case 'users': return <UsersManager />;
+      case 'panel': return <PanelManager />;
       case 'seo': return <SeoManager />;
       default: return <DashboardContent stats={stats} onNavigate={setActivePage} />;
     }

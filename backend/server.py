@@ -2409,6 +2409,122 @@ async def update_shared_facility(facility_id: str, body: dict, admin: dict = Dep
 
 
 
+
+# ============= ADMIN PANEL YÖNETİMİ (Canlı Yayın, Süpervizyon, Sınavlar) =============
+
+@api_router.get("/admin/live-streams")
+async def admin_get_live_streams(admin: dict = Depends(require_admin)):
+    streams = await db.live_streams.find({}, {"_id": 0}).sort("date", -1).to_list(200)
+    return streams
+
+@api_router.post("/admin/live-streams")
+async def admin_create_live_stream(body: dict, admin: dict = Depends(require_admin)):
+    stream = {
+        "id": str(uuid.uuid4()),
+        "title": body.get("title", ""),
+        "date": body.get("date", ""),
+        "status": body.get("status", "upcoming"),
+        "platform": body.get("platform", "Zoom"),
+        "join_url": body.get("join_url", ""),
+        "thumbnail": body.get("thumbnail", ""),
+        "description": body.get("description", ""),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.live_streams.insert_one(stream)
+    stream.pop("_id", None)
+    return stream
+
+@api_router.put("/admin/live-streams/{stream_id}")
+async def admin_update_live_stream(stream_id: str, body: dict, admin: dict = Depends(require_admin)):
+    update = {k: v for k, v in body.items() if k in ("title", "date", "status", "platform", "join_url", "thumbnail", "description")}
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.live_streams.update_one({"id": stream_id}, {"$set": update})
+    return {"message": "Güncellendi"}
+
+@api_router.delete("/admin/live-streams/{stream_id}")
+async def admin_delete_live_stream(stream_id: str, admin: dict = Depends(require_admin)):
+    await db.live_streams.delete_one({"id": stream_id})
+    return {"message": "Silindi"}
+
+@api_router.get("/admin/supervision")
+async def admin_get_supervision(admin: dict = Depends(require_admin)):
+    events = await db.supervision_events.find({}, {"_id": 0}).sort("date", 1).to_list(200)
+    return events
+
+@api_router.post("/admin/supervision")
+async def admin_create_supervision(body: dict, admin: dict = Depends(require_admin)):
+    event = {
+        "id": str(uuid.uuid4()),
+        "title": body.get("title", ""),
+        "location": body.get("location", ""),
+        "city": body.get("city", ""),
+        "date": body.get("date", ""),
+        "status": body.get("status", "upcoming"),
+        "capacity": int(body.get("capacity", 20)),
+        "registered": int(body.get("registered", 0)),
+        "description": body.get("description", ""),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.supervision_events.insert_one(event)
+    event.pop("_id", None)
+    return event
+
+@api_router.put("/admin/supervision/{event_id}")
+async def admin_update_supervision(event_id: str, body: dict, admin: dict = Depends(require_admin)):
+    update = {k: v for k, v in body.items() if k in ("title", "location", "city", "date", "status", "capacity", "registered", "description")}
+    if "capacity" in update: update["capacity"] = int(update["capacity"])
+    if "registered" in update: update["registered"] = int(update["registered"])
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.supervision_events.update_one({"id": event_id}, {"$set": update})
+    return {"message": "Güncellendi"}
+
+@api_router.delete("/admin/supervision/{event_id}")
+async def admin_delete_supervision(event_id: str, admin: dict = Depends(require_admin)):
+    await db.supervision_events.delete_one({"id": event_id})
+    return {"message": "Silindi"}
+
+@api_router.get("/admin/exams")
+async def admin_get_exams(admin: dict = Depends(require_admin)):
+    exams = await db.course_exams.find({}, {"_id": 0}).to_list(200)
+    return exams
+
+@api_router.post("/admin/exams")
+async def admin_create_exam(body: dict, admin: dict = Depends(require_admin)):
+    exam = {
+        "id": str(uuid.uuid4()),
+        "course_id": body.get("course_id", ""),
+        "title": body.get("title", ""),
+        "pass_score": int(body.get("pass_score", 70)),
+        "duration_minutes": int(body.get("duration_minutes", 30)),
+        "questions": body.get("questions", []),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.course_exams.insert_one(exam)
+    exam.pop("_id", None)
+    return exam
+
+@api_router.put("/admin/exams/{exam_id}")
+async def admin_update_exam(exam_id: str, body: dict, admin: dict = Depends(require_admin)):
+    update = {k: v for k, v in body.items() if k in ("course_id", "title", "pass_score", "duration_minutes", "questions")}
+    if "pass_score" in update: update["pass_score"] = int(update["pass_score"])
+    if "duration_minutes" in update: update["duration_minutes"] = int(update["duration_minutes"])
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.course_exams.update_one({"id": exam_id}, {"$set": update})
+    return {"message": "Güncellendi"}
+
+@api_router.delete("/admin/exams/{exam_id}")
+async def admin_delete_exam(exam_id: str, admin: dict = Depends(require_admin)):
+    await db.course_exams.delete_one({"id": exam_id})
+    return {"message": "Silindi"}
+
+@api_router.get("/admin/panel-stats")
+async def admin_panel_stats(admin: dict = Depends(require_admin)):
+    streams = await db.live_streams.count_documents({})
+    supervision = await db.supervision_events.count_documents({})
+    exams = await db.course_exams.count_documents({})
+    panel_users = await db.user_progress.distinct("user_id")
+    return {"streams": streams, "supervision": supervision, "exams": exams, "active_users": len(panel_users)}
+
 # ============= USER PANEL APIs =============
 
 @api_router.get("/user/progress")
