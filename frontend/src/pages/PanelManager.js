@@ -56,7 +56,7 @@ function StatsBar({ stats }) {
 }
 
 // ========== LIVE STREAMS TAB ==========
-function LiveStreamsTab() {
+function LiveStreamsTab({ onUpdate }) {
   const [streams, setStreams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(null);
@@ -85,7 +85,7 @@ function LiveStreamsTab() {
         await api.post('/admin/live-streams', form, { headers: authHeaders() });
         toast.success('Eklendi');
       }
-      setForm(null); setEditId(null); load();
+      setForm(null); setEditId(null); load(); if (onUpdate) onUpdate();
     } catch { toast.error('Kayıt başarısız'); }
     finally { setSaving(false); }
   };
@@ -93,7 +93,7 @@ function LiveStreamsTab() {
   const del = async (id) => {
     if (!window.confirm('Silinsin mi?')) return;
     await api.delete(`/admin/live-streams/${id}`, { headers: authHeaders() });
-    toast.success('Silindi'); load();
+    toast.success('Silindi'); load(); if (onUpdate) onUpdate();
   };
 
   const statusBadge = (s) => {
@@ -208,7 +208,7 @@ function LiveStreamsTab() {
 }
 
 // ========== SUPERVISION TAB ==========
-function SupervisionTab() {
+function SupervisionTab({ onUpdate }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(null);
@@ -237,7 +237,7 @@ function SupervisionTab() {
         await api.post('/admin/supervision', form, { headers: authHeaders() });
         toast.success('Eklendi');
       }
-      setForm(null); setEditId(null); load();
+      setForm(null); setEditId(null); load(); if (onUpdate) onUpdate();
     } catch { toast.error('Kayıt başarısız'); }
     finally { setSaving(false); }
   };
@@ -245,7 +245,7 @@ function SupervisionTab() {
   const del = async (id) => {
     if (!window.confirm('Silinsin mi?')) return;
     await api.delete(`/admin/supervision/${id}`, { headers: authHeaders() });
-    toast.success('Silindi'); load();
+    toast.success('Silindi'); load(); if (onUpdate) onUpdate();
   };
 
   return (
@@ -358,7 +358,7 @@ function SupervisionTab() {
 }
 
 // ========== EXAMS TAB ==========
-function ExamsTab() {
+function ExamsTab({ onUpdate }) {
   const [exams, setExams] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -424,7 +424,7 @@ function ExamsTab() {
         await api.post('/admin/exams', form, { headers: authHeaders() });
         toast.success('Eklendi');
       }
-      setForm(null); setEditId(null); load();
+      setForm(null); setEditId(null); load(); if (onUpdate) onUpdate();
     } catch { toast.error('Kayıt başarısız'); }
     finally { setSaving(false); }
   };
@@ -432,7 +432,7 @@ function ExamsTab() {
   const del = async (id) => {
     if (!window.confirm('Silinsin mi?')) return;
     await api.delete(`/admin/exams/${id}`, { headers: authHeaders() });
-    toast.success('Silindi'); load();
+    toast.success('Silindi'); load(); if (onUpdate) onUpdate();
   };
 
   return (
@@ -600,11 +600,13 @@ function ExamsTab() {
 export default function PanelManager() {
   const [stats, setStats] = useState({ streams: 0, supervision: 0, exams: 0, active_users: 0 });
 
-  useEffect(() => {
+  const refreshStats = useCallback(() => {
     api.get('/admin/panel-stats', { headers: authHeaders() })
       .then(r => setStats(r.data))
       .catch(() => {});
   }, []);
+
+  useEffect(() => { refreshStats(); }, [refreshStats]);
 
   return (
     <div>
@@ -628,9 +630,9 @@ export default function PanelManager() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="streams"><LiveStreamsTab /></TabsContent>
-        <TabsContent value="supervision"><SupervisionTab /></TabsContent>
-        <TabsContent value="exams"><ExamsTab /></TabsContent>
+        <TabsContent value="streams"><LiveStreamsTab onUpdate={refreshStats} /></TabsContent>
+        <TabsContent value="supervision"><SupervisionTab onUpdate={refreshStats} /></TabsContent>
+        <TabsContent value="exams"><ExamsTab onUpdate={refreshStats} /></TabsContent>
       </Tabs>
     </div>
   );

@@ -20,6 +20,15 @@ Modern PropTech web platform for real estate and land investment analysis in Tur
 - **Backend:** /api/user/*, /api/live-streams, /api/supervision/events
 - **Test:** 100% (20/20)
 
+## Admin Panel Yönetimi (Panel Yönetimi Sayfası) - 2026-04-09 - TAMAMLANDI
+Admin paneline "Panel Yönetimi" sidebar öğesi eklendi. 3 tab: Canlı Yayınlar, Süpervizyon, Sınavlar.
+- **Canlı Yayınlar CRUD:** Başlık, tarih, durum, platform, link
+- **Süpervizyon CRUD:** Başlık, lokasyon, şehir, tarih, kapasite
+- **Sınavlar CRUD:** Başlık, kurs bağlantısı, sorular (4 şık + doğru cevap)
+- **Stats bar:** Anlık sayaç, CRUD sonrası güncellenir
+- **Backend:** /api/admin/live-streams, /api/admin/supervision, /api/admin/exams (admin auth)
+- **Test:** 100% (29/29)
+
 
 ## Admin Panel (Complete) - Feb 2026
 Sidebar-based admin panel at `/admin` with 9 module pages:
