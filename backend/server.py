@@ -2409,6 +2409,199 @@ async def update_shared_facility(facility_id: str, body: dict, admin: dict = Dep
 
 
 
+# ============= USER PANEL APIs =============
+
+@api_router.get("/user/progress")
+async def get_user_progress(request: Request):
+    user = await get_session_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Giriş yapmanız gerekiyor")
+    user_id = user.get("user_id")
+    courses = await db.courses.find({"status": "active"}, {"_id": 0}).to_list(100)
+    result = []
+    for course in courses:
+        cid = course.get("id")
+        prog = await db.user_progress.find_one({"user_id": user_id, "course_id": cid}, {"_id": 0})
+        total_lessons = sum(len(m.get("lessons", [])) for m in course.get("modules", []))
+        completed = prog.get("completed_lessons", []) if prog else []
+        pct = round(len(completed) / total_lessons * 100) if total_lessons > 0 else 0
+        result.append({
+            "course_id": cid, "title": course.get("title", ""), "cover_image": course.get("cover_image", ""),
+            "total_lessons": total_lessons, "completed_lessons": len(completed),
+            "progress_pct": pct, "last_lesson_id": prog.get("last_lesson_id") if prog else None,
+        })
+    return result
+
+@api_router.post("/user/progress/{course_id}/{lesson_id}")
+async def update_lesson_progress(course_id: str, lesson_id: str, request: Request):
+    user = await get_session_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Giriş yapmanız gerekiyor")
+    user_id = user.get("user_id")
+    await db.user_progress.update_one(
+        {"user_id": user_id, "course_id": course_id},
+        {"$addToSet": {"completed_lessons": lesson_id}, "$set": {"last_lesson_id": lesson_id, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    return {"message": "İlerleme kaydedildi"}
+
+@api_router.get("/user/files")
+async def get_user_files(request: Request):
+    user = await get_session_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Giriş yapmanız gerekiyor")
+    files = await db.user_files.find({"user_id": user.get("user_id")}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return files
+
+@api_router.delete("/user/files/{file_id}")
+async def delete_user_file(file_id: str, request: Request):
+    user = await get_session_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Giriş yapmanız gerekiyor")
+    await db.user_files.delete_one({"id": file_id, "user_id": user.get("user_id")})
+    return {"message": "Dosya silindi"}
+
+@api_router.get("/user/payments")
+async def get_user_payments(request: Request):
+    user = await get_session_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Giriş yapmanız gerekiyor")
+    payments = await db.user_payments.find({"user_id": user.get("user_id")}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return payments
+
+@api_router.get("/user/contracts")
+async def get_user_contracts(request: Request):
+    user = await get_session_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Giriş yapmanız gerekiyor")
+    contracts = await db.user_contracts.find({"user_id": user.get("user_id")}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return contracts
+
+@api_router.get("/user/exams")
+async def get_user_exams(request: Request):
+    user = await get_session_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Giriş yapmanız gerekiyor")
+    user_id = user.get("user_id")
+    exams = await db.course_exams.find({}, {"_id": 0}).to_list(100)
+    result = []
+    for exam in exams:
+        attempt = await db.user_exam_attempts.find_one({"user_id": user_id, "exam_id": exam.get("id")}, {"_id": 0})
+        result.append({**exam, "attempt": attempt})
+    return result
+
+@api_router.post("/user/exams/{exam_id}/submit")
+async def submit_exam(exam_id: str, body: dict, request: Request):
+    user = await get_session_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Giriş yapmanız gerekiyor")
+    exam = await db.course_exams.find_one({"id": exam_id}, {"_id": 0})
+    if not exam:
+        raise HTTPException(status_code=404, detail="Sınav bulunamadı")
+    answers = body.get("answers", {})
+    questions = exam.get("questions", [])
+    correct = sum(1 for q in questions if answers.get(q["id"]) == q.get("correct_answer"))
+    score = round(correct / len(questions) * 100) if questions else 0
+    attempt = {
+        "id": str(uuid.uuid4()), "user_id": user.get("user_id"), "exam_id": exam_id,
+        "score": score, "answers": answers, "completed_at": datetime.now(timezone.utc).isoformat(),
+        "passed": score >= exam.get("pass_score", 70)
+    }
+    await db.user_exam_attempts.insert_one(attempt)
+    attempt.pop("_id", None)
+    return attempt
+
+@api_router.get("/user/certificates")
+async def get_user_certificates(request: Request):
+    user = await get_session_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Giriş yapmanız gerekiyor")
+    user_id = user.get("user_id")
+    courses = await db.courses.find({"status": "active"}, {"_id": 0}).to_list(100)
+    result = []
+    for course in courses:
+        cid = course.get("id")
+        prog = await db.user_progress.find_one({"user_id": user_id, "course_id": cid}, {"_id": 0})
+        total = sum(len(m.get("lessons", [])) for m in course.get("modules", []))
+        completed = len(prog.get("completed_lessons", [])) if prog else 0
+        pct = round(completed / total * 100) if total > 0 else 0
+        result.append({
+            "course_id": cid, "title": course.get("title", ""), "cover_image": course.get("cover_image", ""),
+            "progress_pct": pct, "eligible": pct >= 90,
+            "certificate_url": f"/certificates/{user_id}/{cid}" if pct >= 90 else None
+        })
+    return result
+
+@api_router.get("/user/transcript")
+async def get_user_transcript(request: Request):
+    user = await get_session_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Giriş yapmanız gerekiyor")
+    user_id = user.get("user_id")
+    courses = await db.courses.find({"status": "active"}, {"_id": 0}).to_list(100)
+    result = []
+    for course in courses:
+        cid = course.get("id")
+        prog = await db.user_progress.find_one({"user_id": user_id, "course_id": cid}, {"_id": 0})
+        total = sum(len(m.get("lessons", [])) for m in course.get("modules", []))
+        completed = len(prog.get("completed_lessons", [])) if prog else 0
+        pct = round(completed / total * 100) if total > 0 else 0
+        if pct >= 90:
+            attempt = await db.user_exam_attempts.find_one({"user_id": user_id}, {"_id": 0}, sort=[("completed_at", -1)])
+            result.append({
+                "course_id": cid, "title": course.get("title", ""), "progress_pct": pct,
+                "score": attempt.get("score", 0) if attempt else 0,
+                "completed_at": prog.get("updated_at") if prog else None
+            })
+    return result
+
+@api_router.get("/live-streams")
+async def get_live_streams():
+    streams = await db.live_streams.find({}, {"_id": 0}).sort("date", -1).to_list(100)
+    if not streams:
+        now = datetime.now(timezone.utc)
+        streams = [
+            {"id": "ls1", "title": "Arsa Yatırımı Temelleri - Canlı Ders", "date": (now + timedelta(days=2)).isoformat(), "status": "upcoming", "platform": "Zoom", "join_url": "#", "thumbnail": ""},
+            {"id": "ls2", "title": "Tapu ve Kadastro Hukuku", "date": (now + timedelta(days=7)).isoformat(), "status": "upcoming", "platform": "Zoom", "join_url": "#", "thumbnail": ""},
+            {"id": "ls3", "title": "Arsa Değerleme Metodolojisi", "date": now.isoformat(), "status": "live", "platform": "Zoom", "join_url": "#", "thumbnail": ""},
+            {"id": "ls4", "title": "İmar Planı Okuma Teknikleri", "date": (now - timedelta(days=5)).isoformat(), "status": "ended", "platform": "Zoom", "join_url": "#", "thumbnail": ""},
+            {"id": "ls5", "title": "Yatırım Analizi Workshop", "date": (now - timedelta(days=12)).isoformat(), "status": "ended", "platform": "Zoom", "join_url": "#", "thumbnail": ""},
+        ]
+    return streams
+
+@api_router.get("/supervision/events")
+async def get_supervision_events():
+    events = await db.supervision_events.find({}, {"_id": 0}).sort("date", 1).to_list(100)
+    if not events:
+        now = datetime.now(timezone.utc)
+        events = [
+            {"id": "sv1", "title": "İstanbul Arsa Analiz Süpervizyon", "location": "İstanbul - Kadıköy Ofis", "city": "İstanbul", "date": (now + timedelta(days=3)).isoformat(), "status": "upcoming", "capacity": 15, "registered": 8},
+            {"id": "sv2", "title": "Ankara Mega Proje İnceleme", "location": "Ankara - Çankaya Merkez", "city": "Ankara", "date": (now + timedelta(days=10)).isoformat(), "status": "upcoming", "capacity": 20, "registered": 12},
+            {"id": "sv3", "title": "İzmir Kıyı Arsa Gezisi", "location": "İzmir - Alsancak", "city": "İzmir", "date": (now + timedelta(days=18)).isoformat(), "status": "upcoming", "capacity": 10, "registered": 6},
+            {"id": "sv4", "title": "Bursa OSB Yatırım Turu", "location": "Bursa - Nilüfer", "city": "Bursa", "date": (now - timedelta(days=7)).isoformat(), "status": "ended", "capacity": 12, "registered": 12},
+        ]
+    return events
+
+# Exam seed helper (called once on startup)
+async def seed_exams():
+    count = await db.course_exams.count_documents({})
+    if count == 0:
+        courses = await db.courses.find({"status": "active"}, {"_id": 0}).to_list(10)
+        for course in courses[:3]:
+            exam = {
+                "id": str(uuid.uuid4()), "course_id": course.get("id"),
+                "title": f"{course.get('title', 'Kurs')} - Değerlendirme Sınavı",
+                "pass_score": 70, "duration_minutes": 30,
+                "questions": [
+                    {"id": "q1", "text": "Arsa yatırımında en önemli kriter nedir?", "options": ["Lokasyon", "Fiyat", "Büyüklük", "Şekil"], "correct_answer": "Lokasyon"},
+                    {"id": "q2", "text": "İmar planı hangi kurum tarafından hazırlanır?", "options": ["Belediye", "Tapu Müdürlüğü", "Kadastro", "Maliye"], "correct_answer": "Belediye"},
+                    {"id": "q3", "text": "Tapu tescili için hangi belge gereklidir?", "options": ["Nüfus cüzdanı", "Satış vaadi sözleşmesi", "Tapu senedi", "İmar belgesi"], "correct_answer": "Tapu senedi"},
+                    {"id": "q4", "text": "Parsel numarası neyi ifade eder?", "options": ["Taşınmaz kimliği", "Bina katı", "Kat planı", "Bina yaşı"], "correct_answer": "Taşınmaz kimliği"},
+                    {"id": "q5", "text": "E.M.S.A.L. kısaltması ne anlama gelir?", "options": ["Emsal değeri", "Emsalsiz Mülk Satış Alanı", "Emsal Miktarı Standart Arazi Listesi", "Emsalli"], "correct_answer": "Emsal değeri"},
+                ]
+            }
+            await db.course_exams.insert_one(exam)
+
 @app.on_event("startup")
 async def startup():
     try:
@@ -2452,6 +2645,12 @@ async def startup():
                 logger.info(f"{col_name}: {count} mevcut, seed atlandı")
         except Exception as e:
             logger.error(f"Seed error for {col_name}: {e}")
+
+    # Seed exams for user panel demo
+    try:
+        await seed_exams()
+    except Exception as e:
+        logger.error(f"Exam seed error: {e}")
 
 app.include_router(api_router)
 

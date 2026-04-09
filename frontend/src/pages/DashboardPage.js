@@ -97,6 +97,9 @@ export default function DashboardPage() {
                   <UserCircle className="w-4 h-4 text-emerald-600" />
                   <span className="font-medium text-xs max-w-[80px] truncate" data-testid="user-name-display">{appUser.full_name || appUser.email}</span>
                 </div>
+                <Button onClick={() => navigate('/panel')} size="sm" className="h-8 px-3 text-xs bg-emerald-600 hover:bg-emerald-700 text-white rounded-full font-semibold" data-testid="user-panel-btn">
+                  Panelim
+                </Button>
                 <Button variant="ghost" size="sm" onClick={handleUserLogout} className="h-8 w-8 p-0 text-slate-400" data-testid="user-logout-btn"><LogOut className="w-3.5 h-3.5" /></Button>
               </div>
             ) : (

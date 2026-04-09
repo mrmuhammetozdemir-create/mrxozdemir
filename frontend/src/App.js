@@ -15,6 +15,7 @@ import AdminPanelPage from '@/pages/AdminPanelPage';
 import CourseDetailPage from '@/pages/CourseDetailPage';
 import YatirimFonuPage from '@/pages/YatirimFonuPage';
 import AuthPage, { AuthCallback } from '@/pages/AuthPage';
+import UserPanelPage from '@/pages/UserPanelPage';
 import '@/App.css';
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
           <Route path="/course/:id" element={<CourseDetailPage />} />
           <Route path="/yatirim-fonu" element={<YatirimFonuPage />} />
           <Route path="/admin" element={<AdminPanelPage />} />
+          <Route path="/panel" element={<UserPanelPage />} />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" />
