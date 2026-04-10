@@ -5,7 +5,8 @@ import {
   Award, ScrollText, Radio, CalendarDays, Users, Calendar,
   Bell, ChevronDown, LogOut, User, Search, Download, Trash2,
   Play, CheckCircle, Clock, AlertCircle, X, Menu, Filter,
-  ChevronLeft, ChevronRight, MapPin, Loader2, ExternalLink
+  ChevronLeft, ChevronRight, MapPin, Loader2, ExternalLink,
+  Star, Phone, Mail, Edit2, Save, Zap, Crown, Shield, Package
 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
@@ -13,8 +14,32 @@ import { toast } from 'sonner';
 const COURSE_THUMB = "https://static.prod-images.emergentagent.com/jobs/40cb78a3-0995-452a-bd7f-4b6b9aca923e/images/b80408b1b6bee4cfd784c820efa68cd92cd676f85ef6d5bc2cc3cbce764341ec.png";
 const COURSE_THUMB2 = "https://static.prod-images.emergentagent.com/jobs/40cb78a3-0995-452a-bd7f-4b6b9aca923e/images/2ab78b22b1c06ccc00e32ca5daf14f407de3b10761216cd12c82aca1114c3413.png";
 
+const AVATAR_COLORS = [
+  { id: 'emerald', bg: 'bg-emerald-600', hex: '#059669' },
+  { id: 'blue', bg: 'bg-blue-600', hex: '#2563eb' },
+  { id: 'violet', bg: 'bg-violet-600', hex: '#7c3aed' },
+  { id: 'rose', bg: 'bg-rose-600', hex: '#e11d48' },
+  { id: 'amber', bg: 'bg-amber-500', hex: '#f59e0b' },
+  { id: 'teal', bg: 'bg-teal-600', hex: '#0d9488' },
+  { id: 'orange', bg: 'bg-orange-500', hex: '#f97316' },
+  { id: 'slate', bg: 'bg-slate-600', hex: '#475569' },
+];
+
+const PLAN_LABELS = { free: 'Ücretsiz', basic: 'Temel', pro: 'Pro', corporate: 'Kurumsal' };
+const PLAN_COLORS = { free: 'bg-slate-700 text-slate-300', basic: 'bg-emerald-900 text-emerald-300', pro: 'bg-blue-900 text-blue-300', corporate: 'bg-amber-900 text-amber-300' };
+
+function getInitials(name) {
+  if (!name) return 'K';
+  const parts = name.trim().split(' ');
+  return parts.length >= 2 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : parts[0].slice(0, 2).toUpperCase();
+}
+function getAvatarHex(colorId) {
+  return AVATAR_COLORS.find(c => c.id === colorId)?.hex || '#059669';
+}
+
 const NAV_ITEMS = [
   { id: 'home', label: 'Anasayfa', icon: Home },
+  { id: 'packages', label: 'Paketler & Üyelik', icon: Star },
   { id: 'courses', label: 'Eğitimlerim', icon: BookOpen },
   { id: 'files', label: 'Dosyalarım', icon: FolderOpen },
   { id: 'payments', label: 'Ödemelerim', icon: CreditCard },
@@ -49,7 +74,7 @@ function PromoBanner() {
 }
 
 // ===== SIDEBAR =====
-function Sidebar({ active, onNav, user, onLogout, mobileOpen, onMobileClose }) {
+function Sidebar({ active, onNav, user, onLogout, onProfile, mobileOpen, onMobileClose }) {
   return (
     <>
       {/* Mobile overlay */}
@@ -60,15 +85,27 @@ function Sidebar({ active, onNav, user, onLogout, mobileOpen, onMobileClose }) {
         style={{ fontFamily: "'Manrope', sans-serif" }}
       >
         {/* User info */}
-        <div className="p-5 border-b border-slate-800 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center shrink-0">
-            <User className="w-4 h-4 text-white" />
+        <button
+          onClick={onProfile}
+          data-testid="sidebar-profile-btn"
+          className="w-full p-5 border-b border-slate-800 flex items-center gap-3 hover:bg-slate-800/60 transition-colors text-left"
+        >
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white font-bold text-sm"
+            style={{ background: getAvatarHex(user?.avatar_color) }}
+          >
+            {getInitials(user?.full_name)}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-white text-sm font-semibold truncate">{user?.full_name || 'Kullanıcı'}</p>
-            <p className="text-slate-400 text-xs truncate">{user?.email || ''}</p>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${PLAN_COLORS[user?.plan || 'free']}`}>
+                {PLAN_LABELS[user?.plan || 'free']}
+              </span>
+            </div>
           </div>
-        </div>
+          <Edit2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+        </button>
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto py-3 scrollbar-hide">
@@ -111,7 +148,7 @@ function Sidebar({ active, onNav, user, onLogout, mobileOpen, onMobileClose }) {
 }
 
 // ===== TOP HEADER =====
-function TopHeader({ user, onLogout, onMenuToggle }) {
+function TopHeader({ user, onLogout, onMenuToggle, onProfile }) {
   const [dropOpen, setDropOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -144,18 +181,29 @@ function TopHeader({ user, onLogout, onMenuToggle }) {
             data-testid="user-dropdown-btn"
             className="flex items-center gap-2 py-1.5 px-2 hover:bg-slate-100 rounded-xl transition-colors"
           >
-            <div className="w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center">
-              <User className="w-3.5 h-3.5 text-white" />
+            <div
+              className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
+              style={{ background: getAvatarHex(user?.avatar_color) }}
+            >
+              {getInitials(user?.full_name)}
             </div>
             <span className="text-sm font-semibold text-slate-700 hidden sm:block truncate max-w-[100px]">
-              {user?.full_name || 'Kullanıcı'}
+              {user?.full_name?.split(' ')[0] || 'Kullanıcı'}
             </span>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
           </button>
 
           {dropOpen && (
-            <div className="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-black/5 py-1 z-50">
-              <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 font-medium" data-testid="profile-dropdown-profile">
+            <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-black/5 py-1 z-50">
+              <div className="px-3 py-2 border-b border-slate-100">
+                <p className="text-xs font-bold text-slate-900 truncate">{user?.full_name}</p>
+                <p className="text-[11px] text-slate-400 truncate">{user?.email}</p>
+              </div>
+              <button
+                onClick={() => { onProfile(); setDropOpen(false); }}
+                data-testid="profile-dropdown-profile"
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 font-medium"
+              >
                 <User className="w-4 h-4 text-slate-400" /> Profilim
               </button>
               <button
@@ -170,6 +218,257 @@ function TopHeader({ user, onLogout, onMenuToggle }) {
         </div>
       </div>
     </header>
+  );
+}
+
+// ===== PROFILE MODAL =====
+function ProfileModal({ user, onClose, onSave }) {
+  const [name, setName] = useState(user?.full_name || '');
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [avatarColor, setAvatarColor] = useState(user?.avatar_color || 'emerald');
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!name.trim()) { toast.error('İsim zorunludur'); return; }
+    setSaving(true);
+    try {
+      const { data } = await api.put('/user/profile', { full_name: name, phone, avatar_color: avatarColor }, { withCredentials: true });
+      // Update localStorage
+      const stored = JSON.parse(localStorage.getItem('app_user') || '{}');
+      const updated = { ...stored, full_name: data.full_name, phone: data.phone, avatar_color: data.avatar_color, plan: data.plan };
+      localStorage.setItem('app_user', JSON.stringify(updated));
+      toast.success('Profil güncellendi');
+      onSave(updated);
+      onClose();
+    } catch { toast.error('Güncelleme başarısız'); } finally { setSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" data-testid="profile-modal">
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b border-slate-100">
+          <h2 className="text-base font-bold text-slate-900">Profili Düzenle</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors"><X className="w-4 h-4 text-slate-500" /></button>
+        </div>
+
+        <div className="p-5 space-y-5">
+          {/* Avatar preview + color picker */}
+          <div className="flex flex-col items-center gap-4">
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-black shadow-lg"
+              style={{ background: getAvatarHex(avatarColor) }}
+              data-testid="profile-avatar-preview"
+            >
+              {getInitials(name || user?.full_name)}
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-500 text-center mb-2">Avatar Rengi</p>
+              <div className="flex gap-2 flex-wrap justify-center">
+                {AVATAR_COLORS.map(c => (
+                  <button
+                    key={c.id}
+                    onClick={() => setAvatarColor(c.id)}
+                    data-testid={`avatar-color-${c.id}`}
+                    className="w-7 h-7 rounded-full transition-all hover:scale-110"
+                    style={{ background: c.hex, outline: avatarColor === c.id ? `3px solid ${c.hex}` : 'none', outlineOffset: '2px' }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Fields */}
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-bold text-slate-600 block mb-1.5">Ad Soyad *</label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  data-testid="profile-name-input"
+                  className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  placeholder="Adınız Soyadınız"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-600 block mb-1.5">Telefon</label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                  data-testid="profile-phone-input"
+                  className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  placeholder="+90 555 000 00 00"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-600 block mb-1.5">E-posta</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  value={user?.email || ''}
+                  readOnly
+                  data-testid="profile-email-input"
+                  className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-slate-100 bg-slate-50 text-slate-400 cursor-not-allowed"
+                />
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1 pl-1">E-posta değiştirilemez</p>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-600 block mb-1.5">Üyelik Planı</label>
+              <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${PLAN_COLORS[user?.plan || 'free']}`}>
+                <Crown className="w-3.5 h-3.5" />
+                {PLAN_LABELS[user?.plan || 'free']}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-5 pt-0 flex gap-2">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">İptal</button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            data-testid="profile-save-btn"
+            className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-all flex items-center justify-center gap-2"
+            style={{ background: 'linear-gradient(135deg, #059669, #0d9488)' }}
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Kaydet
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== PACKAGES SECTION =====
+function PackagesSection({ user, onUpgrade }) {
+  const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const currentPlan = user?.plan || 'free';
+
+  useEffect(() => {
+    api.get('/packages').then(r => setPackages(r.data)).catch(() => setPackages([])).finally(() => setLoading(false));
+  }, []);
+
+  const ICONS = { free: Package, basic: Shield, pro: Zap, corporate: Crown };
+  const COLOR_MAP = {
+    slate: { border: 'border-slate-200', badge: 'bg-slate-100 text-slate-700', btn: 'bg-slate-900 hover:bg-slate-700', check: 'text-slate-500' },
+    emerald: { border: 'border-emerald-200', badge: 'bg-emerald-100 text-emerald-700', btn: 'bg-emerald-600 hover:bg-emerald-700', check: 'text-emerald-500' },
+    blue: { border: 'border-blue-200', badge: 'bg-blue-100 text-blue-700', btn: 'bg-blue-600 hover:bg-blue-700', check: 'text-blue-500' },
+    amber: { border: 'border-amber-200', badge: 'bg-amber-100 text-amber-700', btn: 'bg-amber-500 hover:bg-amber-600', check: 'text-amber-500' },
+  };
+
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-slate-400" /></div>;
+
+  return (
+    <div className="space-y-6" style={{ fontFamily: "'Manrope', sans-serif" }} data-testid="packages-section">
+      <div>
+        <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-1">Üyelik</p>
+        <h1 className="text-2xl font-bold text-slate-900" style={{ fontFamily: "'Outfit', sans-serif" }}>Paketler & Üyelik</h1>
+        <p className="text-sm text-slate-500 mt-1">Hedeflerinize uygun paketi seçin, hemen erişim kazanın.</p>
+      </div>
+
+      {/* Current plan banner */}
+      <div className="bg-slate-900 rounded-2xl p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+            <Crown className="w-4.5 h-4.5 text-amber-400" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-400 font-medium">Mevcut Planınız</p>
+            <p className="text-white font-bold text-sm">{PLAN_LABELS[currentPlan]} Plan</p>
+          </div>
+        </div>
+        {currentPlan === 'free' && (
+          <span className="text-xs font-bold text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-lg">Yükseltilebilir</span>
+        )}
+      </div>
+
+      {/* Package cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {packages.map(pkg => {
+          const c = COLOR_MAP[pkg.color] || COLOR_MAP.slate;
+          const Icon = ICONS[pkg.id] || Package;
+          const isCurrent = pkg.id === currentPlan;
+          return (
+            <div
+              key={pkg.id}
+              data-testid={`package-card-${pkg.id}`}
+              className={`relative bg-white rounded-2xl border-2 p-5 transition-all ${isCurrent ? 'border-emerald-400 shadow-[0_0_0_4px_rgba(16,185,129,0.08)]' : c.border + ' hover:shadow-md'}`}
+            >
+              {pkg.popular && !isCurrent && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wide">
+                  En Popüler
+                </span>
+              )}
+              {isCurrent && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wide">
+                  Mevcut Plan
+                </span>
+              )}
+              <div className="flex items-start justify-between mb-4">
+                <div className={`w-10 h-10 rounded-xl ${c.badge} flex items-center justify-center`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+                <div className="text-right">
+                  {pkg.price === 0 ? (
+                    <span className="text-xl font-black text-slate-900">Ücretsiz</span>
+                  ) : (
+                    <div>
+                      <span className="text-2xl font-black text-slate-900">₺{pkg.price.toLocaleString('tr-TR')}</span>
+                      <span className="text-xs text-slate-400 ml-1">/{pkg.period}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <h3 className="text-base font-bold text-slate-900 mb-3">{pkg.name}</h3>
+              <ul className="space-y-2 mb-5">
+                {pkg.features.map((f, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
+                    <CheckCircle className={`w-4 h-4 shrink-0 mt-0.5 ${c.check}`} />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => !isCurrent && toast.info('Ödeme sistemi yakında aktif olacak!')}
+                data-testid={`package-btn-${pkg.id}`}
+                className={`w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all ${isCurrent ? 'bg-emerald-600 cursor-default opacity-80' : c.btn}`}
+              >
+                {isCurrent ? 'Aktif Plan' : pkg.price === 0 ? 'Ücretsiz Başla' : 'Planı Seç'}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* FAQ */}
+      <div className="bg-white rounded-2xl border border-slate-100 p-5">
+        <h3 className="text-sm font-bold text-slate-900 mb-3">Sıkça Sorulan Sorular</h3>
+        <div className="space-y-3">
+          {[
+            { q: 'Planımı istediğim zaman değiştirebilir miyim?', a: 'Evet, istediğiniz zaman planınızı yükseltebilir veya iptal edebilirsiniz.' },
+            { q: 'Ödeme güvenli mi?', a: 'Tüm ödemeler SSL şifreli altyapı ile güvenli şekilde işlenir.' },
+            { q: 'Ücretsiz denemem var mı?', a: 'Pro plan için 7 günlük ücretsiz deneme hakkınız bulunmaktadır.' },
+          ].map((item, i) => (
+            <details key={i} className="group">
+              <summary className="flex items-center justify-between cursor-pointer text-sm font-semibold text-slate-700 py-2">
+                {item.q}
+                <ChevronRight className="w-4 h-4 text-slate-400 group-open:rotate-90 transition-transform shrink-0" />
+              </summary>
+              <p className="text-sm text-slate-500 pb-2 pt-1">{item.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1042,17 +1341,25 @@ export default function UserPanelPage() {
   const [progress, setProgress] = useState([]);
   const [liveStreams, setLiveStreams] = useState([]);
   const [supervisionEvents, setSupervisionEvents] = useState([]);
+  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('app_user');
-    if (!stored) { navigate('/auth'); return; }
-    try { setUser(JSON.parse(stored)); } catch { navigate('/auth'); return; }
+    if (!stored) { navigate('/auth', { state: { from: '/panel' } }); return; }
+    try { setUser(JSON.parse(stored)); } catch { navigate('/auth', { state: { from: '/panel' } }); return; }
 
     // Load data
     api.get('/user/progress', { withCredentials: true })
       .then(r => setProgress(r.data)).catch(() => setProgress([]));
     api.get('/live-streams').then(r => setLiveStreams(r.data)).catch(() => setLiveStreams([]));
     api.get('/supervision/events').then(r => setSupervisionEvents(r.data)).catch(() => setSupervisionEvents([]));
+    // Fetch full profile (avatar_color, plan etc.)
+    api.get('/user/profile', { withCredentials: true }).then(r => {
+      const stored2 = JSON.parse(localStorage.getItem('app_user') || '{}');
+      const merged = { ...stored2, ...r.data };
+      localStorage.setItem('app_user', JSON.stringify(merged));
+      setUser(merged);
+    }).catch(() => {});
   }, [navigate]);
 
   const handleLogout = () => {
@@ -1066,6 +1373,7 @@ export default function UserPanelPage() {
   const renderSection = () => {
     switch (active) {
       case 'home': return <HomeSection progress={progress} />;
+      case 'packages': return <PackagesSection user={user} />;
       case 'courses': return <CoursesSection progress={progress} />;
       case 'files': return <FilesSection />;
       case 'payments': return <PaymentsSection />;
@@ -1083,6 +1391,13 @@ export default function UserPanelPage() {
 
   return (
     <div className="min-h-screen bg-[#F5E6D3]" style={{ fontFamily: "'Manrope', sans-serif" }}>
+      {showProfile && user && (
+        <ProfileModal
+          user={user}
+          onClose={() => setShowProfile(false)}
+          onSave={updated => setUser(updated)}
+        />
+      )}
       <PromoBanner />
 
       <Sidebar
@@ -1090,6 +1405,7 @@ export default function UserPanelPage() {
         onNav={setActive}
         user={user}
         onLogout={handleLogout}
+        onProfile={() => setShowProfile(true)}
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
       />
@@ -1098,6 +1414,7 @@ export default function UserPanelPage() {
         user={user}
         onLogout={handleLogout}
         onMenuToggle={() => setMobileOpen(!mobileOpen)}
+        onProfile={() => setShowProfile(true)}
       />
 
       {/* Main content */}

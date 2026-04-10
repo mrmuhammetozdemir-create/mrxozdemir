@@ -2759,6 +2759,74 @@ async def admin_panel_stats(admin: dict = Depends(require_admin)):
 
 # ============= USER PANEL APIs =============
 
+@api_router.get("/user/profile")
+async def get_user_profile(request: Request):
+    user = await get_session_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Giriş yapmanız gerekiyor")
+    doc = await db.app_users.find_one({"user_id": user["user_id"]}, {"_id": 0, "password": 0, "hashed_password": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
+    return {
+        "user_id": doc.get("user_id"),
+        "full_name": doc.get("full_name", ""),
+        "email": doc.get("email", ""),
+        "phone": doc.get("phone", ""),
+        "avatar_color": doc.get("avatar_color", "emerald"),
+        "plan": doc.get("plan", "free"),
+        "created_at": doc.get("created_at", ""),
+        "auth_provider": doc.get("auth_provider", "email"),
+    }
+
+@api_router.put("/user/profile")
+async def update_user_profile(body: dict, request: Request):
+    user = await get_session_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Giriş yapmanız gerekiyor")
+    allowed = {}
+    if body.get("full_name", "").strip():
+        allowed["full_name"] = body["full_name"].strip()
+    if "phone" in body:
+        allowed["phone"] = body["phone"].strip()
+    if "avatar_color" in body:
+        allowed["avatar_color"] = body["avatar_color"]
+    allowed["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.app_users.update_one({"user_id": user["user_id"]}, {"$set": allowed})
+    doc = await db.app_users.find_one({"user_id": user["user_id"]}, {"_id": 0, "password": 0, "hashed_password": 0})
+    return {
+        "user_id": doc.get("user_id"),
+        "full_name": doc.get("full_name", ""),
+        "email": doc.get("email", ""),
+        "phone": doc.get("phone", ""),
+        "avatar_color": doc.get("avatar_color", "emerald"),
+        "plan": doc.get("plan", "free"),
+    }
+
+@api_router.get("/packages")
+async def get_packages():
+    return [
+        {
+            "id": "free", "name": "Ücretsiz", "price": 0, "period": "",
+            "color": "slate", "popular": False,
+            "features": ["Ücretsiz seminerlere erişim", "Topluluk forumuna katılım", "Temel içerikler ve makaleler", "Aylık 1 canlı yayın"],
+        },
+        {
+            "id": "basic", "name": "Temel", "price": 499, "period": "ay",
+            "color": "emerald", "popular": False,
+            "features": ["Tüm aktif kurslar", "Eğitim sınavları ve değerlendirmeler", "Tamamlama sertifikaları", "Dosya indirme erişimi", "E-posta desteği"],
+        },
+        {
+            "id": "pro", "name": "Pro", "price": 999, "period": "ay",
+            "color": "blue", "popular": True,
+            "features": ["Temel paket + tüm özellikler", "Sınırsız canlı yayın erişimi", "Süpervizyon eğitimleri", "Öncelikli destek hattı", "Özel grup oturumları", "İndirimli seminer biletleri"],
+        },
+        {
+            "id": "corporate", "name": "Kurumsal", "price": 2499, "period": "ay",
+            "color": "amber", "popular": False,
+            "features": ["Tüm Pro özellikler", "Birebir özel danışmanlık", "Kurumsal grup eğitimleri", "Özelleştirilmiş sözleşme", "7/24 öncelikli destek", "Yıllık yatırım raporu"],
+        },
+    ]
+
 @api_router.get("/user/progress")
 async def get_user_progress(request: Request):
     user = await get_session_user(request)

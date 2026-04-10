@@ -69,10 +69,11 @@ export default function AuthPage() {
   // Check if already logged in or mode param
   useEffect(() => {
     const user = localStorage.getItem('app_user');
-    if (user) navigate('/');
     const params = new URLSearchParams(location.search);
+    const from = params.get('redirect') || location.state?.from || '/panel';
+    if (user) navigate(from);
     if (params.get('mode') === 'register') setMode('register');
-  }, [navigate, location.search]);
+  }, [navigate, location.search, location.state]);
 
   const handleGoogleLogin = () => {
     // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
@@ -92,7 +93,8 @@ export default function AuthPage() {
         localStorage.setItem('admin_token', data.access_token);
       }
       toast.success('Giriş başarılı');
-      navigate('/');
+      const from = new URLSearchParams(location.search).get('redirect') || location.state?.from || '/panel';
+      navigate(from);
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Giriş başarısız');
     } finally { setLoading(false); }
@@ -109,7 +111,8 @@ export default function AuthPage() {
       localStorage.setItem('app_user', JSON.stringify(data.user));
       localStorage.setItem('app_session_token', data.session_token);
       toast.success('Kayıt başarılı');
-      navigate('/');
+      const from = new URLSearchParams(location.search).get('redirect') || location.state?.from || '/panel';
+      navigate(from);
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Kayıt başarısız');
     } finally { setLoading(false); }

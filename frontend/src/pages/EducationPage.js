@@ -53,6 +53,13 @@ export default function EducationPage() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [seminarsFromDB, setSeminarsFromDB] = useState(false);
   const [coursesFromDB, setCoursesFromDB] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    const u = localStorage.getItem('app_user');
+    if (u) { try { const p = JSON.parse(u); setLoggedIn(true); setUserName(p.full_name || p.email || ''); } catch {} }
+  }, []);
 
   const isLoggedIn = () => !!(localStorage.getItem('app_user') || localStorage.getItem('admin_token'));
 
@@ -81,11 +88,63 @@ export default function EducationPage() {
       {selectedSeminar && <SeminarRegistrationModal seminar={selectedSeminar} onClose={() => setSelectedSeminar(null)} />}
       {showLoginModal && <LoginRequiredModal onClose={() => setShowLoginModal(false)} />}
 
+      {/* ── STICKY HEADER ───────────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 border-b" style={{ background: 'rgba(4,14,8,0.96)', backdropFilter: 'blur(16px)', borderColor: 'rgba(255,255,255,0.07)' }}>
+        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+          {/* Logo */}
+          <button onClick={() => navigate('/')} className="flex items-center gap-2 group">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #10b981, #0d9488)' }}>
+              <BookOpen className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="text-sm font-extrabold text-white">mrx<span style={{ color: '#C8A96A' }}>akademi</span></span>
+          </button>
+
+          {/* Nav Links */}
+          <div className="hidden sm:flex items-center gap-6">
+            <button onClick={() => document.getElementById('courses-section')?.scrollIntoView({ behavior: 'smooth' })} className="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Kurslar</button>
+            <button onClick={() => document.getElementById('seminars-section')?.scrollIntoView({ behavior: 'smooth' })} className="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Seminerler</button>
+            <button onClick={() => document.getElementById('live-section')?.scrollIntoView({ behavior: 'smooth' })} className="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Canlı Eğitim</button>
+          </div>
+
+          {/* CTA */}
+          <div className="flex items-center gap-2">
+            {loggedIn ? (
+              <button
+                onClick={() => navigate('/panel')}
+                data-testid="education-panel-btn"
+                className="flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-lg text-white transition-all"
+                style={{ background: 'linear-gradient(135deg, #10b981, #0d9488)' }}
+              >
+                <Users className="w-3.5 h-3.5" />
+                {userName ? userName.split(' ')[0] : 'Panelim'}
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => navigate('/auth', { state: { from: '/panel' } })}
+                  data-testid="education-login-btn"
+                  className="text-xs font-semibold text-slate-300 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-all"
+                >
+                  Giriş Yap
+                </button>
+                <button
+                  onClick={() => navigate('/auth?mode=register', { state: { from: '/panel' } })}
+                  data-testid="education-register-btn"
+                  className="text-xs font-bold px-4 py-2 rounded-lg text-white transition-all"
+                  style={{ background: 'linear-gradient(135deg, #10b981, #0d9488)' }}
+                >
+                  Ücretsiz Kayıt
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+
       {/* ── HERO ──────────────────────────────────────────────────── */}
       <div style={{ background: 'linear-gradient(135deg, #040e08 0%, #0F3D2E 60%, #0d2a1a 100%)' }} className="relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #C8A96A 1px, transparent 0)', backgroundSize: '32px 32px' }} />
         <div className="relative max-w-6xl mx-auto px-4 py-16 sm:py-20">
-          <button onClick={() => navigate('/')} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-10 text-sm"><ArrowLeft className="w-4 h-4" />Ana Sayfaya Dön</button>
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 border text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-5" style={{ background: 'rgba(200,169,106,0.15)', borderColor: 'rgba(200,169,106,0.3)', color: '#C8A96A' }}>
               <Award className="w-3.5 h-3.5" /> Arsa Eğitim Akademisi
@@ -107,7 +166,7 @@ export default function EducationPage() {
       </div>
 
       {/* ── SECTION 1: ÜCRETSİZ SEMİNERLER ──────────────────────── */}
-      <div className="bg-white py-16 sm:py-20">
+      <div className="bg-white py-16 sm:py-20" id="seminars-section">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-start gap-4 mb-4">
             <div className="w-1 h-12 rounded-full flex-shrink-0" style={{ background: 'linear-gradient(180deg, #C8A96A, #0F3D2E)' }} />
@@ -161,7 +220,7 @@ export default function EducationPage() {
       </div>
 
       {/* ── SECTION 2: ÜCRETLİ EĞİTİMLER ────────────────────────── */}
-      <div className="py-16 sm:py-20" style={{ background: '#0F3D2E' }}>
+      <div className="py-16 sm:py-20" id="courses-section" style={{ background: '#0F3D2E' }}>
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-start gap-4 mb-4">
             <div className="w-1 h-12 rounded-full flex-shrink-0" style={{ background: 'linear-gradient(180deg, #C8A96A, #e8c84a)' }} />
