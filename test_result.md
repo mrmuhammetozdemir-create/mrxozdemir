@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "mrxakademi PropTech platform - Code Quality fixes completed (SEED_DATA import, bare except, CORS middleware order, frontend .env URL). Testing regression to ensure no breakage."
+user_problem_statement: "Test new 'Değer Artış Hesaplama' (Real Estate Capital Gains Tax Calculator) module - comprehensive tax calculator with YI-UFE index, progressive tax brackets, PDF export, WhatsApp CTA, and FAQ accordion."
 
 backend:
   - task: "Fix undefined SEED_DATA import"
@@ -151,50 +151,112 @@ backend:
         comment: "✅ VERIFIED: CORS headers present and working correctly. access-control-allow-origin: * and access-control-allow-credentials: true headers confirmed."
 
 frontend:
-  - task: "Fix hardcoded preview URL in .env"
+  - task: "Dashboard - 3+2 Grid Layout with Değer Artış Card"
     implemented: true
     working: true
-    file: "/app/frontend/.env"
+    file: "/app/frontend/src/pages/DashboardPage.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Updated REACT_APP_BACKEND_URL from 'yatirim-stage.preview.emergentagent.com' to 'mrxakademi.preview.emergentagent.com'. Services restarted."
+        comment: "Added 'Değer Artış Hesaplama' module to MODULES array. Card positioned as 3rd item in top row with orange gradient, 'Hesapla' badge, Calculator icon, and subtitle 'Ev Satış Vergisi Hesaplayıcı'."
       - working: true
         agent: "testing"
-        comment: "✅ VERIFIED: Frontend .env correctly updated to 'mrxakademi.preview.emergentagent.com'. Both frontend (pid 1630) and backend (pid 1662) services running successfully on localhost. Preview URL showing 'Preview Unavailable' due to Emergent infrastructure caching (known issue), but application is fully functional on localhost. Backend logs confirm all seed data loaded, API running on port 8001. Frontend webpack dev server running without errors (only minor deprecation warnings)."
+        comment: "✅ VERIFIED: Dashboard displays 'Değer Artış Hesaplama' card correctly in 3+2 grid layout (3rd card in top row). Card shows orange gradient (from-orange-600 to-amber-700), 'Hesapla' badge, Calculator icon, title 'Değer Artış Hesaplama', and subtitle 'Ev Satış Vergisi Hesaplayıcı'. Card click navigation to /deger-artis-hesaplama works correctly. Tested on localhost:3000 (preview URL unavailable due to infrastructure caching issue)."
+
+  - task: "Değer Artış Hesaplama Page - Form & UI"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/DegerArtisHesaplamaPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented comprehensive tax calculator page with: 6 form inputs (Edinim Şekli buttons, Alış/Satış Tarihi, Alış/Satış Fiyatı, Kredi Faizi), HESAPLA and TEMİZLE buttons, result display section."
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: Page loads correctly with header 'Gayrimenkul Değer Artış Kazancı Vergisi Hesaplama'. All form elements present and functional: 3 Edinim Şekli buttons (Bedel Karşılığı, Miras, Bağış), 2 date inputs (Alış/Satış Tarihi with GG.AA.YYYY placeholder), 3 price inputs (Alış/Satış Fiyatı, Kredi Faizi with ₺ symbol), HESAPLA button (orange gradient), TEMİZLE button. Form accepts input correctly. Minor: /api/seo endpoint returns 404 (non-critical)."
+
+  - task: "Tax Calculation Engine - YI-UFE & Progressive Tax"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/DegerArtisHesaplamaPage.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented tax calculation with: YI-UFE index data (1994-2026), progressive tax brackets (2022-2026), exemption amounts per year, 5-year rule, Miras/Bağış exemptions, tapu harcı and damga vergisi calculations."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE: Tax calculation result does NOT appear after clicking HESAPLA button. Test case: Bedel Karşılığı, Alış: 01.01.2022 (500,000 ₺), Satış: 01.01.2026 (4,000,000 ₺), Kredi: 0. Form fills correctly, HESAPLA button clicks successfully, but result section with 'HESAPLAMA SONUCU' does NOT render. No visible error toast. Console shows only minor errors (WebSocket, /api/seo 404). Calculation logic exists in handleHesapla() function but result state may not be updating or rendering. This blocks all downstream testing (PDF export, WhatsApp CTA visibility, etc.)."
+
+  - task: "PDF Export Functionality"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/DegerArtisHesaplamaPage.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented PDF export using jsPDF library. Generates detailed tax calculation report with all breakdown values."
+      - working: "NA"
+        agent: "testing"
+        comment: "⚠ BLOCKED: Cannot test PDF export because tax calculation result does not appear. PDF export button should be visible in result section, but result section does not render. Requires fix to Tax Calculation Engine task first."
+
+  - task: "WhatsApp CTA & Contact Form"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/DegerArtisHesaplamaPage.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented WhatsApp integration (905015508834) with pre-filled messages. Contact form with name, phone, email, subject dropdown, and message fields. Form submission opens WhatsApp with form data."
+      - working: "NA"
+        agent: "testing"
+        comment: "⚠ BLOCKED: Cannot test WhatsApp CTA and contact form because they appear in result section after calculation. Result section does not render due to calculation bug. Requires fix to Tax Calculation Engine task first."
+
+  - task: "FAQ Accordion Section"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/DegerArtisHesaplamaPage.js"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented accordion with 6 FAQ items covering: tax definition, 5-year rule, beyanname timing, 2026 tax brackets, exemption amounts, and deductible expenses."
+      - working: "NA"
+        agent: "testing"
+        comment: "⚠ PARTIALLY BLOCKED: FAQ accordion section exists on page (visible in screenshots), but full functionality testing blocked by calculation result not appearing. Can see 'Sıkça Sorulan Sorular' section and accordion buttons, but cannot verify full interaction flow. Requires fix to Tax Calculation Engine task for complete testing."
 
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 16
+  test_sequence: 18
   run_ui: true
 
 test_plan:
   current_focus:
-    - "Regression test: All existing features still working after code quality fixes"
-    - "Backend API endpoints (/api/packages, /api/auth/login, /api/user/profile)"
-    - "Frontend pages (Dashboard, Education, User Panel, Applications, Admin)"
-    - "User authentication flow (login, session, profile editing)"
-  stuck_tasks: []
-  test_all: true
+    - "Tax Calculation Engine - YI-UFE & Progressive Tax (CRITICAL BUG - result not appearing)"
+  stuck_tasks:
+    - "Tax Calculation Engine - YI-UFE & Progressive Tax"
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
-    message: "Completed code quality fixes: 1) Added missing SEED_DATA import with fallback, 2) Fixed bare except to proper Exception handling, 3) Verified CORS middleware order (already correct), 4) Fixed frontend .env URL. Backend and frontend both running successfully on localhost. Preview infrastructure showing 'Preview Unavailable' but this is an Emergent platform issue, not application bug. Requesting comprehensive regression testing to ensure no features broken by these fixes."
+    message: "Implemented new 'Değer Artış Hesaplama' (Real Estate Capital Gains Tax Calculator) module. Features: Tax calculation engine with YI-UFE index (1994-2026), progressive tax brackets (2022-2026), exemption amounts, PDF export (jsPDF), WhatsApp CTA (905015508834), contact form, and 6-item FAQ accordion. Module added to dashboard as 3rd card in top row (3+2 grid) with orange gradient. Route: /deger-artis-hesaplama. Requesting comprehensive testing of all features including critical tax calculation test case (Alış: 500k on 01.01.2022, Satış: 4M on 01.01.2026, expected tax ~359,602 ₺)."
   - agent: "testing"
-    message: "REGRESSION TESTING COMPLETE - 100% Success. Backend: 14/14 tests passed including packages, auth, user profile, admin stats, and seed data verification. Frontend: Services running correctly, .env updated. All code quality fixes working perfectly. NO REGRESSIONS DETECTED. Application fully functional."
-  - agent: "main"
-    message: "Code Quality Refactoring Complete. All fixes verified through comprehensive testing. Ready for user verification and next phase of development."
-  - agent: "testing"
-    message: "✅ COMPREHENSIVE BACKEND TESTING COMPLETED - 100% SUCCESS RATE (14/14 tests passed). All major backend APIs working correctly: GET /api/packages (returns 4 packages), GET /api/projects (returns 3 projects), POST /api/auth/user-login (session-based auth), POST /api/auth/login (JWT admin auth), GET /api/auth/me, GET/PUT /api/user/profile, GET /api/admin/academy-stats, GET /api/admin/app-users. SEED_DATA import verified working - test user can login, database populated with seed data. CORS headers present, error handling proper (401/404), all authentication flows functional. Backend service running stable on localhost:8001. Code quality fixes have NOT broken any existing functionality."
-  - agent: "testing"
-    message: "✅ FRONTEND REGRESSION TESTING COMPLETED. Preview URL (https://mrxakademi.preview.emergentagent.com) showing 'Preview Unavailable!!!' error due to Emergent infrastructure caching - this is a KNOWN ISSUE mentioned in review request, NOT an application bug. Verified services running correctly on localhost: Frontend (pid 1630, uptime 12+ min), Backend (pid 1662, uptime 12+ min), MongoDB (pid 49, uptime 18+ min). Backend logs confirm: Application startup complete, Object Storage initialized, Admin user ensured, All seed data loaded (3 projects, 6 app_users, 2 courses, 1 seminar, etc.), Uvicorn running on http://0.0.0.0:8001. Frontend logs show only minor webpack deprecation warnings (not affecting functionality). ✅ CONCLUSION: All code quality fixes successful, application fully functional on localhost. Preview URL issue is infrastructure-related, not code-related."
-
-  - agent: "testing"
-    message: "REGRESSION TESTING COMPLETE - 100% Success. Backend: 14/14 tests passed including packages, auth, user profile, admin stats, and seed data verification. Frontend: Services running correctly, .env updated. All code quality fixes working perfectly. NO REGRESSIONS DETECTED. Application fully functional."
-  - agent: "main"
-    message: "Code Quality Refactoring Complete. All fixes verified through comprehensive testing. Ready for user verification and next phase of development."
+    message: "⚠ CRITICAL BUG FOUND: Tax calculation result does NOT appear after clicking HESAPLA button. Dashboard integration ✅ working (card displays correctly, navigation works). Form UI ✅ working (all inputs present and functional). Tax calculation ❌ BROKEN (result section does not render after form submission). Test case used: Bedel Karşılığı, Alış: 01.01.2022 (500,000 ₺), Satış: 01.01.2026 (4,000,000 ₺). Form fills correctly, HESAPLA button clicks, but no result appears. This blocks testing of: PDF export, WhatsApp CTA, contact form, and full FAQ interaction. Console shows only minor errors (WebSocket, /api/seo 404 - non-critical). Calculation logic exists in handleHesapla() but result state may not be updating or component not re-rendering. REQUIRES IMMEDIATE FIX. Tested on localhost:3000 (preview URL unavailable due to Emergent infrastructure caching)."

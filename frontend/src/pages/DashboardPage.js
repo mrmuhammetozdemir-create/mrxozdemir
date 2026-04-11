@@ -34,6 +34,17 @@ const MODULES = [
     img: 'https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/7edec0cb91fb852c91fb6400497a6ee104913e28c06a9628ce096af48303cb6a.png',
   },
   {
+    id: 'deger-artis', title: 'Değer Artış Hesaplama', subtitle: 'Ev Satış Vergisi Hesaplayıcı',
+    description: 'Gayrimenkul satışında ödeyeceğiniz değer artış kazancı vergisini anında hesaplayın.',
+    icon: Calculator, path: '/deger-artis-hesaplama',
+    badge: 'Hesapla',
+    badgeColor: 'bg-orange-600',
+    gradient: 'from-orange-600 to-amber-700',
+    accent: '#ea580c',
+    testId: 'feature-deger-artis',
+    img: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&auto=format&fit=crop',
+  },
+  {
     id: 'investment', title: 'Yatırım Simülatörü', subtitle: 'Proje ROI Tahmini',
     description: 'Yatırım geri dönüşünüzü hesaplayın, risk analizi yapın ve portföy optimizasyonunu keşfedin.',
     icon: Calculator, path: '/investment',
@@ -288,10 +299,10 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* 2x2 module grid + edu card — fills the rest of the screen */}
+        {/* 2x3 module grid (5 modül + edu card) — fills the rest of the screen */}
         <div className="flex-1 flex flex-col gap-2 min-h-0">
           <div className="flex-[3] grid grid-cols-2 gap-2 min-h-0">
-            {MODULES.map(m => (
+            {MODULES.slice(0, 4).map(m => (
               <div
                 key={m.id}
                 onClick={() => go(m.path, m.external)}
@@ -323,34 +334,57 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* Education card */}
-          <div
-            onClick={() => go('/education')}
-            data-testid="feature-education"
-            className="flex-[1] relative rounded-xl overflow-hidden cursor-pointer active:scale-95 transition-transform"
-            style={{ minHeight: '72px' }}
-          >
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706 40%, #0d9488)' }} />
-            <div className="relative px-4 py-2.5 flex items-center justify-between h-full">
-              <div className="flex-1">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <div className="w-5 h-5 rounded-md bg-white/25 flex items-center justify-center">
-                    <BookOpen className="w-3 h-3 text-white" />
+          {/* Son modül (5.) ve education card yan yana */}
+          <div className="flex-[2] grid grid-cols-2 gap-2 min-h-0">
+            {MODULES.slice(4, 5).map(m => (
+              <div
+                key={m.id}
+                onClick={() => go(m.path, m.external)}
+                data-testid={m.testId}
+                className="relative rounded-xl overflow-hidden cursor-pointer active:scale-95 transition-transform"
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${m.gradient}`} />
+                <div className="relative p-3 h-full flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1.5">
+                        <m.icon className="w-4 h-4 text-white/80" strokeWidth={1.5} />
+                        <h3 className="text-sm font-bold text-white leading-tight">{m.title}</h3>
+                      </div>
+                      <span className={`${m.badgeColor} text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0`}>
+                        {m.badge}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-white/60 leading-snug">{m.subtitle}</p>
                   </div>
-                  <span className="text-[11px] font-black text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
-                    mrx<span className="text-teal-900">akademi</span>
-                  </span>
+                  <div className="flex items-end justify-between">
+                    <span className="text-[10px] font-semibold text-white/70 flex items-center gap-0.5">
+                      Keşfet <ChevronRight className="w-3 h-3" />
+                    </span>
+                    <img src={m.img} alt={m.title} className="w-14 h-10 object-contain opacity-80" />
+                  </div>
                 </div>
-                <h3 className="text-sm font-bold text-white leading-tight">Gayrimenkul Eğitim Merkezi</h3>
-                <p className="text-[9px] text-white/70">Sertifikalı Kurslar · Canlı Eğitim</p>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <img
-                  src="https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/86dedebcca4ac76d1db0aed111fca43e1825812d80d254ca59d8f6e6cc54edfd.png"
-                  alt="Eğitim" className="w-12 h-10 object-contain"
-                />
+            ))}
+
+            {/* Education card */}
+            <div
+              onClick={() => go('/education')}
+              data-testid="feature-education"
+              className="relative rounded-xl overflow-hidden cursor-pointer active:scale-95 transition-transform"
+            >
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706 40%, #0d9488)' }} />
+              <div className="relative px-3 py-2.5 flex flex-col justify-between h-full">
+                <div>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <div className="w-5 h-5 rounded-md bg-white/25 flex items-center justify-center">
+                      <BookOpen className="w-3 h-3 text-white" />
+                    </div>
+                    <h3 className="text-sm font-bold text-white leading-tight">mrxakademi</h3>
+                  </div>
+                  <p className="text-[10px] text-white/70 leading-snug">Sertifikalı Eğitimler</p>
+                </div>
                 <button
-                  onClick={e => { e.stopPropagation(); go('/education'); }}
                   className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-amber-900"
                   style={{ background: 'white' }}
                 >
@@ -380,60 +414,119 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* 2x2 Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {MODULES.map(m => (
-              <div
-                key={m.id}
-                onClick={() => go(m.path, m.external)}
-                data-testid={m.testId}
-                className="group relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 shadow-md"
-                style={{ minHeight: '320px' }}
-              >
-                {/* Gradient BG */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${m.gradient}`} />
-                {/* Subtle noise texture */}
-                <div className="absolute inset-0 opacity-[0.03]"
-                  style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
+          {/* 3+2 Grid: İlk 3 modül üst satırda, son 2 alt satırda */}
+          <div className="space-y-6">
+            {/* Üst satır: 3 modül */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {MODULES.slice(0, 3).map(m => (
+                <div
+                  key={m.id}
+                  onClick={() => go(m.path, m.external)}
+                  data-testid={m.testId}
+                  className="group relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 shadow-md"
+                  style={{ minHeight: '320px' }}
+                >
+                  {/* Gradient BG */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${m.gradient}`} />
+                  {/* Subtle noise texture */}
+                  <div className="absolute inset-0 opacity-[0.03]"
+                    style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
 
-                <div className="relative p-7 h-full flex flex-col">
-                  {/* Top row */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <div className="flex items-center gap-2.5 mb-1">
-                        <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
-                          <m.icon className="w-5 h-5 text-white" strokeWidth={1.5} />
+                  <div className="relative p-7 h-full flex flex-col">
+                    {/* Top row */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <div className="flex items-center gap-2.5 mb-1">
+                          <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
+                            <m.icon className="w-5 h-5 text-white" strokeWidth={1.5} />
+                          </div>
+                          <h3 className="text-xl font-bold text-white leading-tight">{m.title}</h3>
                         </div>
-                        <h3 className="text-xl font-bold text-white leading-tight">{m.title}</h3>
+                        <p className="text-sm text-white/60 ml-11">{m.subtitle}</p>
                       </div>
-                      <p className="text-sm text-white/60 ml-11">{m.subtitle}</p>
+                      <span className={`${m.badgeColor} text-white text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0`}>
+                        {m.badge}
+                      </span>
                     </div>
-                    <span className={`${m.badgeColor} text-white text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0`}>
-                      {m.badge}
-                    </span>
+
+                    {/* Description */}
+                    <p className="text-sm text-white/70 leading-relaxed mb-6 max-w-xs">{m.description}</p>
+
+                    {/* Image */}
+                    <div className="flex-1 flex items-end">
+                      <div className="w-full flex items-end justify-between">
+                        <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white border border-white/25 hover:bg-white/15 transition-all group-hover:border-white/50">
+                          Keşfet <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </button>
+                        <img src={m.img} alt={m.title}
+                          className="w-40 h-32 object-contain opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Description */}
-                  <p className="text-sm text-white/70 leading-relaxed mb-6 max-w-xs">{m.description}</p>
-
-                  {/* Image */}
-                  <div className="flex-1 flex items-end">
-                    <div className="w-full flex items-end justify-between">
-                      <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white border border-white/25 hover:bg-white/15 transition-all group-hover:border-white/50">
-                        Keşfet <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </button>
-                      <img src={m.img} alt={m.title}
-                        className="w-40 h-32 object-contain opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
-                      />
-                    </div>
-                  </div>
+                  {/* Hover accent line */}
+                  <div className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ background: `linear-gradient(90deg, ${m.accent}, transparent)` }} />
                 </div>
+              ))}
+            </div>
 
-                {/* Hover accent line */}
-                <div className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{ background: `linear-gradient(90deg, ${m.accent}, transparent)` }} />
-              </div>
-            ))}
+            {/* Alt satır: 2 modül */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {MODULES.slice(3, 5).map(m => (
+                <div
+                  key={m.id}
+                  onClick={() => go(m.path, m.external)}
+                  data-testid={m.testId}
+                  className="group relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 shadow-md"
+                  style={{ minHeight: '320px' }}
+                >
+                  {/* Gradient BG */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${m.gradient}`} />
+                  {/* Subtle noise texture */}
+                  <div className="absolute inset-0 opacity-[0.03]"
+                    style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
+
+                  <div className="relative p-7 h-full flex flex-col">
+                    {/* Top row */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <div className="flex items-center gap-2.5 mb-1">
+                          <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
+                            <m.icon className="w-5 h-5 text-white" strokeWidth={1.5} />
+                          </div>
+                          <h3 className="text-xl font-bold text-white leading-tight">{m.title}</h3>
+                        </div>
+                        <p className="text-sm text-white/60 ml-11">{m.subtitle}</p>
+                      </div>
+                      <span className={`${m.badgeColor} text-white text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0`}>
+                        {m.badge}
+                      </span>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-sm text-white/70 leading-relaxed mb-6 max-w-xs">{m.description}</p>
+
+                    {/* Image */}
+                    <div className="flex-1 flex items-end">
+                      <div className="w-full flex items-end justify-between">
+                        <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white border border-white/25 hover:bg-white/15 transition-all group-hover:border-white/50">
+                          Keşfet <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </button>
+                        <img src={m.img} alt={m.title}
+                          className="w-40 h-32 object-contain opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Hover accent line */}
+                  <div className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ background: `linear-gradient(90deg, ${m.accent}, transparent)` }} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

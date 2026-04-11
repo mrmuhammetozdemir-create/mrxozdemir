@@ -17,6 +17,7 @@ import YatirimFonuPage from '@/pages/YatirimFonuPage';
 import AuthPage, { AuthCallback } from '@/pages/AuthPage';
 import UserPanelPage from '@/pages/UserPanelPage';
 import UygulamalarPage from '@/pages/UygulamalarPage';
+import DegerArtisHesaplamaPage from '@/pages/DegerArtisHesaplamaPage';
 import '@/App.css';
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
           <Route path="/market" element={<MarketAnalysisPage />} />
           <Route path="/course/:id" element={<CourseDetailPage />} />
           <Route path="/yatirim-fonu" element={<YatirimFonuPage />} />
+          <Route path="/deger-artis-hesaplama" element={<DegerArtisHesaplamaPage />} />
           <Route path="/admin" element={<AdminPanelPage />} />
           <Route path="/panel" element={<UserPanelPage />} />
           <Route path="/uygulamalar" element={<UygulamalarPage />} />

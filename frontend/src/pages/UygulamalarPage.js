@@ -32,6 +32,16 @@ const FEATURED = [
     features: ['Kadastro verisi', 'Parsel analizi', 'İmar durumu'],
   },
   {
+    id: 'deger-artis', title: 'Değer Artış Hesaplama', subtitle: 'Ev Satış Vergisi Hesaplayıcı',
+    description: 'Gayrimenkul satışında ödeyeceğiniz değer artış kazancı vergisini Yİ-ÜFE endeksli olarak anında hesaplayın. 2026 güncel vergi dilimleri.',
+    icon: Calculator, path: '/deger-artis-hesaplama',
+    badge: 'Hesapla', badgeColor: 'bg-orange-600',
+    gradient: 'from-orange-600 to-amber-700', accent: '#ea580c',
+    testId: 'app-deger-artis',
+    img: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&auto=format&fit=crop',
+    features: ['2026 Güncel Vergi', 'Yİ-ÜFE Endeksli', 'PDF Rapor'],
+  },
+  {
     id: 'investment', title: 'Yatırım Simülatörü', subtitle: 'Proje ROI Tahmini',
     description: 'Yatırım geri dönüşünüzü hesaplayın, risk analizi yapın ve portföy optimizasyonunu gerçek verilerle keşfedin.',
     icon: Calculator, path: '/investment',
