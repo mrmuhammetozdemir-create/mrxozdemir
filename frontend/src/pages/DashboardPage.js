@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import {
   Building2, Map, Calculator, MapPin, GraduationCap, LogIn, LogOut,
   Settings, BookOpen, UserCircle, ChevronRight, ArrowRight,
-  TrendingUp, BarChart3, Globe, Shield
+  TrendingUp, BarChart3, Globe, Shield, Grid3X3
 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
@@ -140,6 +140,14 @@ export default function DashboardPage() {
 
           {/* Nav Links */}
           <nav className="hidden lg:flex items-center gap-1 flex-1 justify-center">
+            <button
+              onClick={() => navigate('/uygulamalar')}
+              data-testid="nav-uygulamalar"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 transition-all border border-emerald-200"
+            >
+              <Grid3X3 className="w-3.5 h-3.5" />
+              Uygulamalar
+            </button>
             {MODULES.map(m => (
               <button
                 key={m.id}

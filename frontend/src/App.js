@@ -16,6 +16,7 @@ import CourseDetailPage from '@/pages/CourseDetailPage';
 import YatirimFonuPage from '@/pages/YatirimFonuPage';
 import AuthPage, { AuthCallback } from '@/pages/AuthPage';
 import UserPanelPage from '@/pages/UserPanelPage';
+import UygulamalarPage from '@/pages/UygulamalarPage';
 import '@/App.css';
 
 function App() {
@@ -41,6 +42,7 @@ function App() {
           <Route path="/yatirim-fonu" element={<YatirimFonuPage />} />
           <Route path="/admin" element={<AdminPanelPage />} />
           <Route path="/panel" element={<UserPanelPage />} />
+          <Route path="/uygulamalar" element={<UygulamalarPage />} />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" />
