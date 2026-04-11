@@ -399,26 +399,143 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* 2x2 Grid + Yatay Değer Artış + Education */}
+          {/* Asimetrik Grid - Featured + Küçük Modüller */}
           <div className="space-y-6">
-            {/* 2x2 Grid - 4 ana modül */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {MODULES.map(m => (
+            {/* Üst: Featured (Büyük) + 2 Küçük */}
+            <div className="grid grid-cols-3 gap-6" style={{ gridTemplateRows: 'auto auto' }}>
+              {/* Sol: Değer Artış Hesaplama - Featured (Büyük, 2 satır) */}
+              <div
+                onClick={() => go('/deger-artis-hesaplama')}
+                data-testid="feature-deger-artis"
+                className="group relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 shadow-md row-span-2"
+                style={{ minHeight: '420px' }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-600 via-amber-600 to-orange-700" />
+                <div className="absolute inset-0 opacity-[0.03]"
+                  style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
+
+                <div className="relative p-8 h-full flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-14 h-14 rounded-xl bg-white/15 flex items-center justify-center">
+                        <Calculator className="w-7 h-7 text-white" strokeWidth={1.5} />
+                      </div>
+                      <span className="bg-orange-900 text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                        2026 Güncel
+                      </span>
+                    </div>
+                    <h3 className="text-3xl font-bold text-white mb-3 leading-tight">
+                      Değer Artış Kazancı<br />Vergisi Hesaplama
+                    </h3>
+                    <p className="text-white/80 text-base leading-relaxed mb-6">
+                      Gayrimenkul satışında ödeyeceğiniz vergiyi Yİ-ÜFE endeksli olarak anında hesaplayın. 
+                      Gelir vergisi dilimleri, istisna tutarları ve detaylı rapor.
+                    </p>
+                    <div className="space-y-2 text-sm text-white/70">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-white/50"></div>
+                        <span>Yİ-ÜFE Endeksli Hesaplama</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-white/50"></div>
+                        <span>2026 Vergi Dilimleri</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-white/50"></div>
+                        <span>PDF Rapor İndir</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <button className="flex items-center gap-2 px-7 py-3.5 rounded-xl text-base font-bold text-orange-900 bg-white hover:bg-white/90 transition-all self-start">
+                    Hesapla <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+
+                <div className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-amber-300 to-orange-300" />
+              </div>
+
+              {/* Sağ üst 2 modül (küçük) */}
+              <div
+                onClick={() => go(MODULES[0].path, MODULES[0].external)}
+                data-testid={MODULES[0].testId}
+                className="group relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 shadow-md"
+                style={{ minHeight: '200px' }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-800" />
+                <div className="absolute inset-0 opacity-[0.03]"
+                  style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
+
+                <div className="relative p-6 h-full flex flex-col">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
+                        <Building2 className="w-4 h-4 text-white" strokeWidth={1.5} />
+                      </div>
+                      <h3 className="text-lg font-bold text-white leading-tight">e-Konut</h3>
+                    </div>
+                    <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shrink-0">
+                      Fiyat Trendleri
+                    </span>
+                  </div>
+                  <p className="text-xs text-white/70 mb-2">Toplu Konut & Proje Analiz</p>
+                  <div className="flex-1"></div>
+                  <button className="flex items-center gap-1 text-sm font-bold text-white/90">
+                    Keşfet <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+
+                <div className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-blue-400 to-transparent" />
+              </div>
+
+              <div
+                onClick={() => go(MODULES[1].path, MODULES[1].external)}
+                data-testid={MODULES[1].testId}
+                className="group relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 shadow-md"
+                style={{ minHeight: '200px' }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-teal-600 to-teal-900" />
+                <div className="absolute inset-0 opacity-[0.03]"
+                  style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
+
+                <div className="relative p-6 h-full flex flex-col">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
+                        <Map className="w-4 h-4 text-white" strokeWidth={1.5} />
+                      </div>
+                      <h3 className="text-lg font-bold text-white leading-tight">e-İPAT</h3>
+                    </div>
+                    <span className="bg-teal-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shrink-0">
+                      İmar Planı
+                    </span>
+                  </div>
+                  <p className="text-xs text-white/70 mb-2">Arazi Parsel Veri Erişimi</p>
+                  <div className="flex-1"></div>
+                  <button className="flex items-center gap-1 text-sm font-bold text-white/90">
+                    Keşfet <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+
+                <div className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-teal-400 to-transparent" />
+              </div>
+            </div>
+
+            {/* Alt: 2 Normal Kart */}
+            <div className="grid grid-cols-2 gap-6">
+              {MODULES.slice(2, 4).map(m => (
                 <div
                   key={m.id}
                   onClick={() => go(m.path, m.external)}
                   data-testid={m.testId}
                   className="group relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 shadow-md"
-                  style={{ minHeight: '320px' }}
+                  style={{ minHeight: '240px' }}
                 >
-                  {/* Gradient BG */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${m.gradient}`} />
-                  {/* Subtle noise texture */}
+                  <div className={'absolute inset-0 bg-gradient-to-br ' + m.gradient} />
                   <div className="absolute inset-0 opacity-[0.03]"
                     style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
 
                   <div className="relative p-7 h-full flex flex-col">
-                    {/* Top row */}
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <div className="flex items-center gap-2.5 mb-1">
@@ -429,123 +546,71 @@ export default function DashboardPage() {
                         </div>
                         <p className="text-sm text-white/60 ml-11">{m.subtitle}</p>
                       </div>
-                      <span className={`${m.badgeColor} text-white text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0`}>
+                      <span className={'text-white text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0 ' + m.badgeColor}>
                         {m.badge}
                       </span>
                     </div>
 
-                    {/* Description */}
-                    <p className="text-sm text-white/70 leading-relaxed mb-6 max-w-xs">{m.description}</p>
+                    <p className="text-sm text-white/70 leading-relaxed mb-4">{m.description}</p>
 
-                    {/* Image */}
-                    <div className="flex-1 flex items-end">
-                      <div className="w-full flex items-end justify-between">
-                        <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white border border-white/25 hover:bg-white/15 transition-all group-hover:border-white/50">
-                          Keşfet <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </button>
-                        <img src={m.img} alt={m.title}
-                          className="w-40 h-32 object-contain opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
-                        />
-                      </div>
+                    <div className="flex-1 flex items-end justify-between">
+                      <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white border border-white/25 hover:bg-white/15 transition-all group-hover:border-white/50">
+                        Keşfet <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                      <img src={m.img} alt={m.title}
+                        className="w-32 h-24 object-contain opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
+                      />
                     </div>
                   </div>
 
-                  {/* Hover accent line */}
-                  <div className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ background: `linear-gradient(90deg, ${m.accent}, transparent)` }} />
+                  <div className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'linear-gradient(90deg, ' + m.accent + ', transparent)' }} />
                 </div>
               ))}
             </div>
 
-            {/* Değer Artış Hesaplama - Yatay (Geniş, Az Yüksek) */}
-            <div
-              onClick={() => go('/deger-artis-hesaplama')}
-              data-testid="feature-deger-artis"
-              className="group relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 shadow-md"
-              style={{ minHeight: '180px' }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700" />
-              <div className="absolute inset-0 opacity-[0.03]"
-                style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
-
-              <div className="relative p-7 h-full flex items-center justify-between gap-8">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center">
-                      <Calculator className="w-6 h-6 text-white" strokeWidth={1.5} />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <h3 className="text-2xl font-bold text-white">Değer Artış Hesaplama</h3>
-                        <span className="bg-orange-900 text-white text-xs font-bold px-3 py-1 rounded-full">
-                          Hesapla
-                        </span>
-                      </div>
-                      <p className="text-sm text-white/70 mt-1">Ev Satış Vergisi Hesaplayıcı</p>
-                    </div>
-                  </div>
-                  <p className="text-white/80 max-w-2xl leading-relaxed">
-                    Gayrimenkul satışında ödeyeceğiniz değer artış kazancı vergisini Yİ-ÜFE endeksli olarak anında hesaplayın. 2026 güncel vergi dilimleri.
-                  </p>
-                  <button className="mt-4 flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-orange-900 bg-white hover:bg-white/90 transition-all">
-                    Hesaplamaya Başla <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </div>
-
-                <div className="hidden xl:block">
-                  <img 
-                    src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&auto=format&fit=crop" 
-                    alt="Değer Artış Hesaplama"
-                    className="w-64 h-40 object-cover rounded-xl opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
-                  />
-                </div>
-              </div>
-
-              <div className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-amber-300 to-orange-300" />
-            </div>
-
-            {/* Education Card - Eski Hali */}
+            {/* En Alt: Education Card - Yatay, Geniş, Tek Başına */}
             <div
               onClick={() => go('/education')}
               data-testid="feature-education"
               className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 shadow-md"
-              style={{ minHeight: '140px' }}
+              style={{ minHeight: '160px' }}
             >
               <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706 40%, #0d9488)' }} />
+              <div className="absolute inset-0 opacity-[0.03]"
+                style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
               
-              <div className="relative px-8 py-6 flex items-center justify-between h-full">
-                <div className="flex items-center gap-6">
-                  <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <BookOpen className="w-8 h-8 text-white" />
+              <div className="relative px-10 py-8 flex items-center justify-between h-full">
+                <div className="flex items-center gap-8">
+                  <div className="w-20 h-20 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <BookOpen className="w-10 h-10 text-white" />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-2xl font-black text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-3xl font-black text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
                         mrx<span className="text-teal-900">akademi</span>
                       </span>
                     </div>
-                    <h3 className="text-lg font-bold text-white leading-tight">Gayrimenkul Eğitim Merkezi</h3>
-                    <p className="text-sm text-white/80">Sertifikalı Kurslar • Canlı Eğitim • Uzman Danışmanlık</p>
+                    <h3 className="text-xl font-bold text-white leading-tight mb-1">Gayrimenkul Yatırım Eğitim Merkezi</h3>
+                    <p className="text-white/80">Sertifikalı Kurslar • Canlı Seminerler • Uzman Danışmanlık</p>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-8">
                   <img
                     src="https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/86dedebcca4ac76d1db0aed111fca43e1825812d80d254ca59d8f6e6cc54edfd.png"
                     alt="Eğitim" 
-                    className="w-32 h-24 object-contain"
+                    className="w-36 h-28 object-contain"
                   />
                   <button
                     onClick={e => { e.stopPropagation(); go('/education'); }}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-amber-900 bg-white hover:bg-white/90 transition-all"
+                    className="flex items-center gap-2 px-8 py-4 rounded-xl text-base font-bold text-amber-900 bg-white hover:bg-white/90 transition-all shadow-lg"
                   >
-                    Eğitimlere Başla <ChevronRight className="w-4 h-4" />
+                    Eğitimlere Başla <ChevronRight className="w-5 h-5" />
                   </button>
                 </div>
               </div>
             </div>
           </div>
-        </div>
       </section>
 
 
