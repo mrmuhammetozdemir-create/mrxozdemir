@@ -120,11 +120,11 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: '#F5F0E8', fontFamily: "'Manrope', system-ui, sans-serif" }}>
+    <div className="min-h-screen lg:min-h-0" style={{ background: '#F5F0E8', fontFamily: "'Manrope', system-ui, sans-serif" }}>
 
       {/* ── STICKY HEADER ──────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 bg-white border-b border-slate-100 shadow-[0_1px_8px_rgba(0,0,0,0.06)]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between gap-6">
+        <div className="max-w-7xl mx-auto px-4 lg:px-10 h-12 lg:h-16 flex items-center justify-between gap-4 lg:gap-6">
 
           {/* Logo */}
           <button onClick={() => navigate('/')} className="flex items-center gap-2.5 shrink-0">
@@ -166,11 +166,11 @@ export default function DashboardPage() {
             {adminUser ? (
               <>
                 <button onClick={() => navigate('/admin')} data-testid="admin-panel-btn"
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 transition-all">
-                  <Settings className="w-4 h-4" />Yönetim Paneli
+                  className="flex items-center gap-1.5 px-3 lg:px-4 py-1.5 lg:py-2 rounded-xl text-xs lg:text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 transition-all">
+                  <Settings className="w-3.5 h-3.5" /><span className="hidden sm:inline">Yönetim Paneli</span><span className="sm:hidden">Panel</span>
                 </button>
                 <button onClick={handleAdminLogout} data-testid="dashboard-logout-btn"
-                  className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">
                   <LogOut className="w-4 h-4" />
                 </button>
               </>
@@ -180,27 +180,27 @@ export default function DashboardPage() {
                   {appUser.full_name || appUser.email}
                 </span>
                 <button onClick={() => navigate('/panel')} data-testid="user-panel-btn"
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all">
+                  className="flex items-center gap-1.5 px-3 lg:px-4 py-1.5 lg:py-2 rounded-xl text-xs lg:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all">
                   Panelim
                 </button>
                 <button onClick={handleUserLogout} data-testid="user-logout-btn"
-                  className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">
                   <LogOut className="w-4 h-4" />
                 </button>
               </>
             ) : (
               <button onClick={() => navigate('/auth')} data-testid="dashboard-login-btn"
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold border-2 border-slate-200 text-slate-700 hover:border-slate-400 hover:bg-slate-50 transition-all">
-                <LogIn className="w-4 h-4" />Giriş Yap
+                className="flex items-center gap-1.5 px-3 lg:px-4 py-1.5 lg:py-2 rounded-xl text-xs lg:text-sm font-bold border-2 border-slate-200 text-slate-700 hover:border-slate-400 hover:bg-slate-50 transition-all">
+                <LogIn className="w-3.5 h-3.5" />Giriş Yap
               </button>
             )}
           </div>
         </div>
       </header>
 
-      {/* ── HERO ──────────────────────────────────────────────────── */}
+      {/* ── HERO — only desktop ───────────────────────────────────── */}
       <section
-        className="relative overflow-hidden py-20 lg:py-28"
+        className="hidden lg:block relative overflow-hidden py-28"
         style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e2d3d 40%, #0f3a28 100%)' }}
       >
         {/* Dot grid */}
@@ -260,8 +260,102 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* ── MODULE GRID ───────────────────────────────────────────── */}
-      <section className="py-20 lg:py-24">
+      {/* ── MOBILE: Tek ekran layout ──────────────────────────────── */}
+      <section className="lg:hidden flex flex-col px-3 pt-3 pb-2" style={{ height: 'calc(100dvh - 48px)' }}>
+        {/* Mini hero band */}
+        <div className="rounded-2xl px-4 py-3 mb-3 flex items-center justify-between flex-shrink-0"
+          style={{ background: 'linear-gradient(135deg, #0f172a, #0f3a28)' }}>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: '#C8A96A' }}>Türkiye PropTech</p>
+            <h1 className="text-base font-extrabold text-white leading-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
+              Gayrimenkul Analiz Platformu
+            </h1>
+          </div>
+          <button
+            onClick={() => navigate(appUser ? '/panel' : '/auth')}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-white flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg, #10b981, #0d9488)' }}
+          >
+            {appUser ? 'Panelim' : 'Başla'} <ArrowRight className="w-3 h-3" />
+          </button>
+        </div>
+
+        {/* 2x2 module grid + edu card — fills the rest of the screen */}
+        <div className="flex-1 flex flex-col gap-2 min-h-0">
+          <div className="flex-[3] grid grid-cols-2 gap-2 min-h-0">
+            {MODULES.map(m => (
+              <div
+                key={m.id}
+                onClick={() => go(m.path, m.external)}
+                data-testid={m.testId}
+                className="relative rounded-xl overflow-hidden cursor-pointer active:scale-95 transition-transform"
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${m.gradient}`} />
+                <div className="relative p-3 h-full flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1.5">
+                        <m.icon className="w-4 h-4 text-white/80" strokeWidth={1.5} />
+                        <h3 className="text-sm font-bold text-white leading-tight">{m.title}</h3>
+                      </div>
+                      <span className={`${m.badgeColor} text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0`}>
+                        {m.badge}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-white/60 leading-snug">{m.subtitle}</p>
+                  </div>
+                  <div className="flex items-end justify-between">
+                    <span className="text-[10px] font-semibold text-white/70 flex items-center gap-0.5">
+                      Keşfet <ChevronRight className="w-3 h-3" />
+                    </span>
+                    <img src={m.img} alt={m.title} className="w-14 h-10 object-contain opacity-80" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Education card */}
+          <div
+            onClick={() => go('/education')}
+            data-testid="feature-education"
+            className="flex-[1] relative rounded-xl overflow-hidden cursor-pointer active:scale-95 transition-transform"
+            style={{ minHeight: '72px' }}
+          >
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706 40%, #0d9488)' }} />
+            <div className="relative px-4 py-2.5 flex items-center justify-between h-full">
+              <div className="flex-1">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <div className="w-5 h-5 rounded-md bg-white/25 flex items-center justify-center">
+                    <BookOpen className="w-3 h-3 text-white" />
+                  </div>
+                  <span className="text-[11px] font-black text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                    mrx<span className="text-teal-900">akademi</span>
+                  </span>
+                </div>
+                <h3 className="text-sm font-bold text-white leading-tight">Gayrimenkul Eğitim Merkezi</h3>
+                <p className="text-[9px] text-white/70">Sertifikalı Kurslar · Canlı Eğitim</p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <img
+                  src="https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/86dedebcca4ac76d1db0aed111fca43e1825812d80d254ca59d8f6e6cc54edfd.png"
+                  alt="Eğitim" className="w-12 h-10 object-contain"
+                />
+                <button
+                  onClick={e => { e.stopPropagation(); go('/education'); }}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-amber-900"
+                  style={{ background: 'white' }}
+                >
+                  Başla <ChevronRight className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── DESKTOP: Module Grid ───────────────────────────────────── */}
+      <section className="hidden lg:block py-24">
         <div className="max-w-7xl mx-auto px-6 lg:px-10">
 
           {/* Section header */}
@@ -336,8 +430,8 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* ── EDUCATION FEATURE ─────────────────────────────────────── */}
-      <section className="pb-20 lg:pb-24">
+      {/* ── EDUCATION FEATURE — desktop only ─────────────────────── */}
+      <section className="hidden lg:block pb-24">
         <div className="max-w-7xl mx-auto px-6 lg:px-10">
           <div
             onClick={() => go('/education')}
@@ -402,8 +496,8 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* ── FOOTER ────────────────────────────────────────────────── */}
-      <footer className="border-t border-slate-200 bg-white py-8">
+      {/* ── FOOTER — desktop only ─────────────────────────────────── */}
+      <footer className="hidden lg:block border-t border-slate-200 bg-white py-8">
         <div className="max-w-7xl mx-auto px-6 lg:px-10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <LogoMark />
