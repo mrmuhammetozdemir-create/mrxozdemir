@@ -3078,8 +3078,7 @@ async def startup():
     except Exception as e:
         logger.error(f"Exam seed error: {e}")
 
-app.include_router(api_router)
-
+# CRITICAL: Add CORS middleware BEFORE including router
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
@@ -3087,6 +3086,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(api_router)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
