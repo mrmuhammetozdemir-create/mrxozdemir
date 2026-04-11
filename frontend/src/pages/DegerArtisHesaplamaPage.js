@@ -203,9 +203,9 @@ export default function DegerArtisHesaplamaPage() {
       return;
     }
 
-    const alis = parseFloat(alisFiyati.replace(/\./g, '').replace(',', '.')) || 0;
-    const satis = parseFloat(satisFiyati.replace(/\./g, '').replace(',', '.')) || 0;
-    const kredi = krediFaizi ? parseFloat(krediFaizi.replace(/\./g, '').replace(',', '.')) : 0;
+    const alis = parseFloat(alisFiyati.replace(/[.,\s]/g, '')) || 0;
+    const satis = parseFloat(satisFiyati.replace(/[.,\s]/g, '')) || 0;
+    const kredi = krediFaizi ? parseFloat(krediFaizi.replace(/[.,\s]/g, '')) : 0;
 
     console.log('[DEBUG] Parsed values:', { alis, satis, kredi });
 
