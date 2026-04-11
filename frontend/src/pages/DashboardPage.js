@@ -34,17 +34,6 @@ const MODULES = [
     img: 'https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/7edec0cb91fb852c91fb6400497a6ee104913e28c06a9628ce096af48303cb6a.png',
   },
   {
-    id: 'deger-artis', title: 'Değer Artış Hesaplama', subtitle: 'Ev Satış Vergisi Hesaplayıcı',
-    description: 'Gayrimenkul satışında ödeyeceğiniz değer artış kazancı vergisini anında hesaplayın.',
-    icon: Calculator, path: '/deger-artis-hesaplama',
-    badge: 'Hesapla',
-    badgeColor: 'bg-orange-600',
-    gradient: 'from-orange-600 to-amber-700',
-    accent: '#ea580c',
-    testId: 'feature-deger-artis',
-    img: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&auto=format&fit=crop',
-  },
-  {
     id: 'investment', title: 'Yatırım Simülatörü', subtitle: 'Proje ROI Tahmini',
     description: 'Yatırım geri dönüşünüzü hesaplayın, risk analizi yapın ve portföy optimizasyonunu keşfedin.',
     icon: Calculator, path: '/investment',
@@ -299,10 +288,11 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* 2x3 module grid (5 modül + edu card) — fills the rest of the screen */}
+        {/* 2x2 module grid (4 modül) + Değer Artış + edu card */}
         <div className="flex-1 flex flex-col gap-2 min-h-0">
+          {/* 2x2 grid - 4 ana modül */}
           <div className="flex-[3] grid grid-cols-2 gap-2 min-h-0">
-            {MODULES.slice(0, 4).map(m => (
+            {MODULES.map(m => (
               <div
                 key={m.id}
                 onClick={() => go(m.path, m.external)}
@@ -334,38 +324,33 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* Son modül (5.) ve education card yan yana */}
+          {/* Alt satır: Değer Artış + Education yan yana */}
           <div className="flex-[2] grid grid-cols-2 gap-2 min-h-0">
-            {MODULES.slice(4, 5).map(m => (
-              <div
-                key={m.id}
-                onClick={() => go(m.path, m.external)}
-                data-testid={m.testId}
-                className="relative rounded-xl overflow-hidden cursor-pointer active:scale-95 transition-transform"
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${m.gradient}`} />
-                <div className="relative p-3 h-full flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-1.5">
-                        <m.icon className="w-4 h-4 text-white/80" strokeWidth={1.5} />
-                        <h3 className="text-sm font-bold text-white leading-tight">{m.title}</h3>
-                      </div>
-                      <span className={`${m.badgeColor} text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0`}>
-                        {m.badge}
-                      </span>
+            {/* Değer Artış */}
+            <div
+              onClick={() => go('/deger-artis-hesaplama')}
+              data-testid="feature-deger-artis"
+              className="relative rounded-xl overflow-hidden cursor-pointer active:scale-95 transition-transform"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-600 to-amber-700" />
+              <div className="relative p-3 h-full flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-1.5">
+                      <Calculator className="w-4 h-4 text-white/80" strokeWidth={1.5} />
+                      <h3 className="text-sm font-bold text-white leading-tight">Değer Artış</h3>
                     </div>
-                    <p className="text-[10px] text-white/60 leading-snug">{m.subtitle}</p>
-                  </div>
-                  <div className="flex items-end justify-between">
-                    <span className="text-[10px] font-semibold text-white/70 flex items-center gap-0.5">
-                      Keşfet <ChevronRight className="w-3 h-3" />
+                    <span className="bg-orange-900 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                      Hesapla
                     </span>
-                    <img src={m.img} alt={m.title} className="w-14 h-10 object-contain opacity-80" />
                   </div>
+                  <p className="text-[10px] text-white/60 leading-snug">Ev Satış Vergisi</p>
                 </div>
+                <button className="text-[10px] font-semibold text-white/70 flex items-center gap-0.5">
+                  Keşfet <ChevronRight className="w-3 h-3" />
+                </button>
               </div>
-            ))}
+            </div>
 
             {/* Education card */}
             <div
@@ -414,67 +399,11 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* 3+2 Grid: İlk 3 modül üst satırda, son 2 alt satırda */}
+          {/* 2x2 Grid + Yatay Değer Artış + Education */}
           <div className="space-y-6">
-            {/* Üst satır: 3 modül */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {MODULES.slice(0, 3).map(m => (
-                <div
-                  key={m.id}
-                  onClick={() => go(m.path, m.external)}
-                  data-testid={m.testId}
-                  className="group relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 shadow-md"
-                  style={{ minHeight: '320px' }}
-                >
-                  {/* Gradient BG */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${m.gradient}`} />
-                  {/* Subtle noise texture */}
-                  <div className="absolute inset-0 opacity-[0.03]"
-                    style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
-
-                  <div className="relative p-7 h-full flex flex-col">
-                    {/* Top row */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <div className="flex items-center gap-2.5 mb-1">
-                          <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
-                            <m.icon className="w-5 h-5 text-white" strokeWidth={1.5} />
-                          </div>
-                          <h3 className="text-xl font-bold text-white leading-tight">{m.title}</h3>
-                        </div>
-                        <p className="text-sm text-white/60 ml-11">{m.subtitle}</p>
-                      </div>
-                      <span className={`${m.badgeColor} text-white text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0`}>
-                        {m.badge}
-                      </span>
-                    </div>
-
-                    {/* Description */}
-                    <p className="text-sm text-white/70 leading-relaxed mb-6 max-w-xs">{m.description}</p>
-
-                    {/* Image */}
-                    <div className="flex-1 flex items-end">
-                      <div className="w-full flex items-end justify-between">
-                        <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white border border-white/25 hover:bg-white/15 transition-all group-hover:border-white/50">
-                          Keşfet <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </button>
-                        <img src={m.img} alt={m.title}
-                          className="w-40 h-32 object-contain opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Hover accent line */}
-                  <div className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ background: `linear-gradient(90deg, ${m.accent}, transparent)` }} />
-                </div>
-              ))}
-            </div>
-
-            {/* Alt satır: 2 modül */}
+            {/* 2x2 Grid - 4 ana modül */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {MODULES.slice(3, 5).map(m => (
+              {MODULES.map(m => (
                 <div
                   key={m.id}
                   onClick={() => go(m.path, m.external)}
@@ -527,75 +456,98 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ── EDUCATION FEATURE — desktop only ─────────────────────── */}
-      <section className="hidden lg:block pb-24">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10">
-          <div
-            onClick={() => go('/education')}
-            data-testid="feature-education"
-            className="relative rounded-3xl overflow-hidden cursor-pointer hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 shadow-lg"
-            style={{ minHeight: '260px' }}
-          >
-            {/* Gradient */}
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 30%, #0d9488 100%)' }} />
-            {/* Overlay pattern */}
-            <div className="absolute inset-0 opacity-[0.06]"
-              style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
+            {/* Değer Artış Hesaplama - Yatay (Geniş, Az Yüksek) */}
+            <div
+              onClick={() => go('/deger-artis-hesaplama')}
+              data-testid="feature-deger-artis"
+              className="group relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 shadow-md"
+              style={{ minHeight: '180px' }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700" />
+              <div className="absolute inset-0 opacity-[0.03]"
+                style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
 
-            <div className="relative px-10 py-10 flex flex-col lg:flex-row items-center justify-between gap-8 h-full">
-              {/* Content */}
-              <div className="flex-1 max-w-2xl">
-                {/* mrxakademi logo */}
-                <div className="flex items-center gap-2.5 mb-5">
-                  <div className="w-10 h-10 rounded-xl bg-white/25 flex items-center justify-center shadow-sm">
-                    <BookOpen className="w-5 h-5 text-white" />
+              <div className="relative p-7 h-full flex items-center justify-between gap-8">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center">
+                      <Calculator className="w-6 h-6 text-white" strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-2xl font-bold text-white">Değer Artış Hesaplama</h3>
+                        <span className="bg-orange-900 text-white text-xs font-bold px-3 py-1 rounded-full">
+                          Hesapla
+                        </span>
+                      </div>
+                      <p className="text-sm text-white/70 mt-1">Ev Satış Vergisi Hesaplayıcı</p>
+                    </div>
                   </div>
-                  <span className="text-[18px] font-black text-white leading-none" style={{ fontFamily: "'Outfit', sans-serif" }}>
-                    mrx<span className="text-teal-900">akademi</span>
-                  </span>
+                  <p className="text-white/80 max-w-2xl leading-relaxed">
+                    Gayrimenkul satışında ödeyeceğiniz değer artış kazancı vergisini Yİ-ÜFE endeksli olarak anında hesaplayın. 2026 güncel vergi dilimleri.
+                  </p>
+                  <button className="mt-4 flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-orange-900 bg-white hover:bg-white/90 transition-all">
+                    Hesaplamaya Başla <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </button>
                 </div>
 
-                <h3 className="text-3xl lg:text-4xl font-extrabold text-white mb-3 leading-tight"
-                  style={{ letterSpacing: '-0.02em', fontFamily: "'Outfit', sans-serif" }}>
-                  Gayrimenkul Eğitim Merkezi
-                </h3>
-                <p className="text-white/80 text-base mb-7 max-w-lg">
-                  Sertifikalı PropTech kursları, haftalık canlı eğitimler ve özel süpervizyon programlarıyla gayrimenkul uzmanlığınızı geliştirin.
-                </p>
+                <div className="hidden xl:block">
+                  <img 
+                    src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&auto=format&fit=crop" 
+                    alt="Değer Artış Hesaplama"
+                    className="w-64 h-40 object-cover rounded-xl opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
+                  />
+                </div>
+              </div>
 
-                <div className="flex flex-wrap gap-3">
+              <div className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-amber-300 to-orange-300" />
+            </div>
+
+            {/* Education Card - Eski Hali */}
+            <div
+              onClick={() => go('/education')}
+              data-testid="feature-education"
+              className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 shadow-md"
+              style={{ minHeight: '140px' }}
+            >
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706 40%, #0d9488)' }} />
+              
+              <div className="relative px-8 py-6 flex items-center justify-between h-full">
+                <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <BookOpen className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-2xl font-black text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                        mrx<span className="text-teal-900">akademi</span>
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-bold text-white leading-tight">Gayrimenkul Eğitim Merkezi</h3>
+                    <p className="text-sm text-white/80">Sertifikalı Kurslar • Canlı Eğitim • Uzman Danışmanlık</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-6">
+                  <img
+                    src="https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/86dedebcca4ac76d1db0aed111fca43e1825812d80d254ca59d8f6e6cc54edfd.png"
+                    alt="Eğitim" 
+                    className="w-32 h-24 object-contain"
+                  />
                   <button
                     onClick={e => { e.stopPropagation(); go('/education'); }}
-                    className="flex items-center gap-2 px-7 py-3.5 rounded-2xl font-bold text-base text-amber-900 hover:scale-105 transition-all shadow-lg"
-                    style={{ background: 'white' }}
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-amber-900 bg-white hover:bg-white/90 transition-all"
                   >
-                    <GraduationCap className="w-5 h-5" /> Eğitimleri Keşfet
-                  </button>
-                  <button
-                    onClick={e => { e.stopPropagation(); navigate(appUser ? '/panel' : '/auth', { state: { from: '/panel' } }); }}
-                    className="flex items-center gap-2 px-7 py-3.5 rounded-2xl font-bold text-base text-white border-2 border-white/30 hover:bg-white/15 transition-all"
-                  >
-                    {appUser ? 'Panelime Git' : 'Ücretsiz Kayıt'} <ArrowRight className="w-5 h-5" />
+                    Eğitimlere Başla <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
-              </div>
-
-              {/* Image */}
-              <div className="shrink-0">
-                <img
-                  src="https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/86dedebcca4ac76d1db0aed111fca43e1825812d80d254ca59d8f6e6cc54edfd.png"
-                  alt="Eğitim Merkezi"
-                  className="w-52 h-44 object-contain drop-shadow-2xl"
-                />
               </div>
             </div>
           </div>
         </div>
       </section>
+
 
       {/* ── FOOTER — desktop only ─────────────────────────────────── */}
       <footer className="hidden lg:block border-t border-slate-200 bg-white py-8">
