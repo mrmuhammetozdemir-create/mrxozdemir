@@ -1,3 +1,4 @@
+import os
 """
 Tests for Project Excel Import Feature
 - GET /api/admin/project-excel-template - downloads Excel template with project columns

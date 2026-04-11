@@ -105,7 +105,10 @@ export default function UygulamalarPage() {
 
   useEffect(() => {
     const stored = localStorage.getItem('app_user');
-    if (stored) { try { setAppUser(JSON.parse(stored)); } catch {} }
+    if (stored) {
+      try { setAppUser(JSON.parse(stored)); }
+      catch (e) { console.warn('app_user parse error:', e); localStorage.removeItem('app_user'); }
+    }
     const token = localStorage.getItem('admin_token');
     if (token) {
       api.get('/auth/me', { headers: { Authorization: `Bearer ${token}` } })
@@ -121,7 +124,9 @@ export default function UygulamalarPage() {
       try {
         const { data } = await api.post('/auth/cross-site-token', {}, { headers: { Authorization: `Bearer ${sessionToken}` } });
         if (data.token) { window.open(`${path}?cst=${data.token}`, '_blank'); return; }
-      } catch {}
+      } catch (e) {
+        console.warn('Cross-site token failed, opening without SSO:', e?.message);
+      }
     }
     window.open(path, '_blank');
   };

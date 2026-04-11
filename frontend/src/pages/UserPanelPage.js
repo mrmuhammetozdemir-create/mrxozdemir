@@ -431,7 +431,7 @@ function PackagesSection({ user, onUpgrade }) {
               <h3 className="text-base font-bold text-slate-900 mb-3">{pkg.name}</h3>
               <ul className="space-y-2 mb-5">
                 {pkg.features.map((f, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
+                  <li key={`feat-${i}`} className="flex items-start gap-2 text-sm text-slate-600">
                     <CheckCircle className={`w-4 h-4 shrink-0 mt-0.5 ${c.check}`} />
                     {f}
                   </li>
@@ -457,8 +457,8 @@ function PackagesSection({ user, onUpgrade }) {
             { q: 'Planımı istediğim zaman değiştirebilir miyim?', a: 'Evet, istediğiniz zaman planınızı yükseltebilir veya iptal edebilirsiniz.' },
             { q: 'Ödeme güvenli mi?', a: 'Tüm ödemeler SSL şifreli altyapı ile güvenli şekilde işlenir.' },
             { q: 'Ücretsiz denemem var mı?', a: 'Pro plan için 7 günlük ücretsiz deneme hakkınız bulunmaktadır.' },
-          ].map((item, i) => (
-            <details key={i} className="group">
+          ].map((item) => (
+            <details key={item.q} className="group">
               <summary className="flex items-center justify-between cursor-pointer text-sm font-semibold text-slate-700 py-2">
                 {item.q}
                 <ChevronRight className="w-4 h-4 text-slate-400 group-open:rotate-90 transition-transform shrink-0" />
@@ -542,8 +542,8 @@ function HomeSection({ progress }) {
           {[
             { title: 'Arsa Hukuku Temelleri', level: 'Başlangıç', thumb: COURSE_THUMB2 },
             { title: 'İmar Planı Analizi', level: 'Orta', thumb: COURSE_THUMB },
-          ].map((c, i) => (
-            <div key={i} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/30 transition-all cursor-pointer">
+          ].map((c) => (
+            <div key={c.title} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/30 transition-all cursor-pointer">
               <img src={c.thumb} alt={c.title} className="w-12 h-9 rounded-lg object-cover shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-slate-900 truncate">{c.title}</p>
@@ -650,6 +650,7 @@ function FilesSection() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     api.get('/user/files', { withCredentials: true })
       .then(r => setFiles(r.data))
@@ -734,6 +735,7 @@ function PaymentsSection() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     api.get('/user/payments', { withCredentials: true })
       .then(r => setPayments(r.data))
@@ -796,6 +798,7 @@ function ContractsSection() {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     api.get('/user/contracts', { withCredentials: true })
       .then(r => setContracts(r.data))
@@ -857,6 +860,7 @@ function ExamsSection() {
   const [answers, setAnswers] = useState({});
   const [result, setResult] = useState(null);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     api.get('/user/exams', { withCredentials: true })
       .then(r => setExams(r.data))
@@ -1096,6 +1100,7 @@ function LiveStreamsSection() {
   const [streams, setStreams] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     api.get('/live-streams').then(r => setStreams(r.data)).catch(() => setStreams([])).finally(() => setLoading(false));
   }, []);

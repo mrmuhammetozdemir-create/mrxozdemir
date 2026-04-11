@@ -1,3 +1,4 @@
+import os
 """
 Test suite for User Panel endpoints: /api/user/*, /api/live-streams, /api/supervision/events
 Tests: progress, files, payments, contracts, exams, live-streams, supervision events, panel auth
@@ -8,8 +9,8 @@ import os
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
-TEST_EMAIL = "testuser@test.com"
-TEST_PASSWORD = "Test1234!"
+TEST_EMAIL = os.environ.get("TEST_USER_EMAIL", "testuser@test.com")
+TEST_PASSWORD = os.environ.get("TEST_USER_PASSWORD", "Test1234!")
 
 
 @pytest.fixture(scope="module")

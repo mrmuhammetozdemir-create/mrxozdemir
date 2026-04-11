@@ -1,3 +1,4 @@
+import os
 """
 Tests for Admin App-Users Management API
 Tests: GET/PUT /api/admin/app-users/* endpoints
@@ -7,9 +8,9 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://mrx-academy-preview.preview.emergentagent.com').rstrip('/')
-ADMIN_EMAIL = "ipatarazi@gmail.com"
-ADMIN_PASSWORD = "As537273"
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://yatirim-stage.preview.emergentagent.com').rstrip('/')
+ADMIN_EMAIL = os.environ.get("ADMIN_TEST_EMAIL", "ipatarazi@gmail.com")
+ADMIN_PASSWORD = os.environ.get("ADMIN_TEST_PASSWORD", "As537273")
 TEST_USER_EMAIL = "testuser@test.com"
 
 

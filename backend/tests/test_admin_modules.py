@@ -1,3 +1,4 @@
+import os
 """
 Test all 8 Admin Panel Modules Backend APIs
 - Admin Auth & Stats
@@ -16,8 +17,8 @@ import os
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
 # Admin credentials
-ADMIN_EMAIL = "ipatarazi@gmail.com"
-ADMIN_PASSWORD = "As537273"
+ADMIN_EMAIL = os.environ.get("ADMIN_TEST_EMAIL", "ipatarazi@gmail.com")
+ADMIN_PASSWORD = os.environ.get("ADMIN_TEST_PASSWORD", "As537273")
 
 
 @pytest.fixture(scope="module")

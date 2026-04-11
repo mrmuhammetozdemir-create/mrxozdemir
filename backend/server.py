@@ -22,6 +22,12 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
+# Import seed data
+try:
+    from seed_data import SEED_DATA
+except ImportError:
+    SEED_DATA = {}
+
 # MongoDB
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -1296,7 +1302,8 @@ async def get_map_layer_data(project_id: str, layer_id: str):
             return json.loads(data)
         # KMZ: unzip and return inner KML
         if layer["file_type"] == "KMZ":
-            import zipfile, io
+            import zipfile
+            import io
             with zipfile.ZipFile(io.BytesIO(data)) as z:
                 kml_files = [n for n in z.namelist() if n.endswith('.kml')]
                 if not kml_files:
@@ -2063,6 +2070,7 @@ async def agent_chat(body: AgentMessage, admin: dict = Depends(require_admin)):
     chat = LlmChat(api_key=llm_key, session_id=f"agent_{body.session_id}", system_message=AGENT_SYSTEM_PROMPT).with_model("anthropic", "claude-sonnet-4-5-20250929")
     response_text = await chat.send_message(LlmUserMessage(text=body.message + context_msg))
 
+    agent_response = None  # initialize before try to prevent undefined-variable risk
     try:
         raw = response_text.strip()
         if "```json" in raw: raw = raw.split("```json")[1].split("```")[0].strip()
@@ -2639,8 +2647,10 @@ SADECE geçerli JSON döndür, başka hiçbir şey yazma. Türkçe içeriği kor
         raise HTTPException(status_code=500, detail=f"PDF işlenirken hata oluştu: {str(e)[:100]}")
     finally:
         import os as _os
-        try: _os.unlink(tmp_path)
-        except: pass
+        try:
+            _os.unlink(tmp_path)
+        except Exception:
+            pass
 
 # ============= ADMIN PANEL YÖNETİMİ (Canlı Yayın, Süpervizyon, Sınavlar) =============
 

@@ -1,3 +1,4 @@
+import os
 """
 Test suite for new features:
 - GET /api/packages (4 packages: free, basic, pro, corporate)
@@ -10,8 +11,8 @@ import os
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
-TEST_EMAIL = "testuser@test.com"
-TEST_PASSWORD = "Test1234!"
+TEST_EMAIL = os.environ.get("TEST_USER_EMAIL", "testuser@test.com")
+TEST_PASSWORD = os.environ.get("TEST_USER_PASSWORD", "Test1234!")
 
 EXPECTED_PACKAGE_IDS = {"free", "basic", "pro", "corporate"}
 EXPECTED_PACKAGE_COLORS = {"free": "slate", "basic": "emerald", "pro": "blue", "corporate": "amber"}

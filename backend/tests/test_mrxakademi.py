@@ -1,3 +1,4 @@
+import os
 """
 Backend tests for MrxAkademi Admin APIs:
 - Academy Stats: GET /admin/academy-stats
@@ -11,8 +12,8 @@ import requests
 import os
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
-ADMIN_EMAIL = "ipatarazi@gmail.com"
-ADMIN_PASSWORD = "As537273"
+ADMIN_EMAIL = os.environ.get("ADMIN_TEST_EMAIL", "ipatarazi@gmail.com")
+ADMIN_PASSWORD = os.environ.get("ADMIN_TEST_PASSWORD", "As537273")
 
 
 @pytest.fixture(scope="module")

@@ -1,3 +1,4 @@
+import os
 """
 SEO Endpoints Test Suite
 Tests for SEO Manager functionality:
@@ -13,8 +14,8 @@ import os
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
 # Test credentials
-ADMIN_EMAIL = "ipatarazi@gmail.com"
-ADMIN_PASSWORD = "As537273"
+ADMIN_EMAIL = os.environ.get("ADMIN_TEST_EMAIL", "ipatarazi@gmail.com")
+ADMIN_PASSWORD = os.environ.get("ADMIN_TEST_PASSWORD", "As537273")
 
 # SEO page IDs to test
 SEO_PAGE_IDS = ['home', 'e-konut', 'mega-projects', 'ipat', 'egitim', 'topluluk', 'yatirim-fonu']

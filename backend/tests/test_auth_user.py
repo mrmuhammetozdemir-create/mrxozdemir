@@ -1,3 +1,4 @@
+import os
 """
 Backend tests for user authentication:
 - POST /api/auth/register - New user registration
@@ -12,8 +13,8 @@ import uuid
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
-EXISTING_EMAIL = "testuser@test.com"
-EXISTING_PASSWORD = "Test1234!"
+EXISTING_EMAIL = os.environ.get("TEST_USER_EMAIL", "testuser@test.com")
+EXISTING_PASSWORD = os.environ.get("TEST_USER_PASSWORD", "Test1234!")
 NEW_EMAIL = f"TEST_newuser_{uuid.uuid4().hex[:6]}@test.com"
 NEW_PASSWORD = "TestNew1234!"
 

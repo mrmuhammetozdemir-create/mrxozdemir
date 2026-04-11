@@ -1,3 +1,4 @@
+import os
 """
 PropTech Turkey Admin API Tests
 Tests admin authentication, project CRUD, ada/parsel management, and related features
@@ -9,8 +10,8 @@ import os
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
 # Test credentials
-ADMIN_EMAIL = "ipatarazi@gmail.com"
-ADMIN_PASSWORD = "As537273"
+ADMIN_EMAIL = os.environ.get("ADMIN_TEST_EMAIL", "ipatarazi@gmail.com")
+ADMIN_PASSWORD = os.environ.get("ADMIN_TEST_PASSWORD", "As537273")
 
 class TestAdminAuth:
     """Admin authentication tests"""
