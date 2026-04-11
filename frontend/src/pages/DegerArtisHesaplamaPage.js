@@ -194,6 +194,9 @@ export default function DegerArtisHesaplamaPage() {
   // ═══════════════════════════════════════════════════════════════════════════
   
   const handleHesapla = () => {
+    console.log('[DEBUG] handleHesapla called');
+    console.log('[DEBUG] Form values:', { edinimSekli, alisTarihi, satisTarihi, alisFiyati, satisFiyati, krediFaizi });
+    
     // Validasyon
     if (!alisTarihi || !satisTarihi || !alisFiyati || !satisFiyati) {
       toast.error('Lütfen tüm zorunlu alanları doldurun');
@@ -204,8 +207,11 @@ export default function DegerArtisHesaplamaPage() {
     const satis = parseFloat(satisFiyati.replace(/\./g, '').replace(',', '.')) || 0;
     const kredi = krediFaizi ? parseFloat(krediFaizi.replace(/\./g, '').replace(',', '.')) : 0;
 
+    console.log('[DEBUG] Parsed values:', { alis, satis, kredi });
+
     // Ön kontrol 1: Miras veya Bağış
     if (edinimSekli !== 'bedel') {
+      console.log('[DEBUG] Edinim şekli:', edinimSekli, '- VERGİ YOK');
       setResult({
         vergiYok: true,
         mesaj: `${edinimSekli === 'miras' ? 'Miras' : 'Bağış'} yoluyla edinilen gayrimenkuller Gelir Vergisi Kanunu'nun 81. maddesi gereğince değer artış kazancı vergisinden muaftır.`
@@ -216,6 +222,8 @@ export default function DegerArtisHesaplamaPage() {
     // Ön kontrol 2: Tarih geçerliliği
     const [ad, am, ay] = alisTarihi.split('.').map(Number);
     const [sd, sm, sy] = satisTarihi.split('.').map(Number);
+    console.log('[DEBUG] Date parts:', { alisParts: [ad, am, ay], satisParts: [sd, sm, sy] });
+    
     const alisDate = new Date(ay, am - 1, ad);
     const satisDate = new Date(sy, sm - 1, sd);
     
@@ -226,6 +234,8 @@ export default function DegerArtisHesaplamaPage() {
 
     // Ön kontrol 3: 5 yıl kuralı
     const ayFarki = getMonthDifference(alisTarihi, satisTarihi);
+    console.log('[DEBUG] Ay farkı:', ayFarki);
+    
     if (ayFarki > BES_YIL_AY) {
       setResult({
         vergiYok: true,
@@ -237,6 +247,8 @@ export default function DegerArtisHesaplamaPage() {
     // Yİ-ÜFE değerlerini al
     const alisYiUfe = getYiUfe(alisTarihi);
     const satisYiUfe = getYiUfe(satisTarihi);
+
+    console.log('[DEBUG] Yİ-ÜFE values:', { alisYiUfe, satisYiUfe });
 
     if (alisYiUfe === null || alisYiUfe === undefined) {
       toast.error('Alış tarihi için Yİ-ÜFE verisi bulunamadı');
@@ -287,6 +299,8 @@ export default function DegerArtisHesaplamaPage() {
     const toplamVergi = gelirVergisi + damgaVergisi;
     const vergiYukuOrani = (toplamVergi / gayrisafiHasilat) * 100;
 
+    console.log('[DEBUG] Calculation result:', { toplamVergi, vergiYukuOrani });
+
     setResult({
       vergiYok: false,
       alis,
@@ -307,6 +321,8 @@ export default function DegerArtisHesaplamaPage() {
       vergiYukuOrani,
       satisYili: sy
     });
+    
+    console.log('[DEBUG] Result state set successfully');
   };
 
   const handleTemizle = () => {
