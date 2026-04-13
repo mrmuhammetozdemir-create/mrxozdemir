@@ -158,7 +158,7 @@ export default function LandDetailPage() {
             ) : (
               <div className="space-y-2">
                 {parcel.documents.map((doc, index) => (
-                  <a key={index} href={doc} target="_blank" rel="noopener noreferrer" className="block p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+                  <a key={doc} href={doc} target="_blank" rel="noopener noreferrer" className="block p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
                     Belge {index + 1}
                   </a>
                 ))}
@@ -175,7 +175,7 @@ export default function LandDetailPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {parcel.images.map((img, index) => (
-                  <img key={index} src={img} alt={`Parsel ${index + 1}`} className="w-full h-48 object-cover rounded-lg" />
+                  <img key={img} src={img} alt={`Parsel ${index + 1}`} className="w-full h-48 object-cover rounded-lg" />
                 ))}
               </div>
             )}

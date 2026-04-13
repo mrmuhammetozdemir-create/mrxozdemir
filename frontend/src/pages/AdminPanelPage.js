@@ -177,7 +177,7 @@ function DashboardContent({ stats, onNavigate }) {
 // ==================== AI AGENT PANEL ====================
 function AgentPanel({ onClose, onRefresh, selectedProject }) {
   const [messages, setMessages] = useState([
-    { role: 'agent', text: `👋 Merhaba! Ben e-Konut Veri Asistanıyım.\n\n📎 **Dosya Yükle:** Ataç ikonuna tıklayarak:\n• **ZIP / RAR** → İçindeki KMZ + resimler + DOCX'tan **otomatik yeni proje oluşturur**\n• **KMZ / KML / GeoJSON** → Seçili projeye harita katmanı ekler\n• **JPG / PNG** → Seçili projeye görsel ekler\n\n💡 **İpucu:** Dosya ekleyip aynı anda proje bilgilerini de yazabilirsiniz:\n_"Ankara Mamak TOKİ, 300 konut, 2025-2027"_\n\n💬 **Yazılı Komutlar:**\n• "Proje ekle / güncelle / sil"\n• "İstanbul'daki projeleri listele"\n\n${selectedProject ? `🎯 Seçili Proje: **${selectedProject.project_name}**` : '📂 Proje seçilmedi — ZIP yüklerseniz yeni proje otomatik oluşturulur.'}` }
+    { id: 0, role: 'agent', text: `👋 Merhaba! Ben e-Konut Veri Asistanıyım.\n\n📎 **Dosya Yükle:** Ataç ikonuna tıklayarak:\n• **ZIP / RAR** → İçindeki KMZ + resimler + DOCX'tan **otomatik yeni proje oluşturur**\n• **KMZ / KML / GeoJSON** → Seçili projeye harita katmanı ekler\n• **JPG / PNG** → Seçili projeye görsel ekler\n\n💡 **İpucu:** Dosya ekleyip aynı anda proje bilgilerini de yazabilirsiniz:\n_"Ankara Mamak TOKİ, 300 konut, 2025-2027"_\n\n💬 **Yazılı Komutlar:**\n• "Proje ekle / güncelle / sil"\n• "İstanbul'daki projeleri listele"\n\n${selectedProject ? `🎯 Seçili Proje: **${selectedProject.project_name}**` : '📂 Proje seçilmedi — ZIP yüklerseniz yeni proje otomatik oluşturulur.'}` }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -200,7 +200,7 @@ function AgentPanel({ onClose, onRefresh, selectedProject }) {
     if (attachedFile) {
       const fileMsg = attachedFile.name;
       const userText = input.trim();
-      setMessages(prev => [...prev, { role: 'user', text: `📎 ${fileMsg}${userText ? '\n' + userText : ''}` }]);
+      setMessages(prev => [...prev, { id: Date.now(), role: 'user', text: `📎 ${fileMsg}${userText ? '\n' + userText : ''}` }]);
       setInput('');
       setAttachedFile(null);
       setLoading(true);
@@ -227,10 +227,10 @@ function AgentPanel({ onClose, onRefresh, selectedProject }) {
         if (data.location_updated)  summary += `📍 Koordinat otomatik güncellendi\n`;
         if (data.description_extracted) summary += `📝 Açıklama DOCX'tan alındı\n`;
 
-        setMessages(prev => [...prev, { role: 'agent', text: summary.trim() || '✅ Dosya işlendi.' }]);
+        setMessages(prev => [...prev, { id: Date.now(), role: 'agent', text: summary.trim() || '✅ Dosya işlendi.' }]);
         onRefresh();
       } catch (e) {
-        setMessages(prev => [...prev, { role: 'agent', text: `❌ Dosya yüklenemedi: ${e.response?.data?.detail || e.message}` }]);
+        setMessages(prev => [...prev, { id: Date.now(), role: 'agent', text: `❌ Dosya yüklenemedi: ${e.response?.data?.detail || e.message}` }]);
       }
       setLoading(false);
       return;
@@ -239,7 +239,7 @@ function AgentPanel({ onClose, onRefresh, selectedProject }) {
     // --- Text command flow ---
     const userMsg = input.trim();
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    setMessages(prev => [...prev, { id: Date.now(), role: 'user', text: userMsg }]);
     setLoading(true);
     try {
       const { data } = await api.post('/admin/agent/chat',
@@ -260,10 +260,10 @@ function AgentPanel({ onClose, onRefresh, selectedProject }) {
         else if (r.status === 'not_found') resultSummary += `\n⚠️ Bulunamadı: "${r.search}"`;
         else if (r.status === 'error') resultSummary += `\n❌ Hata: ${r.error}`;
       }
-      setMessages(prev => [...prev, { role: 'agent', text: data.message + resultSummary, results: data.results }]);
+      setMessages(prev => [...prev, { id: Date.now(), role: 'agent', text: data.message + resultSummary, results: data.results }]);
       if (data.results?.some(r => ['create','bulk_create','update','delete'].includes(r.type) && r.status === 'ok')) onRefresh();
     } catch (e) {
-      setMessages(prev => [...prev, { role: 'agent', text: '❌ Bir hata oluştu. Tekrar deneyin.', error: true }]);
+      setMessages(prev => [...prev, { id: Date.now(), role: 'agent', text: '❌ Bir hata oluştu. Tekrar deneyin.', error: true }]);
     }
     setLoading(false);
   };
@@ -294,7 +294,7 @@ function AgentPanel({ onClose, onRefresh, selectedProject }) {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {messages.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div key={msg.id ?? i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               {msg.role === 'agent' && (
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mr-2 mt-1 shrink-0">
                   <Bot className="w-3.5 h-3.5 text-white" />
@@ -535,7 +535,7 @@ function TokiManager() {
       {projectImportResult && (
         <div className={`p-3 rounded-lg text-sm mb-4 ${projectImportResult.error_count > 0 ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'} border`}>
           <p className="font-medium">{projectImportResult.success_count} proje eklendi{projectImportResult.error_count > 0 ? `, ${projectImportResult.error_count} hata` : ''}</p>
-          {projectImportResult.errors?.map((err, i) => <p key={i} className="text-red-600 text-xs mt-1">Satır {err.row}: {err.error}</p>)}
+          {projectImportResult.errors?.map((err, i) => <p key={`err-${err.row}-${i}`} className="text-red-600 text-xs mt-1">Satır {err.row}: {err.error}</p>)}
         </div>
       )}
 
@@ -780,7 +780,7 @@ function VideoManager({ projectId, videos, onRefresh }) {
       </div>
       {(!videos || videos.length === 0) ? <p className="text-center text-slate-400 py-4">Henüz video yok</p> :
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{videos.map((v, i) => { const vid = ytId(v); return vid ? (
-          <div key={i} className="rounded overflow-hidden border"><iframe src={`https://www.youtube.com/embed/${vid}`} className="w-full h-40" allowFullScreen title={`V${i}`} />
+          <div key={vid} className="rounded overflow-hidden border"><iframe src={`https://www.youtube.com/embed/${vid}`} className="w-full h-40" allowFullScreen title={`V${i}`} />
             <div className="flex items-center justify-between p-2"><p className="text-xs truncate flex-1 text-slate-500">{v}</p><button className="text-red-500" onClick={() => remove(v)}><Trash2 className="w-3 h-3" /></button></div></div>) : null; })}</div>}
     </div>
   );
@@ -1719,8 +1719,9 @@ export default function AdminPanelPage() {
     // Verify admin session via API call (cookies sent automatically)
     api.get('/auth/me')
       .then(({ data }) => {
-        if (data.role === 'admin') {
-          setUser(data);
+        const userData = data.user || data;
+        if (userData?.role === 'admin') {
+          setUser(userData);
         } else {
           navigate('/auth');
         }

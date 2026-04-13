@@ -201,8 +201,8 @@ export default function YatirimFonuPage() {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {ADVANTAGES.map((a, i) => (
-              <div key={i} className="group p-6 rounded-2xl border border-slate-100 hover:border-[#C8A96A]/40 hover:shadow-lg transition-all duration-300 bg-white">
+            {ADVANTAGES.map((a) => (
+              <div key={a.title} className="group p-6 rounded-2xl border border-slate-100 hover:border-[#C8A96A]/40 hover:shadow-lg transition-all duration-300 bg-white">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: 'linear-gradient(135deg, #0F3D2E, #1a5c43)' }}>
                   <a.icon className="w-6 h-6 text-white" />
                 </div>
@@ -225,8 +225,8 @@ export default function YatirimFonuPage() {
             {/* Desktop connector line */}
             <div className="hidden lg:block absolute top-8 left-[10%] right-[10%] h-0.5" style={{ background: 'linear-gradient(90deg, #C8A96A22, #C8A96A, #C8A96A22)' }} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-              {PROCESS_STEPS.map((s, i) => (
-                <div key={i} className="relative flex flex-col items-center text-center group">
+              {PROCESS_STEPS.map((s) => (
+                <div key={s.num} className="relative flex flex-col items-center text-center group">
                   <div className="w-16 h-16 rounded-full flex items-center justify-center text-white font-black text-lg mb-4 shadow-lg z-10 relative transition-transform group-hover:scale-110" style={{ background: 'linear-gradient(135deg, #0F3D2E, #1a5c43)', border: '3px solid #C8A96A' }}>
                     {s.num}
                   </div>
@@ -302,8 +302,8 @@ export default function YatirimFonuPage() {
               'Uygun segment eşleşmesinin yapılması',
               'Gerekli görüldüğünde ön görüşme yapılması',
               'Proje bazlı bilgilendirme ve değerlendirme sürecine katılım',
-            ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3 p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,169,106,0.2)' }}>
+            ].map((item) => (
+              <div key={item} className="flex items-start gap-3 p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(200,169,106,0.2)' }}>
                 <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: '#C8A96A' }} />
                 <p className="text-white/85 text-[14px] leading-relaxed">{item}</p>
               </div>
@@ -326,8 +326,8 @@ export default function YatirimFonuPage() {
             <h2 className="text-4xl font-black mt-2" style={{ color: '#0F3D2E' }}>Neden İPAT Arazi Fonu?</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {VALUE_PROPS.map((v, i) => (
-              <div key={i} className="p-6 rounded-2xl group hover:shadow-xl transition-all duration-300 cursor-default" style={{ background: 'linear-gradient(135deg, #f8fbf9, #f0f7f2)', border: '1px solid #d4ead9' }}>
+            {VALUE_PROPS.map((v) => (
+              <div key={v.title} className="p-6 rounded-2xl group hover:shadow-xl transition-all duration-300 cursor-default" style={{ background: 'linear-gradient(135deg, #f8fbf9, #f0f7f2)', border: '1px solid #d4ead9' }}>
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 transition-transform group-hover:scale-110" style={{ background: 'linear-gradient(135deg, #0F3D2E, #1e6647)' }}>
                   <v.icon className="w-7 h-7 text-white" />
                 </div>
@@ -387,8 +387,8 @@ export default function YatirimFonuPage() {
             <h2 className="text-4xl font-black mt-2" style={{ color: '#0F3D2E' }}>Sık Sorulan Sorular</h2>
           </div>
           <Accordion type="single" collapsible className="space-y-3">
-            {FAQ_ITEMS.map((item, i) => (
-              <AccordionItem key={i} value={`faq-${i}`} className="rounded-xl border overflow-hidden" style={{ borderColor: '#e2ede5' }} data-testid={`faq-item-${i}`}>
+            {FAQ_ITEMS.map((item) => (
+              <AccordionItem key={item.q} value={`faq-${item.q.slice(0,20)}`} className="rounded-xl border overflow-hidden" style={{ borderColor: '#e2ede5' }} data-testid={`faq-item-${item.q.slice(0,10)}`}>
                 <AccordionTrigger className="px-5 py-4 text-[15px] font-semibold text-left hover:no-underline hover:bg-[#f0f7f2] transition-colors" style={{ color: '#0F3D2E' }}>
                   {item.q}
                 </AccordionTrigger>

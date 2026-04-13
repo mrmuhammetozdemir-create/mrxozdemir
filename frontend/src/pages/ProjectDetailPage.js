@@ -520,8 +520,8 @@ function ProjectDescriptionView({ project }) {
             Proje Özeti
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-            {stats.map((s, i) => (
-              <div key={i} className={`rounded-xl border px-4 py-3 ${s.color}`}>
+            {stats.map((s) => (
+              <div key={s.label} className={`rounded-xl border px-4 py-3 ${s.color}`}>
                 <p className="text-[10px] font-bold uppercase tracking-wide opacity-60 mb-0.5">{s.label}</p>
                 <p className="text-sm font-black">{s.value}</p>
               </div>

@@ -172,8 +172,8 @@ function StudentsSection() {
               <TabsContent value="exams" className="mt-4 space-y-3">
                 {detail.exam_attempts?.length === 0 ? (
                   <p className="text-sm text-slate-400 text-center py-6">Henüz sınava girilmedi.</p>
-                ) : detail.exam_attempts?.map((a, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-slate-100">
+                ) : detail.exam_attempts?.map((a) => (
+                  <div key={a.exam_title} className="flex items-center justify-between p-3 rounded-xl border border-slate-100">
                     <div>
                       <p className="text-sm font-semibold text-slate-900">{a.exam_title}</p>
                       <p className="text-xs text-slate-400">{a.completed_at?.slice(0, 16).replace('T', ' ')}</p>
