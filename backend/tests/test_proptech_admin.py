@@ -25,7 +25,7 @@ class TestAdminAuth:
         assert response.status_code == 200, f"Login failed: {response.text}"
         
         data = response.json()
-        assert "access_token" in data, "Missing access_token"
+        assert "token" in data, "Missing access_token"
         assert "user" in data, "Missing user data"
         assert data["user"]["email"] == ADMIN_EMAIL
         assert data["user"]["role"] == "admin"
@@ -45,7 +45,7 @@ class TestAdminAuth:
             "email": ADMIN_EMAIL,
             "password": ADMIN_PASSWORD
         })
-        token = login_resp.json()["access_token"]
+        token = login_resp.json()["token"]
         
         # Get user info
         response = requests.get(f"{BASE_URL}/api/auth/me", headers={
@@ -65,7 +65,7 @@ def auth_token():
         "password": ADMIN_PASSWORD
     })
     if response.status_code == 200:
-        return response.json()["access_token"]
+        return response.json()["token"]
     pytest.skip("Authentication failed")
 
 

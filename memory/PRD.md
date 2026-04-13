@@ -5,11 +5,22 @@ Modern PropTech web platform for real estate and land investment analysis in Tur
 
 ## Architecture
 - **Frontend:** React + Tailwind CSS + shadcn/ui
-- **Backend:** FastAPI (Python) - monolithic server.py
+- **Backend:** FastAPI (Python) - **Modular router structure** (as of 2026-04)
+  - `server.py` (thin entry point, ~80 lines)
+  - `database.py` (shared DB client)
+  - `auth_utils.py` (shared auth functions - httpOnly cookie + Bearer token)
+  - `storage.py` (Emergent Object Storage)
+  - `routers/auth.py` - Admin + User auth, Google OAuth, Cross-site auth
+  - `routers/admin_users.py` - Admin user management
+  - `routers/projects.py` - Projects, Ada/Parsel, Excel import, Media, Docs, Videos, Map Layers
+  - `routers/content.py` - Calculator, Mega Projects, e-IPAT, SEO, Education, Community, Opportunities, Market, Yatırım Fonu, Admin Stats
+  - `routers/agent.py` - AI Agent, ZIP upload, Shared Facilities
+  - `routers/mrxakademi.py` - MrxAkademi, AI Exam Extractor, Panel Yönetimi
+  - `routers/user_panel.py` - User Panel APIs, Packages
 - **Database:** MongoDB
 - **File Storage:** Emergent Object Storage (cloud)
 - **Maps:** Leaflet.js + OpenStreetMap
-- **Auth:** JWT (admin) + Session tokens (users) + Emergent Google OAuth
+- **Auth:** JWT (admin) + Session tokens (users) + Emergent Google OAuth → **httpOnly cookies only**
 
 ## Kullanıcı Paneli (FULL SYSTEM) - 2026-04-09 - TAMAMLANDI
 12 bölümlü tam kullanıcı paneli `/panel` route'unda. Dark sidebar + sarı promo banner + beyaz içerik.

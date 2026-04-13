@@ -30,8 +30,8 @@ def admin_token():
     )
     assert response.status_code == 200, f"Admin login failed: {response.text}"
     data = response.json()
-    assert "access_token" in data, "No access_token in login response"
-    return data["access_token"]
+    assert "token" in data, "No access_token in login response"
+    return data["token"]
 
 
 @pytest.fixture(scope="module")

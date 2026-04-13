@@ -24,8 +24,8 @@ api.interceptors.response.use(
       localStorage.removeItem('session_token');
       localStorage.removeItem('access_token');
       
-      // Redirect to login
-      if (!window.location.pathname.includes('/auth')) {
+      // Redirect to login (but not for /admin route - admin handles its own login form)
+      if (!window.location.pathname.includes('/auth') && !window.location.pathname.startsWith('/admin')) {
         window.location.href = '/auth';
       }
     }

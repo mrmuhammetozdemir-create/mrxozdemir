@@ -19,7 +19,7 @@ def auth_token():
         "password": "As537273"
     })
     assert response.status_code == 200, f"Login failed: {response.text}"
-    return response.json()["access_token"]
+    return response.json()["token"]
 
 @pytest.fixture(scope="module")
 def auth_headers(auth_token):

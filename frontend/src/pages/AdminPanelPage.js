@@ -1722,11 +1722,13 @@ export default function AdminPanelPage() {
         const userData = data.user || data;
         if (userData?.role === 'admin') {
           setUser(userData);
-        } else {
-          navigate('/auth');
         }
+        // If not admin, user stays null → AdminLogin form shows
       })
-      .catch(() => navigate('/auth'));
+      .catch(() => {
+        // 401 → no cookie → show AdminLogin form (interceptor is disabled for /admin)
+        setUser(null);
+      });
   }, [navigate]);
 
   const loadStats = useCallback(async () => {

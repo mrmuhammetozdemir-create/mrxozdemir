@@ -22,7 +22,7 @@ def admin_token():
         "password": ADMIN_PASSWORD
     })
     assert resp.status_code == 200, f"Admin login failed: {resp.text}"
-    token = resp.json().get("access_token")
+    token = resp.json().get("token")
     assert token, "No access_token returned"
     return token
 

@@ -1,15 +1,16 @@
 # Test Credentials
 
-## Admin Panel
-- URL: /admin
+## Admin Account
 - Email: ipatarazi@gmail.com
 - Password: As537273
+- URL: /admin
 
-## Test User
+## Test User Account
 - Email: testuser@test.com
 - Password: Test1234!
+- URL: /auth (login) → /panel (dashboard)
 
-## Test Project
-- ID: f70c57f6-28a6-4dbd-a4d3-5ea8e4bce6a6
-- Name: 1. Bölge 1. Etap
-- URL: /toki/f70c57f6-28a6-4dbd-a4d3-5ea8e4bce6a6
+## Auth Mechanism
+- Admin: httpOnly cookie (admin_token) + Bearer token support
+- Users: httpOnly cookie (session_token)
+- withCredentials: true on all frontend API calls
