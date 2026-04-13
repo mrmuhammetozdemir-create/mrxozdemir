@@ -5,17 +5,32 @@ export const API_BASE = `${BACKEND_URL}/api`;
 
 const api = axios.create({
   baseURL: API_BASE,
+  withCredentials: true, // CRITICAL: Enable httpOnly cookies
 });
 
 api.interceptors.request.use((config) => {
-  // Don't overwrite if Authorization is already explicitly set
-  if (!config.headers.Authorization) {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
+  // Cookies are automatically sent with withCredentials: true
+  // Remove localStorage token usage for security
   return config;
 });
+
+// Handle 401 responses
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Clear legacy tokens
+      localStorage.removeItem('token');
+      localStorage.removeItem('session_token');
+      localStorage.removeItem('access_token');
+      
+      // Redirect to login
+      if (!window.location.pathname.includes('/auth')) {
+        window.location.href = '/auth';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

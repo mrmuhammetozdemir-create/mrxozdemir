@@ -85,13 +85,12 @@ export default function AuthPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await api.post('/auth/user-login', { email: loginEmail, password: loginPassword }, { withCredentials: true });
+      const { data } = await api.post('/auth/user-login', { email: loginEmail, password: loginPassword });
+      
+      // Cookies are set automatically by backend (httpOnly)
+      // Store only non-sensitive user info in localStorage for UI purposes
       localStorage.setItem('app_user', JSON.stringify(data.user));
-      localStorage.setItem('app_session_token', data.session_token);
-      // Admin girişi ise JWT token'ı da kaydet
-      if (data.user.role === 'admin' && data.access_token) {
-        localStorage.setItem('admin_token', data.access_token);
-      }
+      
       toast.success('Giriş başarılı');
       const from = new URLSearchParams(location.search).get('redirect') || location.state?.from || '/panel';
       navigate(from);
@@ -107,9 +106,12 @@ export default function AuthPage() {
     try {
       const { data } = await api.post('/auth/register', {
         full_name: regName, phone: regPhone, email: regEmail, password: regPassword,
-      }, { withCredentials: true });
+      });
+      
+      // Cookies are set automatically by backend (httpOnly)
+      // Store only non-sensitive user info in localStorage for UI purposes
       localStorage.setItem('app_user', JSON.stringify(data.user));
-      localStorage.setItem('app_session_token', data.session_token);
+      
       toast.success('Kayıt başarılı');
       const from = new URLSearchParams(location.search).get('redirect') || location.state?.from || '/panel';
       navigate(from);

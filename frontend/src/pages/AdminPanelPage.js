@@ -29,9 +29,10 @@ const PROJECT_TYPES = ["TOKİ", "Emlak Konut", "Özel Proje", "Kamu Projesi"];
 const MEDIA_CATEGORIES = ["Altyapı", "Blok Resimleri", "Peyzaj", "Zemin", "Drone", "Master Plan"];
 const DOC_TYPES = ["Zemin Etüt", "Jeoloji / Jeoteknik", "ÇED", "İhale Belgeleri", "Plan Notları", "Vaziyet Planı", "Diğer"];
 
+// No need for authHeaders - cookies are sent automatically with withCredentials
+// This function is kept for backwards compatibility but returns empty object
 function authHeaders() {
-  const token = localStorage.getItem('admin_token');
-  return { Authorization: `Bearer ${token}` };
+  return {}; // Cookies are sent automatically
 }
 
 // ==================== LOGIN ====================
@@ -46,7 +47,10 @@ function AdminLogin({ onLogin }) {
     try {
       const { data } = await api.post('/auth/login', { email, password });
       if (data.user.role !== 'admin') { toast.error('Admin yetkisi yok'); return; }
-      localStorage.setItem('admin_token', data.access_token);
+      
+      // Cookies are set automatically by backend (httpOnly)
+      // No need to store admin_token in localStorage
+      
       onLogin(data.user);
     } catch (e) { toast.error('Giriş başarısız'); }
     finally { setLoading(false); }
@@ -1712,13 +1716,17 @@ export default function AdminPanelPage() {
   const [stats, setStats] = useState({});
 
   useEffect(() => {
-    const token = localStorage.getItem('admin_token');
-    if (token) {
-      api.get('/auth/me', { headers: { Authorization: `Bearer ${token}` } })
-        .then(({ data }) => { if (data.role === 'admin') setUser(data); else localStorage.removeItem('admin_token'); })
-        .catch(() => localStorage.removeItem('admin_token'));
-    }
-  }, []);
+    // Verify admin session via API call (cookies sent automatically)
+    api.get('/auth/me')
+      .then(({ data }) => {
+        if (data.role === 'admin') {
+          setUser(data);
+        } else {
+          navigate('/auth');
+        }
+      })
+      .catch(() => navigate('/auth'));
+  }, [navigate]);
 
   const loadStats = useCallback(async () => {
     try { const { data } = await api.get('/admin/stats', { headers: authHeaders() }); setStats(data); } catch (err) { console.error('Stats load error:', err); }
@@ -1755,7 +1763,23 @@ export default function AdminPanelPage() {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-slate-500">{user.email}</span>
-            <Button variant="outline" size="sm" onClick={() => { localStorage.removeItem('admin_token'); setUser(null); }} data-testid="logout-btn"><LogOut className="w-4 h-4 mr-1" />Çıkış</Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={async () => {
+                try {
+                  await api.post('/auth/logout');
+                } catch (err) {
+                  console.error('Logout error:', err);
+                }
+                localStorage.clear();
+                setUser(null);
+                navigate('/auth');
+              }} 
+              data-testid="logout-btn"
+            >
+              <LogOut className="w-4 h-4 mr-1" />Çıkış
+            </Button>
           </div>
         </header>
         <main className="flex-1 p-6">
