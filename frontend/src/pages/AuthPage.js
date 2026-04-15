@@ -23,10 +23,9 @@ export function AuthCallback() {
     if (!match) { navigate('/auth'); return; }
 
     const sessionId = match[1];
-    api.post('/auth/google-session', { session_id: sessionId }, { withCredentials: true })
+    api.post('/auth/google', { session_id: sessionId }, { withCredentials: true })
       .then(({ data }) => {
-        localStorage.setItem('app_user', JSON.stringify(data.user));
-        localStorage.setItem('app_session_token', data.session_token);
+        // Cookie is set by backend (httpOnly), no localStorage needed
         navigate('/', { state: { user: data.user } });
       })
       .catch((err) => {

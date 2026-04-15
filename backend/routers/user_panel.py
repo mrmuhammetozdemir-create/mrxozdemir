@@ -88,10 +88,13 @@ async def get_user_progress(request: Request):
         raise HTTPException(status_code=401, detail="Giriş yapmanız gerekiyor")
     user_id = user.get("user_id")
     courses = await db.courses.find({"status": "active"}, {"_id": 0}).to_list(100)
+    # Batch fetch all progress records in one query (avoid N+1)
+    progress_docs = await db.user_progress.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+    progress_map = {p["course_id"]: p for p in progress_docs}
     result = []
     for course in courses:
         cid = course.get("id")
-        prog = await db.user_progress.find_one({"user_id": user_id, "course_id": cid}, {"_id": 0})
+        prog = progress_map.get(cid)
         total_lessons = sum(len(m.get("lessons", [])) for m in course.get("modules", []))
         completed = prog.get("completed_lessons", []) if prog else []
         pct = round(len(completed) / total_lessons * 100) if total_lessons > 0 else 0
@@ -157,11 +160,10 @@ async def get_user_exams(request: Request):
         raise HTTPException(status_code=401, detail="Giriş yapmanız gerekiyor")
     user_id = user.get("user_id")
     exams = await db.course_exams.find({}, {"_id": 0}).to_list(100)
-    result = []
-    for exam in exams:
-        attempt = await db.user_exam_attempts.find_one({"user_id": user_id, "exam_id": exam.get("id")}, {"_id": 0})
-        result.append({**exam, "attempt": attempt})
-    return result
+    # Batch fetch all attempts in one query (avoid N+1)
+    all_attempts = await db.user_exam_attempts.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+    attempts_map = {a["exam_id"]: a for a in all_attempts}
+    return [{**exam, "attempt": attempts_map.get(exam.get("id"))} for exam in exams]
 
 
 @router.post("/user/exams/{exam_id}/submit")
@@ -193,10 +195,13 @@ async def get_user_certificates(request: Request):
         raise HTTPException(status_code=401, detail="Giriş yapmanız gerekiyor")
     user_id = user.get("user_id")
     courses = await db.courses.find({"status": "active"}, {"_id": 0}).to_list(100)
+    # Batch fetch all progress in one query (avoid N+1)
+    progress_docs = await db.user_progress.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+    progress_map = {p["course_id"]: p for p in progress_docs}
     result = []
     for course in courses:
         cid = course.get("id")
-        prog = await db.user_progress.find_one({"user_id": user_id, "course_id": cid}, {"_id": 0})
+        prog = progress_map.get(cid)
         total = sum(len(m.get("lessons", [])) for m in course.get("modules", []))
         completed = len(prog.get("completed_lessons", [])) if prog else 0
         pct = round(completed / total * 100) if total > 0 else 0
