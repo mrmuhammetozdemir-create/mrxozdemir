@@ -220,18 +220,23 @@ async def get_user_transcript(request: Request):
         raise HTTPException(status_code=401, detail="Giriş yapmanız gerekiyor")
     user_id = user.get("user_id")
     courses = await db.courses.find({"status": "active"}, {"_id": 0}).to_list(100)
+    # Batch fetch progress + best attempt in 2 queries (avoid N+1)
+    progress_docs = await db.user_progress.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+    progress_map = {p["course_id"]: p for p in progress_docs}
+    best_attempt = await db.user_exam_attempts.find_one(
+        {"user_id": user_id}, {"_id": 0}, sort=[("score", -1)]
+    )
     result = []
     for course in courses:
         cid = course.get("id")
-        prog = await db.user_progress.find_one({"user_id": user_id, "course_id": cid}, {"_id": 0})
+        prog = progress_map.get(cid)
         total = sum(len(m.get("lessons", [])) for m in course.get("modules", []))
         completed = len(prog.get("completed_lessons", [])) if prog else 0
         pct = round(completed / total * 100) if total > 0 else 0
         if pct >= 90:
-            attempt = await db.user_exam_attempts.find_one({"user_id": user_id}, {"_id": 0}, sort=[("completed_at", -1)])
             result.append({
                 "course_id": cid, "title": course.get("title", ""), "progress_pct": pct,
-                "score": attempt.get("score", 0) if attempt else 0,
+                "score": best_attempt.get("score", 0) if best_attempt else 0,
                 "completed_at": prog.get("updated_at") if prog else None
             })
     return result
