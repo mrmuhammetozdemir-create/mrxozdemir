@@ -134,7 +134,6 @@ export default function DashboardPage() {
                 <span className="text-[17px] font-black tracking-tight text-slate-900">mrx</span>
                 <span className="text-[17px] font-extralight tracking-wide text-slate-500">ozdemir</span>
               </div>
-              <p className="text-[8px] font-bold tracking-[0.2em] text-emerald-600 uppercase leading-none mt-0.5">Gayrimenkul</p>
             </div>
           </button>
 
@@ -625,10 +624,9 @@ export default function DashboardPage() {
                 <span className="text-[15px] font-black text-slate-900">mrx</span>
                 <span className="text-[15px] font-extralight text-slate-500">ozdemir</span>
               </div>
-              <p className="text-[8px] font-bold tracking-[0.2em] text-emerald-600 uppercase leading-none">Gayrimenkul</p>
             </div>
           </div>
-          <p className="text-sm text-slate-400">© 2025 mrxozdemir Gayrimenkul. Tüm hakları saklıdır.</p>
+          <p className="text-sm text-slate-400">© 2025 mrxozdemir. Tüm hakları saklıdır.</p>
           <div className="flex items-center gap-4">
             {MODULES.map(m => (
               <button key={m.id} onClick={() => go(m.path, m.external)}

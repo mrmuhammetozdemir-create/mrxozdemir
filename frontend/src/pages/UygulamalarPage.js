@@ -163,7 +163,6 @@ export default function UygulamalarPage() {
                 <span className="text-base font-black tracking-tight text-slate-900">mrx</span>
                 <span className="text-base font-extralight tracking-wide text-slate-500">ozdemir</span>
               </div>
-              <p className="text-[8px] font-bold tracking-[0.2em] text-emerald-600 uppercase leading-none mt-0.5">Gayrimenkul</p>
             </div>
           </button>
 
@@ -399,7 +398,7 @@ export default function UygulamalarPage() {
         <div className="max-w-7xl mx-auto px-4 lg:px-10 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <LogoMark />
-            <span className="text-sm font-bold text-slate-700">mrxozdemir Gayrimenkul</span>
+            <span className="text-sm font-bold text-slate-700">mrxozdemir</span>
           </div>
           <p className="text-xs text-slate-400">© 2025 mrxozdemir. Tüm hakları saklıdır.</p>
           <button onClick={() => navigate('/')} className="text-xs font-semibold text-emerald-600 hover:text-emerald-800 flex items-center gap-1 transition-colors">
