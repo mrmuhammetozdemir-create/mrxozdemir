@@ -90,29 +90,30 @@ export default function DashboardPage() {
   useSEO('home', { title: 'mrxakademi | Türkiye PropTech Platformu' });
 
   useEffect(() => {
-    const token = localStorage.getItem('admin_token');
-    if (token) {
-      api.get('/auth/me', { headers: { Authorization: `Bearer ${token}` } })
-        .then(({ data }) => { if (data.role === 'admin') setAdminUser(data); })
-        .catch(() => localStorage.removeItem('admin_token'));
-    }
+    // Admin auth check via cookie (httpOnly) - no localStorage needed
+    api.get('/auth/me', { withCredentials: true })
+      .then(({ data }) => { if (data.role === 'admin') setAdminUser(data); })
+      .catch(() => {});
     const stored = localStorage.getItem('app_user');
     if (stored) { try { setAppUser(JSON.parse(stored)); } catch {} }
   }, []);
 
-  const handleAdminLogout = () => { localStorage.removeItem('admin_token'); setAdminUser(null); toast.success('Çıkış yapıldı'); };
+  const handleAdminLogout = () => {
+    api.post('/auth/logout', {}, { withCredentials: true }).catch(() => {});
+    setAdminUser(null);
+    toast.success('Çıkış yapıldı');
+  };
   const handleUserLogout = () => {
     api.post('/auth/logout', {}, { withCredentials: true }).catch(() => {});
-    localStorage.removeItem('app_user'); localStorage.removeItem('app_session_token');
+    localStorage.removeItem('app_user');
     setAppUser(null); toast.success('Çıkış yapıldı');
   };
 
   const go = async (path, external) => {
     if (!external) return navigate(path);
-    const sessionToken = localStorage.getItem('app_session_token');
-    if (appUser && sessionToken) {
+    if (appUser) {
       try {
-        const { data } = await api.post('/auth/cross-site-token', {}, { headers: { Authorization: `Bearer ${sessionToken}` } });
+        const { data } = await api.post('/auth/cross-site-token', {}, { withCredentials: true });
         if (data.token) { window.open(`${path}?cst=${data.token}`, '_blank'); return; }
       } catch {}
     }

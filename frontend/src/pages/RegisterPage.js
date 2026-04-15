@@ -24,8 +24,6 @@ export default function RegisterPage({ setUser }) {
         password,
         full_name: fullName,
       });
-      localStorage.setItem('token', data.access_token);
-      localStorage.setItem('user', JSON.stringify(data.user));
       setUser(data.user);
       toast.success('Kayıt başarılı!');
       navigate('/');

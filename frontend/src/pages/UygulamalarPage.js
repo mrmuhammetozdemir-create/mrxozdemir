@@ -119,20 +119,17 @@ export default function UygulamalarPage() {
       try { setAppUser(JSON.parse(stored)); }
       catch (e) { console.warn('app_user parse error:', e); localStorage.removeItem('app_user'); }
     }
-    const token = localStorage.getItem('admin_token');
-    if (token) {
-      api.get('/auth/me', { headers: { Authorization: `Bearer ${token}` } })
-        .then(({ data }) => { if (data.role === 'admin') setAdminUser(data); })
-        .catch(() => {});
-    }
+    // Admin auth check via cookie (httpOnly)
+    api.get('/auth/me', { withCredentials: true })
+      .then(({ data }) => { if (data.role === 'admin') setAdminUser(data); })
+      .catch(() => {});
   }, []);
 
   const go = async (path, external) => {
     if (!external) return navigate(path);
-    const sessionToken = localStorage.getItem('app_session_token');
-    if (appUser && sessionToken) {
+    if (appUser) {
       try {
-        const { data } = await api.post('/auth/cross-site-token', {}, { headers: { Authorization: `Bearer ${sessionToken}` } });
+        const { data } = await api.post('/auth/cross-site-token', {}, { withCredentials: true });
         if (data.token) { window.open(`${path}?cst=${data.token}`, '_blank'); return; }
       } catch (e) {
         console.warn('Cross-site token failed, opening without SSO:', e?.message);
@@ -143,8 +140,7 @@ export default function UygulamalarPage() {
 
   const handleLogout = () => {
     api.post('/auth/logout', {}, { withCredentials: true }).catch(() => {});
-    localStorage.removeItem('app_user'); localStorage.removeItem('app_session_token');
-    localStorage.removeItem('admin_token');
+    localStorage.removeItem('app_user');
     setAppUser(null); setAdminUser(null);
     toast.success('Çıkış yapıldı');
   };

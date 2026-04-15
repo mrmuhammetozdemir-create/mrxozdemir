@@ -15,7 +15,6 @@ import api from '@/utils/api';
 import EducationManagerPage from '@/pages/EducationManager';
 import { LiveStreamsTab, SupervisionTab, ExamsTab, AiExamAssistant } from '@/pages/PanelManager';
 
-function authHeaders() { return { Authorization: `Bearer ${localStorage.getItem('admin_token')}` }; }
 
 // ─── Accordion Section ────────────────────────────────────────────────────────
 function Section({ id, title, icon: Icon, iconBg, badge, children, defaultOpen = false }) {
@@ -54,7 +53,7 @@ function AcademyStats({ refreshKey = 0 }) {
 
   useEffect(() => {
     setLoading(true);
-    api.get('/admin/academy-stats', { headers: authHeaders() })
+    api.get('/admin/academy-stats', )
       .then(r => setStats(r.data)).catch(() => {}).finally(() => setLoading(false));
   }, [refreshKey]);
 
@@ -99,14 +98,14 @@ function StudentsSection() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    api.get('/admin/students', { headers: authHeaders() })
+    api.get('/admin/students', )
       .then(r => setStudents(r.data)).catch(() => setStudents([])).finally(() => setLoading(false));
   }, []);
 
   const openDetail = async (uid) => {
     setSelected(uid); setDetailLoading(true);
     try {
-      const { data } = await api.get(`/admin/students/${uid}`, { headers: authHeaders() });
+      const { data } = await api.get(`/admin/students/${uid}`, );
       setDetail(data);
     } catch { toast.error('Detay yüklenemedi'); }
     finally { setDetailLoading(false); }
@@ -298,7 +297,7 @@ function PaymentsAdminSection({ students, onCrudSuccess }) {
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(() => {
-    api.get('/admin/payments', { headers: authHeaders() })
+    api.get('/admin/payments', )
       .then(r => setPayments(r.data)).catch(() => setPayments([])).finally(() => setLoading(false));
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -307,15 +306,15 @@ function PaymentsAdminSection({ students, onCrudSuccess }) {
     if (!form.course_name || !form.user_id) { toast.error('Kullanıcı ve kurs adı zorunlu'); return; }
     setSaving(true);
     try {
-      if (editId) { await api.put(`/admin/payments/${editId}`, form, { headers: authHeaders() }); toast.success('Güncellendi'); }
-      else { await api.post('/admin/payments', form, { headers: authHeaders() }); toast.success('Eklendi'); }
+      if (editId) { await api.put(`/admin/payments/${editId}`, form, ); toast.success('Güncellendi'); }
+      else { await api.post('/admin/payments', form, ); toast.success('Eklendi'); }
       setForm(null); setEditId(null); load(); onCrudSuccess?.();
     } catch { toast.error('Kayıt başarısız'); } finally { setSaving(false); }
   };
 
   const del = async (id) => {
     if (!window.confirm('Silinsin mi?')) return;
-    await api.delete(`/admin/payments/${id}`, { headers: authHeaders() });
+    await api.delete(`/admin/payments/${id}`, );
     toast.success('Silindi'); load(); onCrudSuccess?.();
   };
 
@@ -424,7 +423,7 @@ function ContractsAdminSection({ students, onCrudSuccess }) {
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(() => {
-    api.get('/admin/contracts', { headers: authHeaders() })
+    api.get('/admin/contracts', )
       .then(r => setContracts(r.data)).catch(() => setContracts([])).finally(() => setLoading(false));
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -433,15 +432,15 @@ function ContractsAdminSection({ students, onCrudSuccess }) {
     if (!form.contract_name || !form.user_id) { toast.error('Kullanıcı ve sözleşme adı zorunlu'); return; }
     setSaving(true);
     try {
-      if (editId) { await api.put(`/admin/contracts/${editId}`, form, { headers: authHeaders() }); toast.success('Güncellendi'); }
-      else { await api.post('/admin/contracts', form, { headers: authHeaders() }); toast.success('Eklendi'); }
+      if (editId) { await api.put(`/admin/contracts/${editId}`, form, ); toast.success('Güncellendi'); }
+      else { await api.post('/admin/contracts', form, ); toast.success('Eklendi'); }
       setForm(null); setEditId(null); load(); onCrudSuccess?.();
     } catch { toast.error('Kayıt başarısız'); } finally { setSaving(false); }
   };
 
   const del = async (id) => {
     if (!window.confirm('Silinsin mi?')) return;
-    await api.delete(`/admin/contracts/${id}`, { headers: authHeaders() });
+    await api.delete(`/admin/contracts/${id}`, );
     toast.success('Silindi'); load(); onCrudSuccess?.();
   };
 
@@ -544,7 +543,7 @@ function FilesAdminSection({ students, onCrudSuccess }) {
   const [selUser, setSelUser] = useState('');
 
   const load = useCallback(() => {
-    api.get('/admin/all-files', { headers: authHeaders() })
+    api.get('/admin/all-files', )
       .then(r => setFiles(r.data)).catch(() => setFiles([])).finally(() => setLoading(false));
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -553,14 +552,14 @@ function FilesAdminSection({ students, onCrudSuccess }) {
     if (!form.file_name || !selUser) { toast.error('Kullanıcı ve dosya adı zorunlu'); return; }
     setSaving(true);
     try {
-      await api.post(`/admin/files/${selUser}`, { file_name: form.file_name, file_url: form.file_url, file_type: 'document' }, { headers: authHeaders() });
+      await api.post(`/admin/files/${selUser}`, { file_name: form.file_name, file_url: form.file_url, file_type: 'document' }, );
       toast.success('Dosya eklendi'); setForm(null); setSelUser(''); load(); onCrudSuccess?.();
     } catch { toast.error('Eklenemedi'); } finally { setSaving(false); }
   };
 
   const del = async (id) => {
     if (!window.confirm('Silinsin mi?')) return;
-    await api.delete(`/admin/files/${id}`, { headers: authHeaders() });
+    await api.delete(`/admin/files/${id}`, );
     toast.success('Silindi'); load(); onCrudSuccess?.();
   };
 
@@ -676,7 +675,7 @@ export default function MrxAkademiManager({ onNavigate }) {
   const refreshStats = () => setStatsKey(k => k + 1);
 
   useEffect(() => {
-    api.get('/admin/students', { headers: authHeaders() })
+    api.get('/admin/students', )
       .then(r => setStudents(r.data)).catch(() => setStudents([]));
   }, []);
 

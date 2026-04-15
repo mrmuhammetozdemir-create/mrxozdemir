@@ -15,6 +15,8 @@ BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
 EXISTING_EMAIL = os.environ.get("TEST_USER_EMAIL", "testuser@test.com")
 EXISTING_PASSWORD = os.environ.get("TEST_USER_PASSWORD", "Test1234!")
+ADMIN_EMAIL = os.environ.get("TEST_ADMIN_EMAIL", "ipatarazi@gmail.com")
+ADMIN_PASSWORD = os.environ.get("TEST_ADMIN_PASSWORD", "As537273")
 NEW_EMAIL = f"TEST_newuser_{uuid.uuid4().hex[:6]}@test.com"
 NEW_PASSWORD = "TestNew1234!"
 
@@ -41,14 +43,14 @@ class TestUserRegistration:
         print(f"[PASS] New user registered: {NEW_EMAIL}, session_token present")
 
     def test_register_duplicate_email_returns_400(self):
-        """Registering with an already-registered email should return 400"""
+        """Registering with an already-registered email should return 409 (conflict)"""
         response = requests.post(f"{BASE_URL}/api/auth/register", json={
             "full_name": "Duplicate User",
             "phone": "",
             "email": NEW_EMAIL,  # already registered in previous test
             "password": NEW_PASSWORD,
         })
-        assert response.status_code == 400, f"Expected 400, got {response.status_code}: {response.text}"
+        assert response.status_code == 409, f"Expected 409, got {response.status_code}: {response.text}"
         data = response.json()
         assert "detail" in data
         print(f"[PASS] Duplicate email returns 400: {data['detail']}")
@@ -135,8 +137,10 @@ class TestSessionAndMe:
         })
         assert me_resp.status_code == 200, f"Expected 200, got {me_resp.status_code}: {me_resp.text}"
         data = me_resp.json()
-        assert data["email"] == EXISTING_EMAIL
-        print(f"[PASS] /auth/me returns user data: {data.get('email')}")
+        # /auth/me returns {"user": {...}, "type": "session"}
+        assert "user" in data, f"Expected 'user' key in response: {data}"
+        assert data["user"]["email"] == EXISTING_EMAIL
+        print(f"[PASS] /auth/me returns user data: {data['user'].get('email')}")
 
     def test_get_me_without_token_returns_401(self):
         """GET /api/auth/me without token returns 401"""
@@ -163,11 +167,12 @@ class TestAdminLogin:
     def test_admin_login_success(self):
         """Admin login with correct credentials"""
         response = requests.post(f"{BASE_URL}/api/auth/login", json={
-            "email": "ipatarazi@gmail.com",
-            "password": "As537273",
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD,
         })
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         data = response.json()
-        assert "access_token" in data
+        # Admin login returns "token" key (not "access_token")
+        assert "token" in data, f"Expected 'token' key in response: {data}"
         assert data["user"]["role"] == "admin"
         print(f"[PASS] Admin login successful")

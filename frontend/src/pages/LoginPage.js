@@ -19,8 +19,6 @@ export default function LoginPage({ setUser }) {
     setLoading(true);
     try {
       const { data } = await api.post('/auth/login', { email, password });
-      localStorage.setItem('token', data.access_token);
-      localStorage.setItem('user', JSON.stringify(data.user));
       setUser(data.user);
       toast.success('Giriş başarılı!');
       navigate('/');

@@ -15,9 +15,6 @@ import {
 } from 'lucide-react';
 import api from '@/utils/api';
 
-function authHeaders() {
-  return { Authorization: `Bearer ${localStorage.getItem('admin_token')}` };
-}
 
 const MODULES = [
   { key: 'projects', label: 'Projeler (TOKİ)' },
@@ -118,7 +115,7 @@ function UserDrawer({ user: initialUser, onClose, onUpdated }) {
   const fetchActivity = useCallback(async (page = 1) => {
     setLoadingActivity(true);
     try {
-      const { data } = await api.get(`/admin/app-users/${user.user_id}/activity?page=${page}&limit=15`, { headers: authHeaders() });
+      const { data } = await api.get(`/admin/app-users/${user.user_id}/activity?page=${page}&limit=15`, );
       setActivity(data.logs);
       setActivityTotal(data.total);
       setActivityPages(data.pages);
@@ -134,7 +131,7 @@ function UserDrawer({ user: initialUser, onClose, onUpdated }) {
   const saveSummary = async () => {
     setSaving(true);
     try {
-      const { data } = await api.put(`/admin/app-users/${user.user_id}`, { full_name: fullName, phone, role }, { headers: authHeaders() });
+      const { data } = await api.put(`/admin/app-users/${user.user_id}`, { full_name: fullName, phone, role }, );
       setUser(data); setIsDirty(false);
       toast.success('Kaydedildi'); onUpdated();
     } catch (e) { toast.error(e.response?.data?.detail || 'Kayıt başarısız'); }
@@ -143,7 +140,7 @@ function UserDrawer({ user: initialUser, onClose, onUpdated }) {
 
   const changeStatus = async (status) => {
     try {
-      await api.put(`/admin/app-users/${user.user_id}/status?status=${status}`, {}, { headers: authHeaders() });
+      await api.put(`/admin/app-users/${user.user_id}/status?status=${status}`, {}, );
       setUser(u => ({ ...u, status }));
       toast.success(`Durum: ${STATUS_CONFIG[status]?.label}`); onUpdated();
     } catch { toast.error('Durum güncellenemedi'); }
@@ -152,7 +149,7 @@ function UserDrawer({ user: initialUser, onClose, onUpdated }) {
   const endSessions = async () => {
     if (!window.confirm('Bu kullanıcının tüm oturumları sonlandırılacak?')) return;
     try {
-      const { data } = await api.post(`/admin/app-users/${user.user_id}/end-sessions`, {}, { headers: authHeaders() });
+      const { data } = await api.post(`/admin/app-users/${user.user_id}/end-sessions`, {}, );
       toast.success(`${data.deleted_count} oturum sonlandırıldı`);
     } catch { toast.error('Oturum sonlandırılamadı'); }
   };
@@ -165,7 +162,7 @@ function UserDrawer({ user: initialUser, onClose, onUpdated }) {
         membership_start_at: membershipStart || null,
         membership_end_at: membershipEnd || null,
         membership_active: membershipActive,
-      }, { headers: authHeaders() });
+      }, );
       setUser(data); setIsDirty(false);
       toast.success('Üyelik kaydedildi'); onUpdated();
     } catch { toast.error('Üyelik güncellenemedi'); }
@@ -176,7 +173,7 @@ function UserDrawer({ user: initialUser, onClose, onUpdated }) {
     if (!extendDays || extendDays < 1) return;
     setSaving(true);
     try {
-      const { data } = await api.put(`/admin/app-users/${user.user_id}/membership`, { extend_days: parseInt(extendDays) }, { headers: authHeaders() });
+      const { data } = await api.put(`/admin/app-users/${user.user_id}/membership`, { extend_days: parseInt(extendDays) }, );
       setUser(data);
       setMembershipEnd(fmtDate(data.membership_end_at));
       toast.success(`${extendDays} gün uzatıldı`); onUpdated();
@@ -187,7 +184,7 @@ function UserDrawer({ user: initialUser, onClose, onUpdated }) {
   const savePermissions = async () => {
     setSaving(true);
     try {
-      await api.put(`/admin/app-users/${user.user_id}/permissions`, { permissions }, { headers: authHeaders() });
+      await api.put(`/admin/app-users/${user.user_id}/permissions`, { permissions }, );
       setIsDirty(false); toast.success('Yetkiler kaydedildi'); onUpdated();
     } catch { toast.error('Yetkiler güncellenemedi'); }
     finally { setSaving(false); }
@@ -196,7 +193,7 @@ function UserDrawer({ user: initialUser, onClose, onUpdated }) {
   const saveNote = async () => {
     setSaving(true);
     try {
-      await api.put(`/admin/app-users/${user.user_id}/note`, { admin_note: adminNote, tags }, { headers: authHeaders() });
+      await api.put(`/admin/app-users/${user.user_id}/note`, { admin_note: adminNote, tags }, );
       setIsDirty(false); toast.success('Not kaydedildi'); onUpdated();
     } catch { toast.error('Not güncellenemedi'); }
     finally { setSaving(false); }
@@ -516,7 +513,7 @@ export default function UsersManager() {
       if (roleFilter) params.set('role', roleFilter);
       if (planFilter) params.set('plan', planFilter);
       if (statusFilter) params.set('status', statusFilter);
-      const { data } = await api.get(`/admin/app-users?${params}`, { headers: authHeaders() });
+      const { data } = await api.get(`/admin/app-users?${params}`, );
       setUsers(data.users);
       setTotal(data.total);
       setPages(data.pages);
@@ -529,7 +526,7 @@ export default function UsersManager() {
 
   const openUser = async (u) => {
     try {
-      const { data } = await api.get(`/admin/app-users/${u.user_id}`, { headers: authHeaders() });
+      const { data } = await api.get(`/admin/app-users/${u.user_id}`, );
       setSelectedUser(data);
     } catch { setSelectedUser(u); }
   };

@@ -16,7 +16,6 @@ import api from '@/utils/api';
 
 const BACKEND = process.env.REACT_APP_BACKEND_URL;
 const fileUrl = (p) => p ? `${BACKEND}/api/files/${p}` : null;
-function authHeaders() { return { Authorization: `Bearer ${localStorage.getItem('admin_token')}` }; }
 
 const BLANK_COURSE = { title: '', short_description: '', full_description: '', cover_image: '', promo_video: '', price: 0, discount_price: '', level: 'başlangıç', tags: [], status: 'active', order: 0, student_count: 0, rating: 5.0 };
 const BLANK_SEMINAR = { title: '', description: '', date: '', time: '', duration: '', speaker: 'Muhammet Özdemir', seminar_type: 'free', location: '', zoom_link: '', cover_image: '', status: 'active' };
@@ -35,7 +34,7 @@ function CoursesTab() {
 
   const fetch = useCallback(async () => {
     setLoading(true);
-    const { data } = await api.get('/admin/education/courses', { headers: authHeaders() });
+    const { data } = await api.get('/admin/education/courses', );
     setCourses(data); setLoading(false);
   }, []);
 
@@ -48,36 +47,36 @@ function CoursesTab() {
       let coverImage = form.cover_image;
       if (imageUpload) {
         const fd = new FormData(); fd.append('file', imageUpload); fd.append('folder', 'kurslar');
-        const { data: med } = await api.post('/admin/education/media/upload', fd, { headers: authHeaders() });
+        const { data: med } = await api.post('/admin/education/media/upload', fd, );
         coverImage = med.storage_path;
       }
       const payload = { ...form, cover_image: coverImage, price: parseFloat(form.price) || 0, discount_price: form.discount_price ? parseFloat(form.discount_price) : null, order: parseInt(form.order) || 0 };
-      if (editId) await api.put(`/admin/education/courses/${editId}`, payload, { headers: authHeaders() });
-      else await api.post('/admin/education/courses', payload, { headers: authHeaders() });
+      if (editId) await api.put(`/admin/education/courses/${editId}`, payload, );
+      else await api.post('/admin/education/courses', payload, );
       toast.success('Kaydedildi'); setForm(null); setEditId(null); setImageUpload(null); fetch();
     } catch { toast.error('Kayıt başarısız'); }
     finally { setSaving(false); }
   };
 
-  const del = async (id) => { if (!window.confirm('Silinsin mi?')) return; await api.delete(`/admin/education/courses/${id}`, { headers: authHeaders() }); toast.success('Silindi'); fetch(); };
+  const del = async (id) => { if (!window.confirm('Silinsin mi?')) return; await api.delete(`/admin/education/courses/${id}`, ); toast.success('Silindi'); fetch(); };
 
   const addModule = async (courseId) => {
     const title = prompt('Modül başlığı:');
     if (!title) return;
-    await api.post(`/admin/education/courses/${courseId}/modules`, { title, order: 0 }, { headers: authHeaders() });
+    await api.post(`/admin/education/courses/${courseId}/modules`, { title, order: 0 }, );
     fetch();
   };
-  const delModule = async (courseId, moduleId) => { if (!window.confirm('Modül silinsin mi?')) return; await api.delete(`/admin/education/courses/${courseId}/modules/${moduleId}`, { headers: authHeaders() }); fetch(); };
+  const delModule = async (courseId, moduleId) => { if (!window.confirm('Modül silinsin mi?')) return; await api.delete(`/admin/education/courses/${courseId}/modules/${moduleId}`, ); fetch(); };
 
   const addLesson = async (courseId, moduleId) => {
     const title = prompt('Ders başlığı:');
     if (!title) return;
     const video = prompt('Video URL (boş bırakılabilir):') || '';
     const duration = prompt('Süre (örn: 15 dk):') || '';
-    await api.post(`/admin/education/courses/${courseId}/modules/${moduleId}/lessons`, { title, video_url: video, duration, is_preview: false, order: 0, pdf_files: [] }, { headers: authHeaders() });
+    await api.post(`/admin/education/courses/${courseId}/modules/${moduleId}/lessons`, { title, video_url: video, duration, is_preview: false, order: 0, pdf_files: [] }, );
     fetch();
   };
-  const delLesson = async (courseId, moduleId, lessonId) => { if (!window.confirm('Ders silinsin mi?')) return; await api.delete(`/admin/education/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`, { headers: authHeaders() }); fetch(); };
+  const delLesson = async (courseId, moduleId, lessonId) => { if (!window.confirm('Ders silinsin mi?')) return; await api.delete(`/admin/education/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`, ); fetch(); };
 
   if (form !== null) return (
     <div className="max-w-2xl">
@@ -219,7 +218,7 @@ function SeminarsTab() {
 
   const fetch = useCallback(async () => {
     setLoading(true);
-    const { data } = await api.get('/admin/education/seminars', { headers: authHeaders() });
+    const { data } = await api.get('/admin/education/seminars', );
     setSeminars(data); setLoading(false);
   }, []);
 
@@ -232,21 +231,21 @@ function SeminarsTab() {
       let coverImage = form.cover_image;
       if (imageUpload) {
         const fd = new FormData(); fd.append('file', imageUpload); fd.append('folder', 'seminerler');
-        const { data: med } = await api.post('/admin/education/media/upload', fd, { headers: authHeaders() });
+        const { data: med } = await api.post('/admin/education/media/upload', fd, );
         coverImage = med.storage_path;
       }
       const payload = { ...form, cover_image: coverImage };
-      if (editId) await api.put(`/admin/education/seminars/${editId}`, payload, { headers: authHeaders() });
-      else await api.post('/admin/education/seminars', payload, { headers: authHeaders() });
+      if (editId) await api.put(`/admin/education/seminars/${editId}`, payload, );
+      else await api.post('/admin/education/seminars', payload, );
       toast.success('Kaydedildi'); setForm(null); setEditId(null); setImageUpload(null); fetch();
     } catch { toast.error('Kayıt başarısız'); }
     finally { setSaving(false); }
   };
 
-  const del = async (id) => { if (!window.confirm('Silinsin mi?')) return; await api.delete(`/admin/education/seminars/${id}`, { headers: authHeaders() }); toast.success('Silindi'); fetch(); };
+  const del = async (id) => { if (!window.confirm('Silinsin mi?')) return; await api.delete(`/admin/education/seminars/${id}`, ); toast.success('Silindi'); fetch(); };
 
   const loadRegs = async (seminarId) => {
-    const { data } = await api.get(`/admin/education/seminars/${seminarId}/registrations`, { headers: authHeaders() });
+    const { data } = await api.get(`/admin/education/seminars/${seminarId}/registrations`, );
     setRegs(data); setViewRegsId(seminarId);
   };
 
@@ -345,25 +344,25 @@ function LiveTab() {
   const [arc, setArc] = useState({ title: '', video_url: '', date: '' });
 
   useEffect(() => {
-    api.get('/admin/education/live', { headers: authHeaders() }).then(r => { if (r.data && r.data.title) setLive(r.data); }).catch(() => {});
+    api.get('/admin/education/live', ).then(r => { if (r.data && r.data.title) setLive(r.data); }).catch(() => {});
   }, []);
 
   const save = async () => {
     setSaving(true);
-    const { data } = await api.put('/admin/education/live', live, { headers: authHeaders() });
+    const { data } = await api.put('/admin/education/live', live, );
     setLive(data); setSaving(false); toast.success('Kaydedildi');
   };
 
   const addArchive = async () => {
     if (!arc.title) { toast.error('Başlık zorunlu'); return; }
-    const { data } = await api.post('/admin/education/live/archives', arc, { headers: authHeaders() });
+    const { data } = await api.post('/admin/education/live/archives', arc, );
     setLive(l => ({ ...l, archives: [...(l.archives || []), data] }));
     setArc({ title: '', video_url: '', date: '' }); setArchiveForm(false);
     toast.success('Arşiv eklendi');
   };
 
   const delArchive = async (id) => {
-    await api.delete(`/admin/education/live/archives/${id}`, { headers: authHeaders() });
+    await api.delete(`/admin/education/live/archives/${id}`, );
     setLive(l => ({ ...l, archives: (l.archives || []).filter(a => a.archive_id !== id) }));
     toast.success('Silindi');
   };
@@ -425,7 +424,7 @@ function MediaTab() {
   const fetch = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams(); if (search) params.set('search', search); if (folder) params.set('folder', folder);
-    const { data } = await api.get(`/admin/education/media?${params}`, { headers: authHeaders() });
+    const { data } = await api.get(`/admin/education/media?${params}`, );
     setMedia(data); setLoading(false);
   }, [search, folder]);
 
@@ -436,14 +435,14 @@ function MediaTab() {
     setUploading(true);
     for (const file of files) {
       const fd = new FormData(); fd.append('file', file); fd.append('folder', folder || 'genel');
-      try { await api.post('/admin/education/media/upload', fd, { headers: authHeaders() }); } catch { toast.error(`${file.name} yüklenemedi`); }
+      try { await api.post('/admin/education/media/upload', fd, ); } catch { toast.error(`${file.name} yüklenemedi`); }
     }
     setUploading(false); toast.success('Yükleme tamamlandı'); fetch();
   };
 
   const del = async (id) => {
     if (!window.confirm('Silinsin mi?')) return;
-    await api.delete(`/admin/education/media/${id}`, { headers: authHeaders() });
+    await api.delete(`/admin/education/media/${id}`, );
     toast.success('Silindi'); fetch();
   };
 
@@ -524,7 +523,7 @@ function PageSettingsTab() {
 
   const save = async () => {
     setSaving(true);
-    try { await api.put('/admin/education/page-settings', sections, { headers: authHeaders() }); toast.success('Sayfa ayarları kaydedildi'); }
+    try { await api.put('/admin/education/page-settings', sections, ); toast.success('Sayfa ayarları kaydedildi'); }
     catch { toast.error('Kayıt başarısız'); }
     finally { setSaving(false); }
   };

@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import api from '@/utils/api';
 
-function authHeaders() { return { Authorization: `Bearer ${localStorage.getItem('admin_token')}` }; }
 
 const BLANK_STREAM = { title: '', date: '', status: 'upcoming', platform: 'Zoom', join_url: '', description: '' };
 const BLANK_SUPERVISION = { title: '', location: '', city: '', date: '', status: 'upcoming', capacity: 20, registered: 0, description: '' };
@@ -66,7 +65,7 @@ function LiveStreamsTab({ onUpdate }) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/admin/live-streams', { headers: authHeaders() });
+      const { data } = await api.get('/admin/live-streams', );
       setStreams(data);
     } catch { toast.error('Yüklenemedi'); }
     finally { setLoading(false); }
@@ -79,10 +78,10 @@ function LiveStreamsTab({ onUpdate }) {
     setSaving(true);
     try {
       if (editId) {
-        await api.put(`/admin/live-streams/${editId}`, form, { headers: authHeaders() });
+        await api.put(`/admin/live-streams/${editId}`, form, );
         toast.success('Güncellendi');
       } else {
-        await api.post('/admin/live-streams', form, { headers: authHeaders() });
+        await api.post('/admin/live-streams', form, );
         toast.success('Eklendi');
       }
       setForm(null); setEditId(null); load(); if (onUpdate) onUpdate();
@@ -92,7 +91,7 @@ function LiveStreamsTab({ onUpdate }) {
 
   const del = async (id) => {
     if (!window.confirm('Silinsin mi?')) return;
-    await api.delete(`/admin/live-streams/${id}`, { headers: authHeaders() });
+    await api.delete(`/admin/live-streams/${id}`, );
     toast.success('Silindi'); load(); if (onUpdate) onUpdate();
   };
 
@@ -218,7 +217,7 @@ function SupervisionTab({ onUpdate }) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/admin/supervision', { headers: authHeaders() });
+      const { data } = await api.get('/admin/supervision', );
       setEvents(data);
     } catch { toast.error('Yüklenemedi'); }
     finally { setLoading(false); }
@@ -231,10 +230,10 @@ function SupervisionTab({ onUpdate }) {
     setSaving(true);
     try {
       if (editId) {
-        await api.put(`/admin/supervision/${editId}`, form, { headers: authHeaders() });
+        await api.put(`/admin/supervision/${editId}`, form, );
         toast.success('Güncellendi');
       } else {
-        await api.post('/admin/supervision', form, { headers: authHeaders() });
+        await api.post('/admin/supervision', form, );
         toast.success('Eklendi');
       }
       setForm(null); setEditId(null); load(); if (onUpdate) onUpdate();
@@ -244,7 +243,7 @@ function SupervisionTab({ onUpdate }) {
 
   const del = async (id) => {
     if (!window.confirm('Silinsin mi?')) return;
-    await api.delete(`/admin/supervision/${id}`, { headers: authHeaders() });
+    await api.delete(`/admin/supervision/${id}`, );
     toast.success('Silindi'); load(); if (onUpdate) onUpdate();
   };
 
@@ -381,7 +380,7 @@ function AiExamAssistant({ onExtracted }) {
       const form = new FormData();
       form.append('file', file);
       const { data } = await api.post('/admin/exams/extract-from-pdf', form, {
-        headers: { ...authHeaders(), 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
       if (!data.questions?.length) { toast.error('PDF\'de soru bulunamadı'); return; }
       toast.success(`${data.questions.length} soru çıkarıldı!`);
@@ -498,8 +497,8 @@ function ExamsTab({ onUpdate }) {
     setLoading(true);
     try {
       const [examsRes, coursesRes] = await Promise.all([
-        api.get('/admin/exams', { headers: authHeaders() }),
-        api.get('/admin/education/courses', { headers: authHeaders() }),
+        api.get('/admin/exams', ),
+        api.get('/admin/education/courses', ),
       ]);
       setExams(examsRes.data);
       setCourses(coursesRes.data);
@@ -545,10 +544,10 @@ function ExamsTab({ onUpdate }) {
     setSaving(true);
     try {
       if (editId) {
-        await api.put(`/admin/exams/${editId}`, form, { headers: authHeaders() });
+        await api.put(`/admin/exams/${editId}`, form, );
         toast.success('Güncellendi');
       } else {
-        await api.post('/admin/exams', form, { headers: authHeaders() });
+        await api.post('/admin/exams', form, );
         toast.success('Eklendi');
       }
       setForm(null); setEditId(null); load(); if (onUpdate) onUpdate();
@@ -558,7 +557,7 @@ function ExamsTab({ onUpdate }) {
 
   const del = async (id) => {
     if (!window.confirm('Silinsin mi?')) return;
-    await api.delete(`/admin/exams/${id}`, { headers: authHeaders() });
+    await api.delete(`/admin/exams/${id}`, );
     toast.success('Silindi'); load(); if (onUpdate) onUpdate();
   };
 
@@ -739,7 +738,7 @@ export default function PanelManager() {
   const [stats, setStats] = useState({ streams: 0, supervision: 0, exams: 0, active_users: 0 });
 
   const refreshStats = useCallback(() => {
-    api.get('/admin/panel-stats', { headers: authHeaders() })
+    api.get('/admin/panel-stats', )
       .then(r => setStats(r.data))
       .catch(() => {});
   }, []);

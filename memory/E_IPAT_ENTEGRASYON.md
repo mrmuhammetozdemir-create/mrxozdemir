@@ -3,7 +3,7 @@
 mrxakademi merkezi auth sunucusu olarak calisir. e-ipat.com tum kullanici islemleri icin mrxakademi API'sini kullanir.
 
 ## mrxakademi API Base URL
-Deploy URL'nizi kullanin (ornek: `https://emlak-vergi.preview.emergentagent.com`)
+Deploy URL'nizi kullanin (ornek: `https://production-ready-152.preview.emergentagent.com`)
 
 ---
 

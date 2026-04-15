@@ -1370,7 +1370,6 @@ export default function UserPanelPage() {
   const handleLogout = () => {
     api.post('/auth/logout', {}, { withCredentials: true }).catch(() => {});
     localStorage.removeItem('app_user');
-    localStorage.removeItem('app_session_token');
     navigate('/auth');
     toast.success('Çıkış yapıldı');
   };
