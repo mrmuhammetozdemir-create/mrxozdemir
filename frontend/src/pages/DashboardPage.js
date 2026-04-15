@@ -92,7 +92,7 @@ export default function DashboardPage() {
   useEffect(() => {
     // Admin auth check via cookie (httpOnly) - no localStorage needed
     api.get('/auth/me', { withCredentials: true })
-      .then(({ data }) => { if (data.role === 'admin') setAdminUser(data); })
+      .then(({ data }) => { if (data.user?.role === 'admin') setAdminUser(data.user); })
       .catch(() => {});
     const stored = localStorage.getItem('app_user');
     if (stored) { try { setAppUser(JSON.parse(stored)); } catch {} }

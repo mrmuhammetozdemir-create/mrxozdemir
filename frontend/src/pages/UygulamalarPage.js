@@ -121,7 +121,7 @@ export default function UygulamalarPage() {
     }
     // Admin auth check via cookie (httpOnly)
     api.get('/auth/me', { withCredentials: true })
-      .then(({ data }) => { if (data.role === 'admin') setAdminUser(data); })
+      .then(({ data }) => { if (data.user?.role === 'admin') setAdminUser(data.user); })
       .catch(() => {});
   }, []);
 
