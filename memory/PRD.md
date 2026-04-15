@@ -228,7 +228,10 @@ Tüm eğitim ve gayrimenkul araçlarını tek sayfada toplayan `MrxAkademiManage
 - PUT /api/admin/seo/{page_id} — Tek sayfa güncelleme
 - POST /api/admin/seo/generate/{page_id} — AI ile SEO üretimi
 
-## Deploy Data Persistence - Apr 2026
+## Deployment Fix - Apr 2026 - TAMAMLANDI
+- **`/health` endpoint eklendi** (`server.py`): Deployment platform'un backend health check'i `https://host/health` için `{"status": "ok"}` döndürür.
+- **Startup hızlandırıldı:** 16 koleksiyon seeding işlemi `asyncio.create_task()` ile background'a taşındı → startup ~2s → ~250ms düştü.
+- Deploy sırasında "Waiting for backend to accept connections" döngüsü artık çok daha erken geçecek.
 - Tüm MongoDB verileri `seed_data.json` dosyasına export edildi (54 kayıt)
 - Startup seed: 16 koleksiyon (projeler, medya, kullanıcılar, SEO, kurslar vb.)
 - Deploy ortamında boş koleksiyonlar otomatik doldurulur

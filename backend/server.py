@@ -26,6 +26,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for deployment platform."""
+    return {"status": "ok"}
+
+
 # CRITICAL: Add CORS middleware BEFORE including routers
 app.add_middleware(
     CORSMiddleware,
@@ -47,6 +53,8 @@ app.include_router(user_panel.router, prefix="/api")
 
 @app.on_event("startup")
 async def startup():
+    import asyncio
+
     try:
         init_storage()
         logger.info("Object Storage initialized successfully")
@@ -69,7 +77,14 @@ async def startup():
     except Exception as e:
         logger.error(f"Admin seed error: {e}")
 
-    # Seed all collections from exported data if empty
+    # Run seeding in background so startup completes fast
+    asyncio.create_task(_background_seed())
+
+
+async def _background_seed():
+    """Seed collections in the background after startup."""
+    import asyncio
+
     SEED_COLLECTIONS = [
         "projects", "shared_facilities", "project_map_layers", "project_media",
         "courses", "seminars", "land_parcels", "land_opportunities",
