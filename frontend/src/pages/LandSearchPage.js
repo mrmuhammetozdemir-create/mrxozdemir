@@ -22,7 +22,7 @@ export default function LandSearchPage() {
   const [loading, setLoading] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  const isLoggedIn = () => !!(localStorage.getItem('app_user') || localStorage.getItem('admin_token'));
+  const isLoggedIn = () => !!(localStorage.getItem('app_user'));
 
   useEffect(() => {
     fetchParcels();

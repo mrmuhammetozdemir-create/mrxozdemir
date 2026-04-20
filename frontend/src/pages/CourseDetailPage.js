@@ -16,7 +16,7 @@ export default function CourseDetailPage() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [openModule, setOpenModule] = useState(null);
 
-  const isLoggedIn = () => !!(localStorage.getItem('app_user') || localStorage.getItem('admin_token'));
+  const isLoggedIn = () => !!(localStorage.getItem('app_user'));
 
   useEffect(() => {
     api.get(`/education/courses/${id}`)

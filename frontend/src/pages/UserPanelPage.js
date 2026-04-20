@@ -353,6 +353,7 @@ function PackagesSection({ user, onUpgrade }) {
   const [loading, setLoading] = useState(true);
   const currentPlan = user?.plan || 'free';
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     api.get('/packages').then(r => setPackages(r.data)).catch(() => setPackages([])).finally(() => setLoading(false));
   }, []);
@@ -1240,7 +1241,7 @@ function CalendarSection({ title, events, cityFilter }) {
                   className={`min-h-[44px] p-1 rounded-xl ${isToday ? 'bg-emerald-50 ring-1 ring-emerald-300' : 'hover:bg-slate-50'} transition-colors`}>
                   <span className={`text-xs font-semibold block mb-1 text-center ${isToday ? 'text-emerald-700' : 'text-slate-700'}`}>{day}</span>
                   {dayEvents.slice(0, 1).map((e, ei) => (
-                    <div key={ei} className="bg-emerald-600 text-white text-[10px] font-semibold rounded-md px-1 py-0.5 truncate leading-tight">{e.title?.slice(0, 12)}</div>
+                    <div key={e.id || `ev-${ei}`} className="bg-emerald-600 text-white text-[10px] font-semibold rounded-md px-1 py-0.5 truncate leading-tight">{e.title?.slice(0, 12)}</div>
                   ))}
                   {dayEvents.length > 1 && <div className="text-[9px] text-emerald-600 font-bold text-center">+{dayEvents.length - 1}</div>}
                 </div>
@@ -1283,6 +1284,7 @@ function SupervisionSection() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     api.get('/supervision/events').then(r => setEvents(r.data)).catch(() => setEvents([])).finally(() => setLoading(false));
   }, []);
@@ -1430,3 +1432,4 @@ export default function UserPanelPage() {
     </div>
   );
 }
+

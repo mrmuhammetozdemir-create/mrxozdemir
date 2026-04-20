@@ -851,7 +851,7 @@ export default function DegerArtisHesaplamaPage() {
                 a: 'Satış bedeli üzerinden hesaplanan %2 tapu harcı ve gayrimenkulün iktisabı için ödenen konut kredisi faizi vergiye tabi matraha dahil edilmeden önce düşülebilir. Ayrıca alış bedeli Yİ-ÜFE endeksi ile değerlemeye tabi tutularak enflasyon etkisi elimine edilir.'
               }
             ].map((item, idx) => (
-              <div key={idx} className="border border-slate-800 rounded-lg overflow-hidden">
+              <div key={item.q.slice(0, 30)} className="border border-slate-800 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setOpenAccordion(openAccordion === idx ? null : idx)}
                   className="w-full flex items-center justify-between px-5 py-4 bg-slate-800 hover:bg-slate-750 text-left transition"

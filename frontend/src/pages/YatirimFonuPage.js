@@ -268,7 +268,7 @@ export default function YatirimFonuPage() {
                     </div>
                     <ul className="space-y-2.5">
                       {seg.perks.map((p, pi) => (
-                        <li key={pi} className="flex items-center gap-2.5 text-[13px]" style={{ color: isDark ? 'rgba(255,255,255,0.85)' : '#374151' }}>
+                        <li key={p} className="flex items-center gap-2.5 text-[13px]" style={{ color: isDark ? 'rgba(255,255,255,0.85)' : '#374151' }}>
                           <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: isDark ? '#C8A96A' : '#0F3D2E' }} />
                           {p}
                         </li>
@@ -355,7 +355,7 @@ export default function YatirimFonuPage() {
                 <p className="text-sm text-white/70 mb-2">Yatırım Sunumu</p>
                 <div className="mt-4 grid grid-cols-3 gap-4 opacity-40">
                   {[...Array(6)].map((_, i) => (
-                    <div key={i} className="h-2 rounded-full bg-white/40 w-24" />
+                    <div key={`skel-${i}`} className="h-2 rounded-full bg-white/40 w-24" />
                   ))}
                 </div>
                 <p className="text-[11px] text-white/40 mt-6">Sunum dosyası yüklendiğinde burada görüntülenecektir</p>

@@ -25,7 +25,7 @@ export default function InvestmentCalculatorPage() {
   const [loading, setLoading] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  const isLoggedIn = () => !!(localStorage.getItem('app_user') || localStorage.getItem('admin_token'));
+  const isLoggedIn = () => !!(localStorage.getItem('app_user'));
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

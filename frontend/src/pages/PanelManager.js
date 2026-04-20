@@ -669,7 +669,7 @@ function ExamsTab({ onUpdate }) {
                           <SelectTrigger data-testid={`q-answer-${qi}`}><SelectValue placeholder="Doğru şıkkı seçin" /></SelectTrigger>
                           <SelectContent>
                             {q.options.filter(o => o).map((opt, oi) => (
-                              <SelectItem key={oi} value={opt}>{String.fromCharCode(65 + oi)}) {opt}</SelectItem>
+                              <SelectItem key={opt} value={opt}>{String.fromCharCode(65 + oi)}) {opt}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>

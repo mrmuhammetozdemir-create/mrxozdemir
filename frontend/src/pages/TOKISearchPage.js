@@ -38,7 +38,7 @@ export default function TOKISearchPage() {
   const [loading, setLoading] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  const isLoggedIn = () => !!(localStorage.getItem('app_user') || localStorage.getItem('admin_token'));
+  const isLoggedIn = () => !!(localStorage.getItem('app_user'));
 
   // Derive available districts from existing project data for the selected city
   const availableDistricts = useMemo(() => {

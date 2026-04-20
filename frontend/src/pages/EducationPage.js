@@ -61,7 +61,7 @@ export default function EducationPage() {
     if (u) { try { const p = JSON.parse(u); setLoggedIn(true); setUserName(p.full_name || p.email || ''); } catch {} }
   }, []);
 
-  const isLoggedIn = () => !!(localStorage.getItem('app_user') || localStorage.getItem('admin_token'));
+  const isLoggedIn = () => !!(localStorage.getItem('app_user'));
 
   const handleGate = (action) => {
     if (!isLoggedIn()) { setShowLoginModal(true); return; }
