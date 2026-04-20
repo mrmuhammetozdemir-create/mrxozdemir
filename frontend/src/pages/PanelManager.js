@@ -655,7 +655,7 @@ function ExamsTab({ onUpdate }) {
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         {q.options.map((opt, oi) => (
-                          <div key={oi}>
+                          <div key={`opt-${qi}-${oi}`}>
                             <Label className="text-xs text-slate-500 mb-1 block">Seçenek {String.fromCharCode(65 + oi)}</Label>
                             <Input value={opt} onChange={e => updateOption(qi, oi, e.target.value)}
                               placeholder={`Şık ${String.fromCharCode(65 + oi)}`}

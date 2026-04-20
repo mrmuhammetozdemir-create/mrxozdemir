@@ -901,7 +901,7 @@ function ExamsSection() {
               <p className="text-sm font-bold text-slate-900 mb-4">{qi + 1}. {q.text}</p>
               <div className="space-y-2">
                 {q.options.map((opt, oi) => (
-                  <label key={oi} data-testid={`exam-opt-${q.id}-${oi}`}
+                  <label key={`${q.id}-opt-${oi}`} data-testid={`exam-opt-${q.id}-${oi}`}
                     className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer border transition-all
                       ${answers[q.id] === opt ? 'border-emerald-500 bg-emerald-50' : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50'}`}>
                     <input type="radio" name={q.id} value={opt} checked={answers[q.id] === opt}

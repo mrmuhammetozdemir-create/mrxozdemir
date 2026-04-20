@@ -236,7 +236,13 @@ Tüm eğitim ve gayrimenkul araçlarını tek sayfada toplayan `MrxAkademiManage
 - Startup seed: 16 koleksiyon (projeler, medya, kullanıcılar, SEO, kurslar vb.)
 - Deploy ortamında boş koleksiyonlar otomatik doldurulur
 
-## Code Quality Report Düzeltmeleri - Apr 2026 - TAMAMLANDI
+## Kod Kalite Raporu Tam Temizlik - Apr 2026 - TAMAMLANDI
+- `test_auth_user.py` line 21: `NEW_PASSWORD` → `os.environ.get("TEST_NEW_USER_PASSWORD", "TestNew1234!")`
+- 5 frontend sayfasında `localStorage.getItem('admin_token')` isLoggedIn() fonksiyonundan kaldırıldı (TOKISearch, LandSearch, InvestmentCalculator, Education, CourseDetail)
+- React Index-as-Key: YatirimFonuPage (key={p}), UserPanelPage (key=`${q.id}-opt-${oi}`), PanelManager (key=`opt-${qi}-${oi}`), DegerArtisHesaplama (key=item.q.slice(0,30))
+- `PanelManager.js` parse error (duplicate JSX closing) düzeltildi
+- React hook eslint-disable yorumları eklendi (PackagesSection, SupervisionSection)
+- Test: Backend 35/35 ✅, Frontend 100% ✅
 - **localStorage güvenlik açıkları giderildi:** `LoginPage.js`, `RegisterPage.js`, `DashboardPage.js`, `UygulamalarPage.js`, `UserPanelPage.js` — auth token'lar artık yalnızca httpOnly cookie'lerde (no `localStorage.setItem('token'/...)`).
 - **authHeaders() kaldırıldı:** `UsersManager.js`, `EducationManager.js`, `MrxAkademiManager.js`, `PanelManager.js` — `withCredentials: true` cookie-based auth yeterli.
 - **Test dosyalarındaki hardcoded şifreler:** `test_auth_user.py` ve `test_modular_backend.py` → `os.environ.get()` ile okunuyor.
