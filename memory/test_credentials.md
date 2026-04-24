@@ -1,16 +1,14 @@
 # Test Credentials
 
-## Admin Account
-- Email: ipatarazi@gmail.com
+## Admin Panel (/admin)
+- Email: kullanıcı@mrxozdemir.com
 - Password: As537273
-- URL: /admin
 
-## Test User Account
+## Test User (/auth)
 - Email: testuser@test.com
 - Password: Test1234!
-- URL: /auth (login) → /panel (dashboard)
 
-## Auth Mechanism
-- Admin: httpOnly cookie (admin_token) + Bearer token support
-- Users: httpOnly cookie (session_token)
+## Auth Notes
+- Admin auth: httpOnly cookie (admin_token)
+- User auth: httpOnly cookie (session_token)
 - withCredentials: true on all frontend API calls
