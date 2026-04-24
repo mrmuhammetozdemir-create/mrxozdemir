@@ -66,7 +66,7 @@ const FEATURED = [
     description: 'Türkiye\'nin en büyük arsa yatırım zirvesinde buluşun. Uzman konuşmacılar, yatırım fırsatları ve sektörün liderleriyle networking imkânı.',
     icon: Calendar, path: 'https://arsayatirimzirvesi.com', external: true,
     badge: '21 Mayıs 2026', badgeColor: 'bg-green-600',
-    gradient: 'from-green-700 to-emerald-900', accent: '#16a34a',
+    gradient: 'from-blue-900 to-indigo-950', accent: '#1e3a8a',
     testId: 'app-arsa-zirvesi',
     img: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&auto=format&fit=crop',
     features: ['21 Mayıs 2026', 'Uzman Konuşmacılar', 'Networking'],
