@@ -4,7 +4,7 @@ import {
   Building2, Map, Calculator, MapPin, GraduationCap,
   Users, Target, BarChart3, BookOpen, LogIn, LogOut,
   Settings, ChevronRight, ArrowRight, ExternalLink, Zap,
-  Grid3X3, Star, TrendingUp, Home
+  Grid3X3, Star, TrendingUp, Home, Calendar
 } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
@@ -60,6 +60,16 @@ const FEATURED = [
     testId: 'app-mega',
     img: 'https://static.prod-images.emergentagent.com/jobs/188d7137-7a2f-40e2-9241-c0824080af66/images/eab64624fef67dada87f9740213e291d5137a4ed123bfd3116d641cc04a2639c.png',
     features: ['Güzergah haritası', 'Proje detayları', 'Etki analizi'],
+  },
+  {
+    id: 'arsa-zirvesi', title: 'Arsa Yatırım Zirvesi 2026', subtitle: 'Etkinlik & Konferans',
+    description: 'Türkiye\'nin en büyük arsa yatırım zirvesinde buluşun. Uzman konuşmacılar, yatırım fırsatları ve sektörün liderleriyle networking imkânı.',
+    icon: Calendar, path: 'https://arsayatirimzirvesi.com', external: true,
+    badge: '21 Mayıs 2026', badgeColor: 'bg-green-600',
+    gradient: 'from-green-700 to-emerald-900', accent: '#16a34a',
+    testId: 'app-arsa-zirvesi',
+    img: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&auto=format&fit=crop',
+    features: ['21 Mayıs 2026', 'Uzman Konuşmacılar', 'Networking'],
   },
 ];
 
@@ -225,7 +235,7 @@ export default function UygulamalarPage() {
           </div>
           <div className="flex flex-wrap gap-3">
             {[
-              { label: '8 Uygulama', icon: Grid3X3, color: 'text-emerald-400' },
+              { label: `${FEATURED.length + SECONDARY.length} Uygulama`, icon: Grid3X3, color: 'text-emerald-400' },
               { label: 'Gerçek Zamanlı Veri', icon: TrendingUp, color: 'text-blue-400' },
               { label: 'Türkiye Geneli', icon: MapPin, color: 'text-amber-400' },
             ].map(s => (
