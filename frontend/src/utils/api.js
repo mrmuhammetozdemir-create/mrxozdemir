@@ -24,8 +24,11 @@ api.interceptors.response.use(
       localStorage.removeItem('session_token');
       localStorage.removeItem('access_token');
       
-      // Redirect to login (but not for /admin route - admin handles its own login form)
-      if (!window.location.pathname.includes('/auth') && !window.location.pathname.startsWith('/admin')) {
+      // Yalnızca gerçekten korumalı sayfalarda /auth'a yönlendir
+      // Ana sayfa (/), uygulamalar ve public sayfalar giriş gerektirmez
+      const PROTECTED_PATHS = ['/panel'];
+      const isProtected = PROTECTED_PATHS.some(p => window.location.pathname.startsWith(p));
+      if (isProtected) {
         window.location.href = '/auth';
       }
     }
