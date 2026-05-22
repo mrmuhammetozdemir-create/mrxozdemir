@@ -6,7 +6,7 @@ import uuid, io, json
 
 from database import db
 from auth_utils import require_admin
-from storage import put_object, get_object, MIME_TYPES, APP_NAME
+from storage import put_object, get_object, get_public_url, MIME_TYPES, APP_NAME
 
 router = APIRouter()
 
@@ -561,11 +561,9 @@ async def delete_map_layer(layer_id: str, admin: dict = Depends(require_admin)):
 
 @router.get("/files/{path:path}")
 async def serve_file(path: str):
-    try:
-        data, content_type = get_object(path)
-        return FastAPIResponse(content=data, media_type=content_type)
-    except Exception:
-        raise HTTPException(status_code=404, detail="File not found")
+    """Redirect to R2 public URL for direct CDN serving."""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url=get_public_url(path), status_code=302)
 
 
 # ============= MAP LAYER DATA =============
