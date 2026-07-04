@@ -1,7 +1,7 @@
 # Test Credentials
 
 ## Admin Panel (/admin)
-- Email: kullanıcı@mrxozdemir.com
+- Email: admin@mrxozdemir.com
 - Password: As537273
 
 ## Test User (/auth)

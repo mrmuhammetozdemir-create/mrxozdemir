@@ -64,9 +64,9 @@ async def startup():
     # Ensure admin user exists (always update password to stay in sync)
     try:
         await db.users.update_one(
-            {"email": "kullanıcı@mrxozdemir.com"},
+            {"email": "admin@mrxozdemir.com"},
             {"$set": {
-                "email": "kullanıcı@mrxozdemir.com",
+                "email": "admin@mrxozdemir.com",
                 "full_name": "Admin",
                 "password": hash_password("As537273"),
                 "role": "admin",
